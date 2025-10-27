@@ -221,9 +221,9 @@ The GPU, or graphics processing unit, is a single-instruction multiple-data (or 
 
 Each streaming multiprocessor is also home to a set of hardware accelerators, the number of which are standardized across all SMs within an architecture. In recent years, attention has been drawn to the introduction of tensor cores into the SMs, allowing for fast 4x4 tensor fused-multiply-add across the warp. It bears reminding, however, that as a result of its historical purpose, the streaming multiprocessors have always had access to \emph{texture mapping units} (TMUs) as well, which are accelerate linear and bilinear interpolation of the bound texture resource. As an example of accelerator allocation, Nvidia's RTX 5090 has four tensor cores and four TMUs per SM, for a total of 680 units each across 170 SMs\cite{NVIDIABlackwellArchitecture}.
 
-\paragraph{Programming for the GPU} To program for the GPU, programmers write what is known as a \emph{kernel}. The kernel is executed over a large number of threads known as a \emph{grid} which is a tuple $(G,B)$ of $G$ thread blocks each containing $B$ threads. Each invocation of the kernel is assigned a block identifier and a thread identifier, allowing the program to branch based on the invocation index. Within a block, threads are able to share memory and synchronization primitives, although grid-level synchronization is made available by a driver. On program dispatch, each block is issued to a streaming multiprocessor, which then partitions the block into warps for execution. Programmers for Nvidia architectures may use CUDA to write kernels, and for programmers who wish to target a wider variety of hardware, they may write the kernel as a compute shader compiled to SPIR-V and execute it using the Vulkan API.
+\paragraph{Programming for the GPU} To program for the GPU, programmers write what is known as a \emph{kernel}. The kernel is executed over a large number of threads known as a \emph{grid} which is a tuple $(G,B)$ of $G$ thread blocks each containing $B$ threads. Each invocation of the kernel is assigned a block identifier and a thread identifier, allowing the program to branch based on the invocation index. Within a block, threads are able to share memory and synchronization primitives, although grid-level synchronization is made available by a driver. On kernel dispatch, each block is issued to a streaming multiprocessor, which then partitions the block into warps for execution. Programmers for Nvidia architectures may use CUDA to write kernels, and for programmers who wish to target a wider variety of hardware, they may write the kernel as a compute shader compiled to SPIR-V and execute it using the Vulkan API.
 
-Typically, a kernel dispatch is performed from the host. However, the ability to dispatch kernels from the GPU grows increasingly supported, reducing the need for ping-pong between the CPU and GPU. In CUDA, the feature is known as Dynamic Parallelism, and in Vulkan, the extension is known as \emph{Device-Generated Commands}\cite{VK_EXT_device_generated_commands3VulkanDocumentation}.
+Typically, a kernel dispatch is performed from the CPU (also known as the host device). However, the ability to dispatch kernels from the GPU grows increasingly supported, reducing the need for ping-pong between the CPU and GPU. In CUDA, the feature is known as Dynamic Parallelism, and in Vulkan, the extension is known as \emph{Device-Generated Commands}\cite{VK_EXT_device_generated_commands3VulkanDocumentation}.
 
 \subsection{Compilers for the GPU}
 
@@ -277,13 +277,11 @@ Inverse rendering derives geometry and materials from one or more final images o
 
 \section{Thesis Proposal}
 
-The programmable deliverable of this thesis is to develop an MLIR dialect for dispatching work to the GPU. The research value of such a project is not immediately apparent, however, it does lay the groundwork and an overarching research theme for research ideas exploring cross-pipeline optimizations moving forward. In the short term, the concrete paper ideas are:
+The programmable deliverable of this thesis is to develop an MLIR dialect for dispatching work to the GPU. The research value of such a project is not immediately apparent, however, it does lay the groundwork and an overarching research theme for research ideas exploring cross-pipeline optimizations. In the short term, the concrete paper ideas are:
 \begin{itemize}
   \item Accelerating Sparse-Sparse Matrix Multiplication with Raytracing Hardware
   \item Rasterization Pipeline Optimizations as Program Rewrites
 \end{itemize}
-
-In the long term, the research deliverable of this thesis would be to declaratively program and optimize a state-of-the-art computer graphics pipeline with a user-scheduled language. In the present year, the current state of the art with regards to real-time graphics is Unreal Engine 5's Lumen and Nanite technologies, utilized in both real-time and offline scenarios through video games and film respectively.
 
 \subsection{Accelerating Sparse-Sparse Matrix Multiplication with Raytracing Hardware}
 
@@ -297,9 +295,9 @@ The rasterization pipeline is a well-understood programming model utilized by gr
 
 We treat the tiling of the render pass as a program rewrite. Unlike linear algebra workloads, the iteration domain is not the only tiling target. The draw command's viewport and the frustum corresponding to the projection matrix must be tiled as well, respestively corresponding to pipeline and geometric semantics. By subdividing and rotating the frustum, however, the inter-tile depth buffer becomes incoherent, resulting in non-trivial adjustment for use in post-processing passes that rely on the depth buffer. One example of such a pass is depth-based edge detection. We will investigate the effects of tiling on the geometric semantics of the render pass, and attempt to resolve it with whole program optimization that is only possible with multi-level compilers. This will allow us to investigate the use of compiler rewrites as a means to optimize pipelines.
 
-\subsection{Criteria for Success: The 'gpu2' Dialect}
+\subsection{Criteria for Success}
 
-Throughout the period of the PhD, the goal is to eventually supplant or provide an alternative to MLIR's existing $\mathsf{gpu}$ dialect, which is overly focused on the compute pipeline and lacks the ability to fully utilize. Perhaps 
+While adoption in the general community is fun to dream about, two years is hardly sufficient for the.
 
 \section {Timeplan}
 %% Bibliography
