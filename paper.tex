@@ -243,6 +243,14 @@ As we saw with general compute, the GPU has come a long way from being a fixed-f
 
 \subsubsection{The Rasterization Pipeline}
 
+The rasterization pipeline is takes the graphics card from primitive bufers through to \autoref{fig:rasterpipe}
+
+\begin{figure}
+\includegraphics[scale=0.25,keepaspectratio]{RasterizationPipeline.drawio.png}
+
+\caption{The rasterization pipeline. Programmable stages are highlighted in red, with optional components outlined with dotted lines.\label{fig:rasterpipe}}  
+\end{figure}
+
 \label{sssec:rasterization}
 
 
@@ -250,6 +258,18 @@ As we saw with general compute, the GPU has come a long way from being a fixed-f
 
 \subsubsection{The Raytracing Pipeline}
 
+\autoref{fig:raytracepipe}
+
+\begin{figure}
+\includegraphics[scale=0.25,keepaspectratio]{RayTracingPipeline.drawio.png}
+\caption{The ray tracing pipeline. Programmable stages are highlighted in green.\label{fig:raytracepipe}}  
+\end{figure}
+\begin{figure}
+\includegraphics[scale=0.25,keepaspectratio]{AS.drawio.png}
+\caption{The acceleration structure (AS) layout as described in Nvidia's DirectX 12 Raytracing tutorial\cite{DX12RaytracingTutorial}. The top-level acceleration structures (TLAS) instance the bottom-level acceleration structures (BLAS), not unlike how objects in a scene instance the same meshes. \label{fig:raytracepipe}}  
+\end{figure}
+
+\cite{RayTracingVulkan2020}
 Top-level and bottom-level acceleration structures (TLAS/BLAS respectively). The ability to loop back to the beginning of the pipeline.
 
 \subsection{Compilers in Computer Graphics}
@@ -257,7 +277,7 @@ Top-level and bottom-level acceleration structures (TLAS/BLAS respectively). The
 Computer graphics as a field is huge, spanning different rendering techniques and the use of machine learning in various parts of the render pipeline. We will hence cover a small subset of it, relating to the use of compiler techniques in computer graphics.
 
 \subsubsection{The Rendering Equation}
-
+ 
 The rendering equation\cite{kajiyaRenderingEquation1986} refers to the equation used to compute the value of a point's irradiance, which we define in \autoref{eqn:rendering}. It computes the irradiance for a point by integrating over the hemisphere $\Omega$, taking in as input the normal at the point $\mathbf{n}$ and incoming and outgoing radiance $L_i$ and $L_o$ along the directions $\omega_i$ and $\omega_o$ respectively. $f$ most often appears as $f_r$, known as the bidirectional reflection function, which is the proportion of light reflectioned from $\omega_i$ to $\omega_o$.
 \begin{align}
   \label{eqn:rendering}
@@ -297,7 +317,7 @@ We treat the tiling of the render pass as a program rewrite. Unlike linear algeb
 
 \subsection{Criteria for Success}
 
-While adoption in the general community is fun to dream about, two years is hardly sufficient for the.
+While adoption in the general community would be great, two years is hardly sufficient for a project to gain traction within the community. However, adoption by 
 
 \section {Timeplan}
 %% Bibliography
