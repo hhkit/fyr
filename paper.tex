@@ -299,17 +299,21 @@ Inverse rendering derives geometry and materials from one or more final images o
 
 The programmable deliverable of this thesis is to develop an MLIR dialect for dispatching work to the GPU. The research value of such a project is not immediately apparent, however, it does lay the groundwork and an overarching research theme for research ideas exploring cross-pipeline optimizations. In the short term, the concrete paper ideas are:
 \begin{itemize}
-  \item Accelerating Sparse-Sparse Matrix Multiplication with Raytracing Hardware
+  \item Compiling to Accelerate Block-Sparse Linear Algebra with Raytracing Hardware
   \item Rasterization Pipeline Optimizations as Program Rewrites
 \end{itemize}
 
-\subsection{Accelerating Sparse-Sparse Matrix Multiplication with Raytracing Hardware}
+\subsection{Compiling to Accelerate Block-Sparse Linear Algebra with Raytracing Hardware}
+
+Target Venue: ISCA / ASPLOS 
 
 The general idea of tackling linear algebra as a geometry problem is not a particularly novel innovation. Why, even dense GEMM is often modelled as a polyhedral program. Therefore, the idea of modelling sparse-sparse matrix multiplication as a geometric problem should not come as a surprise either. By converting the elements of sparse matrices into triangles and utilizing the ray tracing pipeline's acceleration structure, Zhang et al.~\cite{zhangRTSpMSpMHarnessingRay2025} manage to harness the ray tracing hardware to optimize the sparse linear algebra problem, achieving a 1.85x speedup over cuSPARSE.
 
 We observe that Zhang's approach uses OptiX, Nvidia's SDK for ray tracing, and posit that their approach can still be further refined by treating the lowering of the sparse computation to the raytracing pipeline as a compiler optimization. We will attempt to use compiler techniques to not only simplify the writing of the dispatch for the frontend programmer, but also enable well-known optimizations such as block-sparse formats. The block semantics available to block-sparse matrices more easily permit tensor core acceleration, and as geometric primitives with larger volume, should be more efficiently handled by the bounding volume acceleration structures. This approach is clearly cross-pipeline, utilizing both the compute and raytracing pipelines to optimize a linear algebra problem, and is simple to implement and explore with existing tools, allowing us to dedicate engineering effort to building a well-rounded GPU dispatch framework.
 
 \subsection{Rasterization Pipeline Optimizations as Program Rewrites}
+
+Target Venue: SIGGRAPH / SIGGRAPH ASIA / Eurographics
 
 The rasterization pipeline is a well-understood programming model utilized by graphics engineers all across the video game industry. One of the most crucial optimizations one could perform to their graphics pipeline is to reduce the amount of overdraw in the scene, and a common way of doing this is with deferred shading. As stated in \autoref{sssec:rasterization}, deferred shading reduces overdraw by only performing the expensive lighting computations on fragments that are actually visible on the screen. While this reduces overdraw and usually results in a performance improvement, many intermediate textures (collectively known as the G-buffer or geometry buffer) must be materialized to cache the values for the lighting computation. This is both memory intensive and exhausts the limited texture units available in the hardware. To mitigate the latter, the classical approach is to pack the results into as few textures as possible, as each texture is able to store 4 separate values corresponding to the RGBA channels, and to utilize formats that reduce accuracy where it is not needed --- for instance, normals are typically stored in a 16 bit float format. A more effective approach to reducing memory overhead, and the one taken by most game engines, is to \emph{tile} the render parts, in a manner not unlike their compute counterparts.
 
