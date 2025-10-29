@@ -164,6 +164,7 @@
 \renewcommand{\sectionautorefname}{Section}
 \renewcommand{\subsectionautorefname}{Section}
 \renewcommand{\subsubsectionautorefname}{Section}
+\newcommand{\algorithmautorefname}{Algorithm}
 
 \newcommand{\dialect}[1]{$\mathsf{#1}$}
 
@@ -201,7 +202,7 @@
 \begin{abstract}
 It has been about 22 years since the raster pipeline of the GPU was first used for general compute\cite{krugerLinearAlgebraOperators2003, bolzSparseMatrixSolvers2003}, sparking off a worldwide, multi-decade, multi-trillion dollar investment into accelerating linear algebra on hardware initially designed for entertainment. With the advent of artificial intelligence, the majority of the research effort has largely been directed towards generalizing the rendering hardware such that it is more usable by generic compute workflows. Even so hardware accelerators and pipelines designed specifically for computer graphics, such as texture samplers and ray tracing acceleration structures, remain accessible on consumer-grade hardware across all vendors, begging to be exploited.
 
-Therefore, the end goal of this thesis will be to create Oolong\footnote{We dub this toolkit "Oolong", named after a type of tea, to represent computer graphics's iconic Utah teapot, whose name also contains "long" (the Chinese word for dragon) to represent compilers.}, a mid-level compiler toolkit for dispatching work to the GPU, allowing the user to utilize all three of the architectural pipelines available. Research will be focused on the workflows that are able to exploit cross-pipeline interactions by using accelerators designed for one domain in another. As the program dispatch will be split across different pipelines, the toolkit will be designed using MLIR, a multi-level compiler toolkit which separates program semantics into different dialects. This permits separation of concerns when deciding between optimizing the computation or the underlying pipelines that the computation would be dispatched to, and drastically limits the search space required for compilers and engineers alike to perform whole-program optimization. 
+Therefore, the end goal of this thesis will be to create Oolong\footnote{We dub this toolkit "Oolong", named after a type of tea, to represent computer graphics's iconic Utah teapot, whose name also contains "long" (the Chinese word for dragon) to represent compilers.}, a multi-level compiler toolkit for dispatching work to the GPU, allowing the user to utilize all three of the architectural pipelines available. Research will be focused on the workflows that are able to exploit cross-pipeline interactions by using accelerators designed for one domain in another. As the program dispatch will be split across different pipelines, the toolkit will be designed using MLIR, a multi-level compiler toolkit which separates program semantics into different dialects. This permits separation of concerns when deciding between optimizing the computation or the underlying pipelines that the computation would be dispatched to, and drastically limits the search space required for compilers and engineers alike to perform whole-program optimization. 
 
 The research questions that Oolong will answer are as follows:
 \begin{itemize}
@@ -230,7 +231,7 @@ Each streaming multiprocessor is also home to a set of hardware accelerators, th
 
 \paragraph{Programming for the GPU} To program for the GPU, programmers write what is known as a \emph{kernel}. The kernel is executed over a large number of threads known as a \emph{grid} which is a tuple $(G,B)$ of $G$ thread blocks each containing $B$ threads for a total of $G \cdot B$ threads in a dispatch. Each invocation of the kernel is assigned a block identifier and a thread identifier, allowing the program to branch based on the invocation identifier. Within a block, threads are able to share memory and synchronization primitives, although grid-level synchronization is made available by a driver. On kernel dispatch, each block is issued to a streaming multiprocessor, which then partitions the block into warps for execution. Programmers for Nvidia architectures may use CUDA to write kernels, and for programmers who wish to target a wider variety of hardware, they may write the kernel as a compute shader compiled to SPIR-V and execute it using the Vulkan API.
 
-Typically, a kernel dispatch is performed from the CPU (also known as the host device). However, the ability to dispatch kernels from the GPU grows increasingly supported, reducing the need for ping-pong between the CPU and GPU. In CUDA, the feature is known as Dynamic Parallelism\cite{CUDADynamicParallelism2014}, and in Vulkan, the extension is known as \emph{Device-Generated Commands}\cite{VK_EXT_device_generated_commands3VulkanDocumentation}.
+Typically, a kernel dispatch is performed from the CPU (also known as the host device). However, the ability to dispatch kernels from the GPU grows increasingly supported, reducing the need for ping-pong between the CPU and GPU. In CUDA, the feature is known as \emph{Dynamic Parallelism}\cite{CUDADynamicParallelism2014}, and in Vulkan, the extension is known as \emph{Device-Generated Commands}\cite{VK_EXT_device_generated_commands3VulkanDocumentation}.
 
 \subsection{Compilers for the GPU}
 
@@ -305,7 +306,7 @@ A number of DSLs have been devised, some specfically for computer graphics, othe
 
 \subsubsection{Inverse Rendering}
 
-Inverse rendering derives geometry and materials from one or more final images of a target scene. This is achieved through machine learning; specifically, the approach of \emph{differentiable rendering} uses automatic differentiation of the shaders to produce geometry and textures that would produce the same target images. State of the art in the field includes Mitsuba (and its underlying IR, DR.JIT\cite{jakobDRJITJustintimeCompiler2022}), which is able to automatically differentiate the whole pipeline and train for both geometry and render simultaneously, and SlangD\cite{bangaruSLANGDFastModular2023}, which performs automatic differentiation at the per-shader level which improves performance but forces geometry and render to be trained for separately. Crucially, both papers include performance comparisons with the autodiff in machine learning frameworks such as JAX\cite{frostigCompilingMachineLearning2018} and Enzyme\cite{enzymeadEnzymeCon2023HackableAutodiff2024}. We include this as an interesting exploration of compiler techniques in computer graphics, and a potential research pivot should initial plans go awry.
+Inverse rendering derives geometry and materials from one or more final images of a target scene. This is achieved through machine learning; specifically, the approach of \emph{differentiable rendering} uses \emph{automatic differentiation} (or autodiff) of the shaders to produce geometry and textures that would produce the same target images. State of the art in the field includes Mitsuba (and its underlying IR, DR.JIT\cite{jakobDRJITJustintimeCompiler2022}), which is able to automatically differentiate the whole pipeline and train for both geometry and render simultaneously, and SlangD\cite{bangaruSLANGDFastModular2023}, which performs automatic differentiation at the per-shader level which improves performance but forces geometry and render to be trained separately. Crucially, both papers include performance comparisons with the autodiff in machine learning frameworks such as JAX\cite{frostigCompilingMachineLearning2018} and Enzyme\cite{enzymeadEnzymeCon2023HackableAutodiff2024}. We include this as an interesting exploration of compiler techniques in computer graphics, and a potential research pivot should initial plans go awry.
 
 \section{Progress Report}
 \label{sec:progressreport}
@@ -344,12 +345,63 @@ The attention mechanism\cite{vaswaniAttentionAllYou2023} in large language model
 
 The mathematical definition of attention is provided in \autoref{eqn:attention}, which we then expand with the definition of $\softmax$ in \autoref{eqn:attention-math}. However, raising $e$ to the power of values traditionally in the $QK^T$ matrix results in values far beyond the limit of what 32-bit floating point is able to capture. Hence, a safe version of softmax is applied by subtracting the maximum row value from the exponent, which we can see in \autoref{eqn:attention-math-safe}.
 
-This presents us with an issue when it comes to loop fusion.
+This presents us with an issue when it comes to loop fusion. Maximum and accumulation are both reductions, and the result of the maximum operation is used in the accumulation operation. The compiler is unable to perform loop fusion of the two loops depicted in \autoref{alg:attention}.
 
-Loop tiling is the transformation that allows us to partition the loop to obtain a subtile that can be transformed into a dispatch to the GPU. However, if we are unable to fuse the loop, we have to tile each loop separately, resulting in multiple dispatch calls which is inefficient. Fortunately, by applying the online softmax transformation as described in \cite{milakovOnlineNormalizerCalculation2018}, a single rewrite turns the imperative program into a single loop. Not only is this loop tileable, it also allows the programmer to automatically derive the same kernel as devised in Flash Attention 2\cite{daoFlashAttention2FasterAttention2023}. Unlike Flash Attention, which is written as a low-level Triton kernel, our attention implementation is written as a high-level neural network. This allows us to perform subsequent tiling and optimizations on the attention mechanism such as quantization, conversion to MXFP formats and the like, while still retaining the high-level representation.
+\begin{figure}
+\includegraphics[width=\textwidth, keepaspectratio]{attention-unfusable.png}  
+\caption{The pink and blue reductions are unfusable, as the result of the former is used in the latter as shown by the red line.\label{alg:attention}}
+\end{figure}
 
-This paper is still a work in progress, as we have not fully integrated the functionality into IREE for a proper benchmark using the Meta attention gym. However, a demo is planned to be presented at CC's C4ML (deadline of December 2025) followed by a submission at OOPSLA in 2026. Through the process of writing this paper, we have become familiar with the design of MLIR's Transform dialect\cite{luckeMLIRTransformDialect2024}, its extensions, and how to progressively lower linear algebra operators to the hardware.
+\begin{algorithm}
+  \caption{Attention, optimized with online softmax\label{alg:online-attention}}
+  \begin{algorithmic}[1]
+  \Function{Attention}{
+    $Q : \mathbb{R}^{N \times d}$,
+    $K : \mathbb{R}^{N \times d}$,
+    $V : \mathbb{R}^{N \times d}$}
 
+    \State $S, P : \mathbb{R}^{N \times N} \qquad 
+            O : \mathbb{R}^{N \times d} \qquad
+            m, \sigma :\mathbb{R}^N$
+    \State Initialize $m = (-\infty)^N \quad \sigma = (0)^N$,
+
+    % matmul
+    \ForAll {$i,j \in [0,N) \times [0, N)$}  
+      \For {$k \in [0, d)$}  
+        \State $S_{i,j} := S_{i,j} + Q_{i,k} \cdot K_{j,k}$
+      \EndFor
+    \EndFor
+
+    % softmax
+    \ForAll {$i \in [0,N)$} 
+      \For {$j \in [0,N)$} 
+        \State $m' := m_i$
+        \State $m_i := \text{max}(m_i, S_{i,j})$
+        \State $\alpha_i := e^{m' - m_i}$
+        \State $P_{i,j} := e^{S_{i,j} - m_i} $
+        \State $\ell_i := \alpha_i \ell_i + P_{i,j}$
+        \For{$k \in [0,d]$}
+        \State $O_{i,k} := O_{i,k} + P_{i,j} \cdot V_{j,k} $
+        \EndFor
+      \EndFor
+    \EndFor
+
+    \ForAll {$i \in [0,N)$} 
+      \ForAll {$j \in [0,N)$} 
+        \State $O_{i,j} := O_{i,j} / \ell_i$
+      \EndFor
+    \EndFor
+
+    \Return $O$
+  \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+Loop tiling is the transformation that allows us to partition the loop to obtain a subtile that can be transformed into a dispatch to the GPU. However, if we are unable to fuse the loop, each loop must be tiled separately, resulting in multiple dispatch calls which is inefficient. Fortunately, by applying the online softmax transformation as described in \cite{milakovOnlineNormalizerCalculation2018}, we are able to derive a single nested loop as in \autoref{alg:online-attention}. Not only is this loop tileable, it also allows the programmer to automatically derive the same kernel as devised in Flash Attention 2\cite{daoFlashAttention2FasterAttention2023}. Unlike Flash Attention, which is written as a low-level Triton kernel, our attention implementation is written as a high-level neural network. This allows us to perform subsequent tiling and optimizations on the attention mechanism such as quantization, conversion to MXFP\cite{rouhaniMicroscalingDataFormats2023} formats and other low-level optimizations, while still retaining the high-level representation.
+
+This paper is still a work in progress, as we have not fully integrated the functionality into IREE for a proper benchmark. Once implemented, we will be using the Meta attention gym \cite{MetapytorchAttentiongym2025} to do an apples-to-apples comparison with PyTorch's FlexAttention\cite{dongFlexAttentionProgramming2024}. In terms of timeline, a demo is planned to be presented at CC's C4ML (deadline of December 2025) followed by a submission at OOPSLA in 2026. 
+
+Through the process of writing this paper, we have become familiar with the design of MLIR's Transform dialect\cite{luckeMLIRTransformDialect2024}, its extensions, and how to progressively lower linear algebra operators to the GPU.
 
 
 \section{Thesis Proposal}
@@ -378,7 +430,7 @@ Hence, we treat the tiling of the render pass as a program rewrite. Unlike linea
 
 \subsection{Criteria for Success}
 
-RQ1 will be addressed by the raytracing paper, as we apply compiler techniques to not only apply the raytracing pipeline to sparse linear algebra, but fuse adjacent computations into the loop as well. Success will be determined by how our compiler-based solution holds up against the state of the art sparse linear algebra libraries such as cuSPARSE\cite{CuSPARSE}, MAGMA\cite{abdelfattahMAGMAEnablingExascale2024}, and \cite{zhangRTSpMSpMHarnessingRay2025}, comparing the metrics of performance, maintainability and GPU utilization.
+RQ1 will be addressed by the raytracing paper, as we apply compiler techniques to not only apply the raytracing pipeline to sparse linear algebra, but fuse adjacent computations into the loop as well. Success will be determined by how our compiler-based solution holds up against the state of the art sparse linear algebra libraries such as cuSPARSE\cite{CuSPARSE}, MAGMA\cite{abdelfattahMAGMAEnablingExascale2024}, and RTSpMSpM \cite{zhangRTSpMSpMHarnessingRay2025}, comparing the metrics of performance, maintainability and GPU utilization.
 
 As for RQ2, the raster rewrite paper will only partially answer it. As rendering engines are immensely complex and configurable engines, there are far too many intricate details to handle. Hence, we will benchmark our prototype graphics engine against tutorial projects by LearnOpenGL\cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems\cite{SaschaWillemsVulkanExamples}, which implement deferred shading and other techniques atomically to form a more stable control. If this first paper proves successful, implementing advanced techniques such as radiance cascades or those found Unreal Engine 5's Lumen\cite{LumenGlobalIllumination} will allow us to verify the claim that program rewrites can yield an effective, maintainable codebase for a render engine with comparable performance to the state of the art.
 
