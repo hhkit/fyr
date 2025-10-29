@@ -9,6 +9,25 @@
   file = {/Users/ihkh2/Zotero/storage/TP2FW5TX/7c5eccc6547c8d6c817a263c1d9c7bc9.html}
 }
 
+@article{abdelfattahMAGMAEnablingExascale2024,
+  title = {{{MAGMA}}: {{Enabling}} Exascale Performance with Accelerated {{BLAS}} and {{LAPACK}} for Diverse {{GPU}} Architectures},
+  shorttitle = {{{MAGMA}}},
+  author = {Abdelfattah, Ahmad and Beams, Natalie and Carson, Robert and Ghysels, Pieter and Kolev, Tzanio and Stitt, Thomas and Vargas, Arturo and Tomov, Stanimire and Dongarra, Jack},
+  year = 2024,
+  month = sep,
+  journal = {The International Journal of High Performance Computing Applications},
+  volume = {38},
+  number = {5},
+  pages = {468--490},
+  publisher = {SAGE Publications Ltd STM},
+  issn = {1094-3420},
+  doi = {10.1177/10943420241261960},
+  urldate = {2025-10-29},
+  abstract = {MAGMA (Matrix Algebra for GPU and Multicore Architectures) is a pivotal open-source library in the landscape of GPU-enabled dense and sparse linear algebra computations. With a repertoire of approximately 750 numerical routines across four precisions, MAGMA is deeply ingrained in the DOE software stack, playing a crucial role in high-performance computing. Notable projects such as ExaConstit, HiOP, MARBL, and STRUMPACK, among others, directly harness the capabilities of MAGMA. In addition, the MAGMA development team has been acknowledged multiple times for contributing to the vendors' numerical software stacks. Looking back over the time of the Exascale Computing Project (ECP), we highlight how MAGMA has adapted to recent changes in modern HPC systems, especially the growing gap between CPU and GPU compute capabilities, as well as the introduction of low precision arithmetic in modern GPUs. We also describe MAGMA's direct impact on several ECP projects. Maintaining portable performance across NVIDIA and AMD GPUs, and with current efforts toward supporting Intel GPUs, MAGMA ensures its adaptability and relevance in the ever-evolving landscape of GPU architectures.},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/YHGYZPNT/Abdelfattah et al. - 2024 - MAGMA Enabling exascale performance with accelerated BLAS and LAPACK for diverse GPU architectures.pdf}
+}
+
 @inproceedings{abdulahBoostingEarthSystem2024,
   title = {Boosting {{Earth System Model Outputs And Saving PetaBytes}} in {{Their Storage Using Exascale Climate Emulators}}},
   booktitle = {{{SC24}}: {{International Conference}} for {{High Performance Computing}}, {{Networking}}, {{Storage}} and {{Analysis}}},
@@ -62,6 +81,25 @@
   isbn = {978-1-4503-9265-5},
   langid = {english},
   file = {/Users/ihkh2/Zotero/storage/MAQLCK7R/Ahrens et al. - 2022 - Autoscheduling for sparse tensor algebra with an asymptotic cost model.pdf}
+}
+
+@inproceedings{anselPyTorch2Faster2024,
+  title = {{{PyTorch}} 2: {{Faster Machine Learning Through Dynamic Python Bytecode Transformation}} and {{Graph Compilation}}},
+  shorttitle = {{{PyTorch}} 2},
+  booktitle = {Proceedings of the 29th {{ACM International Conference}} on {{Architectural Support}} for {{Programming Languages}} and {{Operating Systems}}, {{Volume}} 2},
+  author = {Ansel, Jason and Yang, Edward and He, Horace and Gimelshein, Natalia and Jain, Animesh and Voznesensky, Michael and Bao, Bin and Bell, Peter and Berard, David and Burovski, Evgeni and Chauhan, Geeta and Chourdia, Anjali and Constable, Will and Desmaison, Alban and DeVito, Zachary and Ellison, Elias and Feng, Will and Gong, Jiong and Gschwind, Michael and Hirsh, Brian and Huang, Sherlock and Kalambarkar, Kshiteej and Kirsch, Laurent and Lazos, Michael and Lezcano, Mario and Liang, Yanbo and Liang, Jason and Lu, Yinghai and Luk, C. K. and Maher, Bert and Pan, Yunjie and Puhrsch, Christian and Reso, Matthias and Saroufim, Mark and Siraichi, Marcos Yukio and Suk, Helen and Zhang, Shunting and Suo, Michael and Tillet, Phil and Zhao, Xu and Wang, Eikan and Zhou, Keren and Zou, Richard and Wang, Xiaodong and Mathews, Ajit and Wen, William and Chanan, Gregory and Wu, Peng and Chintala, Soumith},
+  year = 2024,
+  month = apr,
+  series = {{{ASPLOS}} '24},
+  volume = {2},
+  pages = {929--947},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  doi = {10.1145/3620665.3640366},
+  urldate = {2025-10-29},
+  abstract = {This paper introduces two extensions to the popular PyTorch machine learning framework, TorchDynamo and TorchInductor, which implement the torch.compile feature released in PyTorch 2. TorchDynamo is a Python-level just-in-time (JIT) compiler that enables graph compilation in PyTorch programs without sacrificing the flexibility of Python. It achieves this by dynamically modifying Python bytecode before execution and extracting sequences of PyTorch operations into an FX graph, which is then JIT compiled using one of many extensible backends. TorchInductor is the default compiler backend for TorchDynamo, which translates PyTorch programs into OpenAI's Triton for GPUs and C++ for CPUs. Results show that TorchDynamo is able to capture graphs more robustly than prior approaches while adding minimal overhead, and TorchInductor is able to provide a 2.27{\texttimes} inference and 1.41{\texttimes} training geometric mean speedup on an NVIDIA A100 GPU across 180+ real-world models, which outperforms six other compilers. These extensions provide a new way to apply optimizations through compilers in eager mode frameworks like PyTorch.},
+  isbn = {979-8-4007-0385-0},
+  file = {/Users/ihkh2/Zotero/storage/CV3AI35Y/Ansel et al. - 2024 - PyTorch 2 Faster Machine Learning Through Dynamic Python Bytecode Transformation and Graph Compilat.pdf}
 }
 
 @misc{AutomaticDifferentiation,
@@ -458,6 +496,15 @@
   abstract = {http://CppCon.org --- Presentation Slides, PDFs, Source Code and other presenter materials are available at: https://github.com/cppcon/cppcon2016}
 }
 
+@misc{CuSPARSE,
+  title = {{{cuSPARSE}}},
+  journal = {NVIDIA Developer},
+  urldate = {2025-10-29},
+  howpublished = {https://developer.nvidia.com/cusparse},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/YAB9AMKW/cusparse.html}
+}
+
 @misc{daoFlashAttention2FasterAttention2023,
   title = {{{FlashAttention-2}}: {{Faster Attention}} with {{Better Parallelism}} and {{Work Partitioning}}},
   shorttitle = {{{FlashAttention-2}}},
@@ -599,6 +646,22 @@
   howpublished = {https://developer.nvidia.com/rtx/raytracing/dxr/dx12-raytracing-tutorial-part-1},
   langid = {english},
   file = {/Users/ihkh2/Zotero/storage/EWPA4NZK/dx12-raytracing-tutorial-part-1.html}
+}
+
+@article{eilertsenRealtimeNoiseawareTone2015,
+  title = {Real-Time Noise-Aware Tone Mapping},
+  author = {Eilertsen, Gabriel and Mantiuk, Rafa{\l} K. and Unger, Jonas},
+  year = 2015,
+  month = nov,
+  journal = {ACM Trans. Graph.},
+  volume = {34},
+  number = {6},
+  pages = {198:1--198:15},
+  issn = {0730-0301},
+  doi = {10.1145/2816795.2818092},
+  urldate = {2025-10-29},
+  abstract = {Real-time high quality video tone mapping is needed for many applications, such as digital viewfinders in cameras, display algorithms which adapt to ambient light, in-camera processing, rendering engines for video games and video post-processing. We propose a viable solution for these applications by designing a video tone-mapping operator that controls the visibility of the noise, adapts to display and viewing environment, minimizes contrast distortions, preserves or enhances image details, and can be run in real-time on an incoming sequence without any preprocessing. To our knowledge, no existing solution offers all these features. Our novel contributions are: a fast procedure for computing local display-adaptive tone-curves which minimize contrast distortions, a fast method for detail enhancement free from ringing artifacts, and an integrated video tone-mapping solution combining all the above features.},
+  file = {/Users/ihkh2/Zotero/storage/UDD6LS32/Eilertsen et al. - 2015 - Real-time noise-aware tone mapping.pdf}
 }
 
 @misc{enzymeadEnzymeCon2023HackableAutodiff2024,
@@ -962,6 +1025,24 @@
   file = {/Users/ihkh2/Zotero/storage/7WWDEK24/learning-vulkan.html}
 }
 
+@article{huTaichiLanguageHighperformance2019,
+  title = {Taichi: A Language for High-Performance Computation on Spatially Sparse Data Structures},
+  shorttitle = {Taichi},
+  author = {Hu, Yuanming and Li, Tzu-Mao and Anderson, Luke and {Ragan-Kelley}, Jonathan and Durand, Fr{\'e}do},
+  year = 2019,
+  month = dec,
+  journal = {ACM Transactions on Graphics},
+  volume = {38},
+  number = {6},
+  pages = {1--16},
+  issn = {0730-0301, 1557-7368},
+  doi = {10.1145/3355089.3356506},
+  urldate = {2025-10-29},
+  abstract = {3D visual computing data are often spatially sparse. To exploit such sparsity, people have developed hierarchical sparse data structures, such as multi-level sparse voxel grids, particles, and 3D hash tables. However, developing and using these high-performance sparse data structures is challenging, due to their intrinsic complexity and overhead. We propose               Taichi               , a new data-oriented programming language for efficiently authoring, accessing, and maintaining such data structures. The language offers a high-level, data structure-agnostic interface for writing computation code. The user independently specifies the data structure. We provide several elementary components with different sparsity properties that can be arbitrarily composed to create a wide range of multi-level sparse data structures. This               decoupling               of data structures from computation makes it easy to experiment with different data structures without changing computation code, and allows users to write computation as if they are working with a dense array. Our compiler then uses the semantics of the data structure and index analysis to automatically optimize for locality, remove redundant operations for coherent accesses, maintain sparsity and memory allocations, and generate efficient parallel and vectorized instructions for CPUs and GPUs.                                         Our approach yields competitive performance on common computational kernels such as stencil applications, neighbor lookups, and particle scattering. We demonstrate our language by implementing simulation, rendering, and vision tasks including a material point method simulation, finite element analysis, a multigrid Poisson solver for pressure projection, volumetric path tracing, and 3D convolution on sparse grids. Our computation-data structure decoupling allows us to quickly experiment with different data arrangements, and to develop high-performance data structures tailored for specific computational tasks. With               1               {$<$}u{$>$}               1               {$<$}/u{$>$}               0               th as many lines of code, we achieve 4.55{\texttimes} higher performance on average, compared to hand-optimized reference implementations.},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/Z2LALSBW/Hu et al. - 2019 - Taichi a language for high-performance computation on spatially sparse data structures.pdf}
+}
+
 @misc{innesDifferentiableProgrammingSystem2019,
   title = {A {{Differentiable Programming System}} to {{Bridge Machine Learning}} and {{Scientific Computing}}},
   author = {Innes, Mike and Edelman, Alan and Fischer, Keno and Rackauckas, Chris and Saba, Elliot and Shah, Viral B. and Tebbutt, Will},
@@ -1227,6 +1308,24 @@
   file = {/Users/ihkh2/Zotero/storage/9GAUF54Q/Lan - Penetration-free projective dynamics on the GPU.pdf}
 }
 
+@misc{lattnerMLIRCompilerInfrastructure2020,
+  title = {{{MLIR}}: {{A Compiler Infrastructure}} for the {{End}} of {{Moore}}'s {{Law}}},
+  shorttitle = {{{MLIR}}},
+  author = {Lattner, Chris and Amini, Mehdi and Bondhugula, Uday and Cohen, Albert and Davis, Andy and Pienaar, Jacques and Riddle, River and Shpeisman, Tatiana and Vasilache, Nicolas and Zinenko, Oleksandr},
+  year = 2020,
+  month = mar,
+  number = {arXiv:2002.11054},
+  eprint = {2002.11054},
+  primaryclass = {cs},
+  publisher = {arXiv},
+  doi = {10.48550/arXiv.2002.11054},
+  urldate = {2025-10-29},
+  abstract = {This work presents MLIR, a novel approach to building reusable and extensible compiler infrastructure. MLIR aims to address software fragmentation, improve compilation for heterogeneous hardware, significantly reduce the cost of building domain specific compilers, and aid in connecting existing compilers together. MLIR facilitates the design and implementation of code generators, translators and optimizers at different levels of abstraction and also across application domains, hardware targets and execution environments. The contribution of this work includes (1) discussion of MLIR as a research artifact, built for extension and evolution, and identifying the challenges and opportunities posed by this novel design point in design, semantics, optimization specification, system, and engineering. (2) evaluation of MLIR as a generalized infrastructure that reduces the cost of building compilers-describing diverse use-cases to show research and educational opportunities for future programming languages, compilers, execution environments, and computer architecture. The paper also presents the rationale for MLIR, its original design principles, structures and semantics.},
+  archiveprefix = {arXiv},
+  keywords = {Computer Science - Machine Learning,Computer Science - Programming Languages},
+  file = {/Users/ihkh2/Zotero/storage/BUFPNCTP/Lattner et al. - 2020 - MLIR A Compiler Infrastructure for the End of Moore's Law.pdf;/Users/ihkh2/Zotero/storage/SI5L4ZYP/2002.html}
+}
+
 @article{lessigFoundationsLightTransport,
   title = {Foundations of {{Light Transport Simulation}}},
   author = {Lessig, Christian},
@@ -1435,6 +1534,23 @@
   file = {/Users/ihkh2/Zotero/storage/PRB8TLJP/Macklin et al. - 2016 - XPBD position-based simulation of compliant constrained dynamics.pdf}
 }
 
+@article{mcintoshEfficientlySimulatingBokeh2012,
+  title = {Efficiently {{Simulating}} the {{Bokeh}} of {{Polygonal Apertures}} in a {{Post-Process Depth}} of {{Field Shader}}},
+  author = {McIntosh, L. and Riecke, B. E. and DiPaola, S.},
+  year = 2012,
+  journal = {Computer Graphics Forum},
+  volume = {31},
+  number = {6},
+  pages = {1810--1822},
+  issn = {1467-8659},
+  doi = {10.1111/j.1467-8659.2012.02097.x},
+  urldate = {2025-10-29},
+  abstract = {The effect of aperture shape on an image, known in photography as `bokeh', is an important characteristic of depth of field in real-world cameras. However, most real-time depth of field techniques produce Gaussian bokeh rather than the circular or polygonal bokeh that is almost universal in real-world cameras. `Scattering' (i.e. point-splatting) techniques provide a flexible way to model any aperture shape, but tend to have prohibitively slow performance, and require geometry-shaders or significant engine changes to implement. This paper shows that simple post-process `gathering' depth of field shaders can be easily extended to simulate certain bokeh effects. Specifically we show that it is possible to efficiently model the bokeh effects of square, hexagonal and octagonal apertures using a novel separable filtering approach. Performance data from a video game engine test demonstrates that our shaders attain much better frame rates than a naive non-separable approach.},
+  langid = {english},
+  keywords = {computer graphics,depth of field,I.3.7Computer Graphics: Three-Dimensional Graphics and Realism: Colour,real-time,rendering,shaders,Shading,Shadowing and Texture},
+  file = {/Users/ihkh2/Zotero/storage/2QJIX3WJ/j.1467-8659.2012.02097.html}
+}
+
 @misc{microsoftvisualstudioHowDebuggersWork2025,
   title = {How {{Debuggers Work}}},
   author = {{Microsoft Visual Studio}},
@@ -1594,6 +1710,53 @@
   howpublished = {https://resources.nvidia.com/en-us-blackwell-architecture},
   langid = {english},
   file = {/Users/ihkh2/Zotero/storage/IEGSAB35/nvidia-blackwell-architecture-technical-brief.pdf;/Users/ihkh2/Zotero/storage/33SEVYUD/en-us-blackwell-architecture.html}
+}
+
+@misc{NVIDIARTXNVRHI2025,
+  title = {{{NVIDIA-RTX}}/{{NVRHI}}},
+  year = 2025,
+  month = oct,
+  urldate = {2025-10-29},
+  copyright = {MIT},
+  howpublished = {NVIDIA-RTX}
+}
+
+@misc{O3deO3de2025,
+  title = {O3de/O3de},
+  year = 2025,
+  month = oct,
+  urldate = {2025-10-29},
+  abstract = {Open 3D Engine (O3DE) is an Apache 2.0-licensed multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations.},
+  howpublished = {O3DE},
+  keywords = {3d-graphics,3d-graphics-engine,animation,game-development,game-engine,gamedev}
+}
+
+@misc{O3DERenderHardware,
+  title = {{{O3DE}}: {{Render Hardware Interface}}},
+  shorttitle = {{{O3DE}}},
+  urldate = {2025-10-29},
+  abstract = {What is RHI? The {\dots}},
+  howpublished = {https://www.docs.o3de.org/docs/atom-guide/dev-guide/rhi/},
+  langid = {american},
+  file = {/Users/ihkh2/Zotero/storage/9AHHKTBL/rhi.html}
+}
+
+@misc{osborneRadianceCascadesNovel2024,
+  title = {Radiance {{Cascades}}: {{A Novel High-Resolution Formal Solution}} for {{Multidimensional Non-LTE Radiative Transfer}}},
+  shorttitle = {Radiance {{Cascades}}},
+  author = {Osborne, Christopher M. J. and Sannikov, Alexander},
+  year = 2024,
+  month = aug,
+  number = {arXiv:2408.14425},
+  eprint = {2408.14425},
+  primaryclass = {astro-ph},
+  publisher = {arXiv},
+  doi = {10.48550/arXiv.2408.14425},
+  urldate = {2025-10-29},
+  abstract = {Non-LTE radiative transfer is a key tool for modern astrophysics: it is the means by which many key synthetic observables are produced, thus connecting simulations and observations. Radiative transfer models also inform our understanding of the primary formation layers and parameters of different spectral lines, and serve as the basis of inversion tools used to infer the structure of the solar atmosphere from observations. The default approach for computing the radiation field in multidimensional solar radiative transfer models has long remained the same: a short characteristics, discrete ordinates method, formal solver. In situations with complex atmospheric structure and multiple transitions between optically-thick and -thin regimes these solvers require prohibitively high angular resolution to correctly resolve the radiation field. Here, we present the theory of radiance cascades, a technique designed to exploit structure inherent to the radiation field, allowing for efficient reuse of calculated samples, thus providing a very high-resolution result at a fraction of the computational cost of existing methods. We additionally describe our implementation of this method in the DexRT code, and present initial results of the synthesis of a snapshot of a magnetohydrodynamic model of a solar prominence formed via levitation-condensation. The approach presented here provides a credible route for routinely performing multidimensional radiative transfer calculations free from so-called ray effects, and scaling high-quality non-LTE models to next-generation high-performance computing systems with GPU accelerators.},
+  archiveprefix = {arXiv},
+  keywords = {Astrophysics - Instrumentation and Methods for Astrophysics,Astrophysics - Solar and Stellar Astrophysics},
+  file = {/Users/ihkh2/Zotero/storage/MT2BHTCF/Osborne and Sannikov - 2024 - Radiance Cascades A Novel High-Resolution Formal Solution for Multidimensional Non-LTE Radiative Tr.pdf;/Users/ihkh2/Zotero/storage/YJ4QVNXS/2408.html}
 }
 
 @inproceedings{pengCURDDynamicCUDA2018,
@@ -1797,6 +1960,22 @@
   file = {/Users/ihkh2/Zotero/storage/A6IVKCRY/Savidis and Tsiatsianas - 2021 - Implementation of Live Reverse Debugging in LLDB.pdf;/Users/ihkh2/Zotero/storage/D5D7KN4Q/2105.html}
 }
 
+@article{silvennoinenRealtimeGlobalIllumination2017,
+  title = {Real-Time Global Illumination by Precomputed Local Reconstruction from Sparse Radiance Probes},
+  author = {Silvennoinen, Ari and Lehtinen, Jaakko},
+  year = 2017,
+  month = nov,
+  journal = {ACM Trans. Graph.},
+  volume = {36},
+  number = {6},
+  pages = {230:1--230:13},
+  issn = {0730-0301},
+  doi = {10.1145/3130800.3130852},
+  urldate = {2025-10-29},
+  abstract = {We present a direct-to-indirect transport technique that enables accurate real-time rendering of indirect illumination in mostly static scenes of complexity on par with modern games while supporting fully dynamic lights, cameras and diffuse surface materials. Our key contribution is an algorithm for reconstructing the incident radiance field from a sparse set of local samples --- radiance probes --- by incorporating mutual visibility into the reconstruction filter. To compute global illumination, we factorize the direct-to-indirect transport operator into global and local parts, sample the global transport with sparse radiance probes at real-time, and use the sampled radiance field as input to our precomputed local reconstruction operator to obtain indirect radiance. In contrast to previous methods aiming to encode the global direct-to-indirect transport operator, our precomputed data is local in the sense that it needs no long-range interactions between probes and receivers, and every receiver depends only on a small, constant number of nearby radiance probes, aiding compression, storage, and iterative workflows. While not as accurate, we demonstrate that our method can also be used for rendering indirect illumination on glossy surfaces, and approximating global illumination in scenes with large-scale dynamic geometry.},
+  file = {/Users/ihkh2/Zotero/storage/JFMWFD3I/Silvennoinen and Lehtinen - 2017 - Real-time global illumination by precomputed local reconstruction from sparse radiance probes.pdf}
+}
+
 @article{solomonikCS598EVS,
   title = {{{CS}} 598 {{EVS}}: {{Tensor Computations}} - {{Basics}} of {{Tensor Computations}}},
   author = {Solomonik, Edgar},
@@ -1828,6 +2007,16 @@
   file = {/Users/ihkh2/Zotero/storage/AXSSTEL7/Stephenson et al. - 2021 - Cooperative Profile Guided Optimizations.pdf}
 }
 
+@misc{stevewhimsDirect3D12Reference,
+  title = {{{Direct3D}} 12 Reference - {{Win32}} Apps},
+  author = {{stevewhims}},
+  urldate = {2025-10-29},
+  abstract = {This section covers APIs for Direct3D 12-based graphics programming.},
+  howpublished = {https://learn.microsoft.com/en-us/windows/win32/direct3d12/direct3d-12-reference},
+  langid = {american},
+  file = {/Users/ihkh2/Zotero/storage/BL3XUACV/direct3d-12-reference.html}
+}
+
 @inproceedings{stocksBreakingMillionElectron12024,
   title = {Breaking the {{Million-Electron}} and 1 {{EFLOP}}/s {{Barriers}}: {{Biomolecular-Scale Ab Initio Molecular Dynamics Using MP2 Potentials}}},
   shorttitle = {Breaking the {{Million-Electron}} and 1 {{EFLOP}}/s {{Barriers}}},
@@ -1845,6 +2034,24 @@
   isbn = {979-8-3503-5291-7},
   langid = {english},
   file = {/Users/ihkh2/Zotero/storage/RSHQYHD3/Stocks et al. - 2024 - Breaking the Million-Electron and 1 EFLOPs Barriers Biomolecular-Scale Ab Initio Molecular Dynamic.pdf}
+}
+
+@article{stoneOpenCLParallelProgramming2010,
+  title = {{{OpenCL}}: {{A Parallel Programming Standard}} for {{Heterogeneous Computing Systems}}},
+  shorttitle = {{{OpenCL}}},
+  author = {Stone, John E. and Gohara, David and Shi, Guochun},
+  year = 2010,
+  month = may,
+  journal = {Computing in Science \& Engineering},
+  volume = {12},
+  number = {3},
+  pages = {66--73},
+  issn = {1558-366X},
+  doi = {10.1109/MCSE.2010.69},
+  urldate = {2025-10-29},
+  abstract = {The OpenCL standard offers a common API for program execution on systems composed of different types of computational devices such as multicore CPUs, GPUs, or other accelerators.},
+  keywords = {Computer architecture,Computer interfaces,Concurrent computing,Hardware,High performance computing,Kernel,Microprocessors,Parallel programming,Runtime,Software standards},
+  file = {/Users/ihkh2/Zotero/storage/XGYIQ3R2/Stone et al. - 2010 - OpenCL A Parallel Programming Standard for Heterogeneous Computing Systems.pdf}
 }
 
 @article{szafarczykDynamicLoopFusion2025,
@@ -2074,6 +2281,18 @@
   file = {/Users/ihkh2/Zotero/storage/Q7HHX2MB/VK_EXT_device_generated_commands.html}
 }
 
+@misc{vulkanHomeVulkanCross2025,
+  title = {Home {\textbar} {{Vulkan}} {\textbar} {{Cross}} Platform {{3D Graphics}}},
+  author = {Vulkan},
+  year = 2025,
+  month = mar,
+  urldate = {2025-10-29},
+  abstract = {Vulkan is a next generation graphics and compute API that provides high-efficiency, cross-platform access to modern GPUs used in PCs, consoles, mobile phones and embedded platforms.},
+  howpublished = {https://vulkan.org/},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/MXYAUPKQ/vulkan.org.html}
+}
+
 @misc{wangDemystifyingDifferentiableProgramming2019,
   title = {Demystifying {{Differentiable Programming}}: {{Shift}}/{{Reset}} the {{Penultimate Backpropagator}}},
   shorttitle = {Demystifying {{Differentiable Programming}}},
@@ -2109,6 +2328,15 @@
   langid = {english},
   keywords = {Computer Science - Computer Vision and Pattern Recognition,Computer Science - Graphics},
   file = {/Users/ihkh2/Zotero/storage/ATQDBQB8/Wu et al. - 2024 - 4D Gaussian Splatting for Real-Time Dynamic Scene Rendering.pdf}
+}
+
+@misc{XLACompilingMachine,
+  title = {{{XLA}} : {{Compiling Machine Learning}} for {{Peak Performance}}},
+  shorttitle = {{{XLA}}},
+  urldate = {2025-10-29},
+  howpublished = {https://research.google/pubs/xla-compiling-machine-learning-for-peak-performance/},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/WUHU4UB4/xla-compiling-machine-learning-for-peak-performance.html}
 }
 
 @article{yangRenderKernelHighlevelProgramming2024,

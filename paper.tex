@@ -165,8 +165,9 @@
 \renewcommand{\subsectionautorefname}{Section}
 \renewcommand{\subsubsectionautorefname}{Section}
 
-\begin{document}
+\newcommand{\dialect}[1]{$\mathsf{#1}$}
 
+\begin{document}
 %% Title information
 \title[Oolong]{Oolong: An MLIR-based Compiler Toolkit for GPU Dispatch}       %% [Short Title] is optional;
                                       %% when present, will be used in
@@ -200,13 +201,13 @@
 \begin{abstract}
 It has been about 22 years since the raster pipeline of the GPU was first used for general compute, sparking off a worldwide, multi-decade, multi-trillion dollar investment into accelerating linear algebra on hardware initially designed for entertainment. With the advent of artificial intelligence, the majority of the research effort has largely been directed towards generalizing the rendering hardware such that it is more usable by generic compute workflows. Even so hardware accelerators and pipelines designed specifically for computer graphics, such as texture samplers and ray tracing acceleration structures, remain accessible on consumer-grade hardware across all vendors, begging to be exploited.
 
-Therefore, the end goal of this thesis will be to create Oolong\footnote{We dub this toolkit "Oolong", named after a type of tea, to represent computer graphics's eponymous Utah teapot, whose name also contains "long" (the Chinese word for dragon) to represent compilers.}, a mid-level compiler toolkit for dispatching work to the GPU, allowing the user to utilize all three of the architectural pipelines available. Research will be focused on the workflows that are able to exploit cross-pipeline interactions by using accelerators designed for one domain in another. As the program dispatch will be split across different pipelines, the toolkit will be designed using MLIR, a multi-level compiler toolkit which separates program semantics into different dialects. This permits separation of concerns when deciding between optimizing the computation or the underlying pipelines that the computation would be dispatched to, and drastically limits the search space required for compilers and engineers alike to perform whole-program optimization. 
+Therefore, the end goal of this thesis will be to create Oolong\footnote{We dub this toolkit "Oolong", named after a type of tea, to represent computer graphics's iconic Utah teapot, whose name also contains "long" (the Chinese word for dragon) to represent compilers.}, a mid-level compiler toolkit for dispatching work to the GPU, allowing the user to utilize all three of the architectural pipelines available. Research will be focused on the workflows that are able to exploit cross-pipeline interactions by using accelerators designed for one domain in another. As the program dispatch will be split across different pipelines, the toolkit will be designed using MLIR, a multi-level compiler toolkit which separates program semantics into different dialects. This permits separation of concerns when deciding between optimizing the computation or the underlying pipelines that the computation would be dispatched to, and drastically limits the search space required for compilers and engineers alike to perform whole-program optimization. 
 
 The research questions that Oolong will answer are as follows:
 \begin{itemize}
   \item RQ1: To what extent can we exploit hardware-accelerated pipelines in the GPU to accelerate linear algebra operations?
-  \item RQ2: Does declaratively expressing real-time render pipelines as a high-level programming language enable effective whole program optimization?
-  \item \ivan{Truthfully I could not come up with an RQ3} RQ3: 
+  \item RQ2: Does declaratively expressing real-time render pipelines as a high-level programming language enable effective whole program optimization with traditional compiler techniques?
+  \item \ivan{Truthfully I could not come up with an RQ3}RQ3: 
 \end{itemize}
 \end{abstract}
 
@@ -222,7 +223,7 @@ This literature review will span the three topics that the thesis will cover: th
 
 \subsection{GPU and General Purpose Compute}
 
-\emph{Note: GPU terminology is not standardized and inconsistent across vendors. This section will be using Nvidia's terminology.}
+\emph{Note: GPU terminology is not standardized and inconsistent across vendors. This section will be using Nvidia's terminology, but mention the more vendor-agnostic Vulkan\cite{vulkanHomeVulkanCross2025} where modern features are concerned.}
 
 The GPU, or graphics processing unit, is a single-instruction multiple-data (or SIMD) architecture that consists of a massive number of streaming multiprocessors (or SMs). A streaming multiprocessor consists of a set of shader cores and a set of warp schedulers, and execute bundles of threads known as warps. On Nvidia architectures, an SM receives a warp of 32 threads that share four warp schedulers. % Pre-Volta, threads would conditionally execute the same instruction eight times in parallel four times in sequence for the total of 32 threads. However, as of Volta, each thread has its own program counter, and programmers are encouraged to treat each thread as its own instance in a paradigm known as SIMT (single-instruction multiple-thread). The underlying hardware attempts to retain the performance granted by SIMD by grouping threads with similar control flow, however, if inter-lane control flow diverges too much, they become subject to performance degradation in what is known as \emph{warp divergence}.
 
@@ -234,45 +235,57 @@ Typically, a kernel dispatch is performed from the CPU (also known as the host d
 
 \subsection{Compilers for the GPU}
 
-As a massively parallel architecture, compilers for the GPU are closely associated with parallel compilers. Aside from the previously mentioned CUDA and Vulkan, APIs such as OpenCL allow for parallel programming of heterogeneous hardware. 
+As a massively parallel architecture, compilers for the GPU are closely associated with parallel compilers. Aside from the previously mentioned CUDA and Vulkan, APIs such as OpenCL\cite{stoneOpenCLParallelProgramming2010} allow for parallel programming of heterogeneous hardware. 
 
 Polyhedral compilers\cite{grosserPolyhedralASTGeneration2015,GRAPHITEPolyhedralAnalyses, baghdadiTiramisuPolyhedralCompiler2018} are compilers that operate on perfectly nested affine loops known as static control parts (or SCoPs). By restricting array accesses to affine expressions on loop induction variables, formulas can be derived to calculate statistics about programs such as memory limits, cache locality that can then be optimized for. Moreover, loop transformations can be expressed as affine transformations on the loop induction variations, making polyhedral programs closed under loop transformations and can be recursively optimized. Work has also been done on directly targeting the GPU\cite{verdoolaegePolyhedralParallelCode2013}, by tiling the SCoP and using affine expressions to compute the memory requirement of the subtile being dispatched to the GPU.
 
-\subsubsection{MLIR} LLVM's Multi-Level IR (MLIR) framework  % blah blah blah
+\subsubsection{MLIR} LLVM's Multi-Level IR (MLIR)\cite{lattnerMLIRCompilerInfrastructure2020} framework specifies an SSA-driven hybrid IR that organizes high- and low-level semantics into separate \emph{dialects}. This can span from the high-level \dialect{linalg} dialect which specifies perfectly nested loops \cite{MLIRLinalgDialect2022}, the \dialect{tensor} dialect which describes the layout and allocation of dense multidimensional arrays, to the low-level \dialect{SPIR-V} that targets Vulkan compute and \dialect{LLVM} for CPUs. Dialect-agnostic optimizations such as constant subexpression elimination and dead code elimination are implemented and executed by the framework's drivers.
 
-One of the dialects, $\mathsf{linalg}$, has proven to be a dominant common target for tensor dialects.
-
-Triton\cite{tilletTritonIntermediateLanguage2019} innovated on the SIMT model
-
-IREE\cite{theireeauthorsIREE2019} takes a whole-model approach to optimizing models, lowering high-level tensor operations through the various stages.
+Triton \cite{tilletTritonIntermediateLanguage2019} is an MLIR-based compiler that provides a high-level Python-embedded DSL for specifying tile semantics, which is immediately translated to its own eponymously-named tile-based MLIR dialect. Other machine learning compilers, such as TorchInductor\cite{anselPyTorch2Faster2024}, XLA\cite{XLACompilingMachine}, and IREE\cite{theireeauthorsIREE2019}, aim to consume neural networks as a sequence of computations and each have their own methods of lowering. We will further elaborate on our work in IREE in \autoref{sec:progressreport}.
 
 \subsection{GPU and Processing Graphics}
 
 As we saw with general compute, the GPU has come a long way from being a fixed-function pipeline, manually plugging in transformation matrices and lights to draw to the screen texture. However, the vast majority of consumer grade GPUs are designed for exactly what it is named for: graphics processing. The compute pipeline, while the most general, is far from the only pipeline available on the GPU. In fact, there are two other pipelines dedicated to graphics rendering available:
 \begin{itemize}
-  \item Rasterization pipeline
+  \item Raster pipeline
   \item Raytracing pipeline
 \end{itemize}
 
-\subsubsection{The Rasterization Pipeline}
+To dispatch work to the GPU and select the pipelines, render engines interface with the graphics card using low-level APIs such as DirectX\cite{stevewhimsDirect3D12Reference} and Vulkan\cite{vulkanHomeVulkanCross2025}. One common abstraction implemented by graphics engines, such as O3DE\cite{O3DERenderHardware} and NVIDIA-RTX \cite{NVIDIARTXNVRHI2025}, is the \emph{rendering hardware interface}, which reduces the dependency on the choice of API.
 
-The rasterization pipeline, depicted in \autoref{fig:rasterpipe}, is what directs the graphics card to transform vertex buffers through primitives into fragments that get written into the output texture. 
+\subsubsection{The Rendering Equation}
+ 
+The rendering equation\cite{kajiyaRenderingEquation1986} refers to the equation used to compute the value of a point's irradiance, which we define in \autoref{eqn:rendering}. It computes the irradiance for a point by integrating over the hemisphere $\Omega$, taking in as input the normal at the point $\mathbf{n}$ and incoming and outgoing radiance $L_i$ and $L_o$ along the directions $\omega_i$ and $\omega_o$ respectively. $f$ most often appears as $f_r$, known as the bidirectional reflection function, which is the proportion of light reflectioned from $\omega_i$ to $\omega_o$.
+\begin{align}
+  \label{eqn:rendering}
+  \int_\Omega L_i(\omega_i)f(\omega_i,\omega_o,\theta)\langle \mathbf{n}, \omega_i \rangle \mathsf{d} \omega_i
+\end{align}
+
+The integral over the hemisphere is what allows for computing global illumination in a realistic manner. By nature of being an integral over a 2D manifold, it is also computationally intensive, yet must be performed for every fragment in the render target to achieve realistic lighting. In real-time workflows, radiance probes\cite{silvennoinenRealtimeGlobalIllumination2017} placed throughout the scene collect global illumination. Radiance cascades\cite{RadianceCascadesPaperOut_latexmk2RadianceCascadespdf} utilize TMUs to accelerate the interpolation of irradiance data from adjacent radiance probes.
+
+\subsubsection{The Raster Pipeline}
+
+The raster pipeline, depicted in \autoref{fig:rasterpipe}, is what directs the graphics card to transform vertex buffers through primitives into fragments that get written into the output texture. Vertex, tesselation and geometry shaders are collectively the \emph{geometry} step of the raster pipeline, producing primitives that are then rasterized into fragments that are \emph{shaded} by the fragment shader.
+
 \begin{figure}
 \includegraphics[scale=0.25,keepaspectratio]{RasterizationPipeline.drawio.png}
 
-\caption{The rasterization pipeline. Programmable stages are highlighted in red, with optional components outlined with dotted lines.\label{fig:rasterpipe}}  
+\caption{The raster pipeline. Programmable stages are highlighted in red, with optional components outlined with dotted lines.\label{fig:rasterpipe}}  
 \end{figure}
 
 \label{sssec:rasterization}
 
+\paragraph{Deferred Shading} As there are far more fragment shader invocations than vertex shader invocations, significant gains are made by not performing expensive lighting computations. Deferred shading defers the lighting computation to a separate render pass, painting the intermediate values required by the rendering equation into a set of output textures known as the geometry buffer (or G-buffer). While this improved the performance of lighting computations, deferred shading was notoriously memory intensive. As an embarrassingly parallel operation, however, the deferred shading computation could be tiled, saving the memory limits of the G-buffer.
 
-\paragraph{Deferred Shading}
+\paragraph{Forward+} Forward rendering refers to performing the entire graphics pass, from geometry through to shading, in a single render pass. \cite{haradaForwardBringingDeferred2012} takes the tiling of the deferred shading pipeline and applied it to forward rendering, tiling the camera frustum and performing frustum culls of lights in the scene using a compute shader. The insight drawn from Forward+ was that deferred shading was not the final destination of graphics optimization; the true cost may be memory traffic. 
+
+\paragraph{Post-processing} While the typical graphics pass produces a realistic image of the scene, many applications of real-time graphics are typically geared towards entertainment such as video games. Artists may tune the final image, applying \emph{post processing effects} such as depth of field\cite{mcintoshEfficientlySimulatingBokeh2012} and tone mapping\cite{eilertsenRealtimeNoiseawareTone2015} to achieve a desired effect on the viewer. As each of these effects forms, massive performance gains can be made by \emph{fusing} adjacent passes into a single shader, avoiding the materialization of intermediate textures and minimizing the number of draw calls.
 
 \subsubsection{The Raytracing Pipeline}
 
 The raytracing pipeline, depicted in \autoref{fig:raytracepipe}, is a different pipeline that graphics programmers can opt to use that is optimized for raytracing workflows. Compared to the rasterization and compute pipelines, the raytracing pipeline allows the program to loop back and generate more shader invocations. Rays are generated by the Ray Generation Shader (RGS), which are then raycast into a hardware-accelerated bounding volume hierarchy (BVH) known as the acceleration structure, depicted in \autoref{fig:tlas}.
 
-The primary advantage offered by the raytracing pipeline is the hardware acceleration of ray casts into the BVH, which was abused by Zhang et al. in their work on accelerating sparse matrix-matrix multiplications using the ray tracing pipeline \cite{zhangRTSpMSpMHarnessingRay2025}.
+The primary advantage offered by the raytracing pipeline is the hardware acceleration of raycasts into the BVH, which was abused by Zhang et al. in their work on accelerating sparse matrix-matrix multiplications using the ray tracing pipeline \cite{zhangRTSpMSpMHarnessingRay2025}.
 
 \begin{figure}
 \includegraphics[scale=0.25,keepaspectratio]{RayTracingPipeline.drawio.png}
@@ -285,33 +298,28 @@ The primary advantage offered by the raytracing pipeline is the hardware acceler
 
 \subsection{Compilers in Computer Graphics}
 
-Computer graphics as a field is huge, spanning different rendering techniques and the use of machine learning in various parts of the render pipeline. We will hence cover a small subset of it, relating to the use of compiler techniques in computer graphics.
-
-\subsubsection{The Rendering Equation}
- 
-The rendering equation\cite{kajiyaRenderingEquation1986} refers to the equation used to compute the value of a point's irradiance, which we define in \autoref{eqn:rendering}. It computes the irradiance for a point by integrating over the hemisphere $\Omega$, taking in as input the normal at the point $\mathbf{n}$ and incoming and outgoing radiance $L_i$ and $L_o$ along the directions $\omega_i$ and $\omega_o$ respectively. $f$ most often appears as $f_r$, known as the bidirectional reflection function, which is the proportion of light reflectioned from $\omega_i$ to $\omega_o$.
-\begin{align}
-  \label{eqn:rendering}
-  \int_\Omega L_i(\omega_i)f(\omega_i,\omega_o,\theta)\langle \mathbf{n}, \omega_i \rangle \mathsf{d} \omega_i
-\end{align}
-
-The integral over the hemisphere is what allows for computing global illumination in a realistic manner. By nature of being an integral over a 2D manifold, it is also computationally intensive, yet must be performed for every fragment in the render target to achieve realistic lighting. In real-time workflows, this is approximated by using radiance probes to cache global illumination, or by using the raytracing pipeline.
+Computer graphics as a field is huge, spanning different rendering techniques and the use of machine learning in various parts of the render pipeline. We will hence cover a small subset of it, relating to the use of compiler techniques in computer graphics. 
 
 \subsubsection{Domain Specific Languages (DSLs) for Computer Graphics}
-A number of DSLs have been devised for computer graphics. Many if not all of these DSLs target raytracing workloads, with very few options for a DSL targeting real-time rendering.
+A number of DSLs have been devised, some specfically for computer graphics, others for more generic computation. Taichi\cite{huTaichiLanguageHighperformance2019} is a high-performance DSL written for Python that is designed for high performance sparse programs, a class of programs that includes raytraced rendering. Luisarenderer \cite{zhengLuisaRenderHighPerformanceRendering} and RenderKernel \cite{yangRenderKernelHighlevelProgramming2024} are two attempts at creating a high-level DSL for raster pipelines, attempting to use Python's decorator functionality to specify which pieces of code are kernels to be dispatched to the GPU.
 
 \subsubsection{Inverse Rendering}
 
 Inverse rendering derives geometry and materials from one or more final images of a target scene. This is achieved through machine learning; specifically, the approach of \emph{differentiable rendering} uses automatic differentiation of the shaders to produce geometry and textures that would produce the same target images. State of the art in the field includes Mitsuba (and its underlying IR, DR.JIT\cite{jakobDRJITJustintimeCompiler2022}), which is able to automatically differentiate the whole pipeline and train for both geometry and render simultaneously, and SlangD\cite{bangaruSLANGDFastModular2023}, which performs automatic differentiation at the per-shader level which improves performance but forces geometry and render to be trained for separately. We include this as an interesting exploration of compiler techniques in computer graphics, and an avenue for potential research in the future.
 
 \section{Progress Report}
+\label{sec:progressreport}
+
+To begin research into making a compiler for the GPU, we must first delve into what the state of the art of compilers in the GPU are. In the latter half of 2025, we have been working on a paper on tiling the attention mechanism\cite{vaswaniAttentionAllYou2023} in large language models, where we made the crucial insight that enabling online attention through the online softmax rewrite\cite{milakovOnlineNormalizerCalculation2018} opens the door to complete tiling of the attention operation.
+
+
 
 \section{Thesis Proposal}
 
 The programmable deliverable of this thesis is to develop an MLIR dialect for dispatching work to the GPU. The research value of such a project is not immediately apparent, however, it does lay the groundwork and an overarching research theme for research ideas exploring cross-pipeline optimizations. In the short term, the concrete paper ideas are:
 \begin{itemize}
   \item Compiling to Accelerate Block-Sparse Linear Algebra with Raytracing Hardware
-  \item Rasterization Pipeline Optimizations as Program Rewrites
+  \item Raster Pipeline Optimizations as Program Rewrites
 \end{itemize}
 
 \subsection{Compiling to Accelerate Block-Sparse Linear Algebra with Raytracing Hardware}
@@ -322,17 +330,19 @@ The general idea of tackling linear algebra as a geometry problem is not a parti
 
 We observe that Zhang's approach uses OptiX, Nvidia's SDK for ray tracing, and posit that their approach can still be further refined by treating the lowering of the sparse computation to the raytracing pipeline as a compiler optimization. We will attempt to use compiler techniques to not only simplify the writing of the dispatch for the frontend programmer, but also enable well-known optimizations such as block-sparse formats. The block semantics available to block-sparse matrices more easily permit tensor core acceleration, and as geometric primitives with larger volume, should be more efficiently handled by the bounding volume acceleration structures. This approach is clearly cross-pipeline, utilizing both the compute and raytracing pipelines to optimize a linear algebra problem, and is simple to implement and explore with existing tools, allowing us to dedicate engineering effort to building a well-rounded GPU dispatch framework.
 
-\subsection{Rasterization Pipeline Optimizations as Program Rewrites}
+\subsection{Raster Pipeline Optimizations as Program Rewrites}
 
 Target Venue: SIGGRAPH / SIGGRAPH ASIA
 
-The rasterization pipeline is a well-understood programming model utilized by graphics engineers all across the video game industry. One of the most crucial optimizations one could perform to their graphics pipeline is to reduce the amount of overdraw in the scene, and a common way of doing this is with deferred shading. As stated in \autoref{sssec:rasterization}, deferred shading reduces overdraw by only performing the expensive lighting computations on fragments that are actually visible on the screen. While this reduces overdraw and usually results in a performance improvement, many intermediate textures (collectively known as the G-buffer or geometry buffer) must be materialized to cache the values for the lighting computation. This is both memory intensive and exhausts the limited texture units available in the hardware. To mitigate the latter, the classical approach is to pack the results into as few textures as possible, as each texture is able to store 4 separate values corresponding to the RGBA channels, and to utilize formats that reduce accuracy where it is not needed --- for instance, normals are typically stored in a 16 bit float format. A more effective approach to reducing memory overhead, and the one taken by most game engines, is to \emph{tile} the render parts, in a manner not unlike their compute counterparts.
+The raster pipeline is a well-understood programming model utilized by graphics engineers all across the video game industry. One of the most crucial optimizations one could perform to their graphics pipeline is to reduce the amount of overdraw in the scene, and a common way of doing this is with deferred shading. As stated in \autoref{sssec:rasterization}, deferred shading reduces overdraw by only performing the expensive lighting computations on fragments that are actually visible on the screen, but comes at the cost of maintaining a memory-intensive G-buffer. To mitigate the memory overhead, the deferred shading operation may be tiled, not unlike that of the machine learning counterparts.
 
-We treat the tiling of the render pass as a program rewrite. Unlike linear algebra workloads, the iteration domain is not the only tiling target. The draw command's viewport and the frustum corresponding to the projection matrix must be tiled as well, respectively corresponding to pipeline and geometric semantics. By subdividing and rotating the frustum, however, the inter-tile depth buffer becomes incoherent, resulting in non-trivial adjustment for use in post-processing passes that rely on the depth buffer. One example of such a pass is depth-based edge detection. We will investigate the effects of tiling on the geometric semantics of the render pass, and attempt to resolve it with whole program optimization that is only possible with multi-level compilers. This will allow us to investigate the use of compiler rewrites as a means to optimize pipelines.
+Hence, we treat the tiling of the render pass as a program rewrite. Unlike linear algebra workloads, the iteration domain is not the only tiling target. The draw command's viewport and the frustum corresponding to the projection matrix must be tiled as well, respectively corresponding to a change in pipeline and geometric semantics. By subdividing and rotating the camera frustum, however, the inter-tile depth buffer becomes incoherent, resulting in non-trivial adjustment for use in post-processing passes that rely on the depth buffer. One example of such a pass is depth-based edge detection. We will investigate the effects of tiling on the geometric semantics of the render pass, and attempt to resolve it with whole program optimization that is only possible with multi-level compilers. This will allow us to investigate the use of compiler rewrites as a means to optimize pipelines.
 
 \subsection{Criteria for Success}
 
-While adoption in the general community would be great, two years is hardly sufficient for a project to gain traction within the community. However, adoption by 
+RQ1 will be addressed by the raytracing paper, as we apply compiler techniques to not only apply the raytracing pipeline to sparse linear algebra, but fuse adjacent computations into the loop as well. Success will be determined by how our compiler-based solution holds up against the state of the art sparse linear algebra libraries such as cuSPARSE\cite{CuSPARSE} and MAGMA\cite{abdelfattahMAGMAEnablingExascale2024}.
+
+RQ2 will 
 
 \section {Timeplan}
 %% Bibliography
