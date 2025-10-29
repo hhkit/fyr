@@ -266,7 +266,7 @@ The raster pipeline, depicted in \autoref{fig:rasterpipe}, is what directs the g
 
 \paragraph{Deferred Shading} As there are far more fragment shader invocations than vertex shader invocations, significant gains are made by not performing expensive lighting computations. Deferred shading defers the lighting computation to a separate render pass, painting the intermediate values required by the rendering equation into a set of output textures known as the geometry buffer (or G-buffer). While this improved the performance of lighting computations, deferred shading was notoriously memory intensive. As an embarrassingly parallel operation, however, the deferred shading computation could be tiled, saving the memory limits of the G-buffer.
 
-\paragraph{Forward+} Forward rendering refers to performing the entire graphics pass, from geometry through to shading, in a single render pass. \cite{haradaForwardBringingDeferred2012} takes the tiling of the deferred shading pipeline and applied it to forward rendering, tiling the camera frustum and performing frustum culls of lights in the scene using a compute shader. The insight drawn from Forward+ was that deferred shading was not the final destination of graphics optimization; the true cost may be memory traffic. 
+\paragraph{Forward+} Forward rendering refers to performing the entire graphics pass, from geometry through to shading, in a single render pass. Forward+\cite{haradaForwardBringingDeferred2012} takes the tiling of the deferred shading pipeline and applied it to forward rendering, tiling the camera frustum and performing frustum culls of the lights in the scene using a compute shader. The insight drawn from Forward+ was that deferred shading was not the final destination of graphics optimization; the true cost may be memory traffic. 
 
 \paragraph{Post-processing} While the typical graphics pass produces a realistic image of the scene, many applications of real-time graphics are typically geared towards entertainment such as video games. Complete realism may not always be the requirement, and thus, artists may tune the final image, applying \emph{post processing effects} such as depth of field\cite{mcintoshEfficientlySimulatingBokeh2012} and tone mapping\cite{eilertsenRealtimeNoiseawareTone2015} to achieve a desired effect on the viewer. As each of these effects forms, massive performance gains can be made by \emph{fusing} adjacent passes into a single shader, avoiding the materialization of intermediate textures and minimizing the number of draw calls.
 
@@ -310,11 +310,45 @@ Inverse rendering derives geometry and materials from one or more final images o
 \section{Progress Report}
 \label{sec:progressreport}
 
-To begin research into making a compiler for the GPU, we must first delve into what the state of the art of compilers for the GPU are. After being introduced to MLIR's metainfrastructure by working on IRDL\cite{MLIRIRDLAddedIRDL,fehrIRDLIRDefinition2022}, we then started work on IREE in the latter half of 2025. The attention mechanism\cite{vaswaniAttentionAllYou2023} in large language models is a parallel algorithm that gives the transformer the ability to infer context.
+To begin research into making a compiler for the GPU, we must first delve into what the state of the art of compilers for the GPU are. After being introduced to MLIR's metainfrastructure by working on IRDL\cite{MLIRIRDLAddedIRDL,fehrIRDLIRDefinition2022}, we then started work on implementing an optimization of the attention mechanism in IREE in the latter half of 2025. 
 
+\subsection{Attention Comprehension: Extensible compiler optimization of attention kernels}
 
+Target venue: OOPSLA
 
-This paper is still a work in progress, as we have not fully integrated the functionality into IREE for a proper benchmark. However, a demo is planned to be made at C4ML (deadline of December 2025) followed by a submission at OOPSLA in 2026.
+The attention mechanism\cite{vaswaniAttentionAllYou2023} in large language models is a parallel algorithm that gives the transformer the ability to infer context. Optimization of attention for GPUs is a heavily researched topic \cite{daoFlashAttentionFastMemoryEfficient2022,daoFlashAttention2FasterAttention2023,dongFlexAttentionProgramming2024}, but by studying the Flash Attention 2 kernel, we observe that it is actually a tiling of the attention mechanism. The issue arises because at the high level, attention is not trivially tileable.
+%
+\newcommand{\Attention}{\mathsf{Attention}}
+\newcommand{\softmax}{\mathsf{softmax}}
+\begin{align}
+  \label{eqn:attention}
+  \quad \Attention(\mathbf{Q}, \mathbf{K}, \mathbf{V}) 
+  &= \softmax(\mathbf{Q} \mathbf{K}^T) \mathbf{V}
+  \\
+  \label{eqn:attention-math}
+  &=\left[
+    \cfrac {e^{\mathbf{S}_{i,j}}} 
+           {\sum_{n=0}^{N} e^{\mathbf{S}_{i,n}}}
+    \right]
+    \mathbf{V}
+    \qquad \text{ where } \mathbf{S} = \mathbf{Q} \mathbf{K}^T
+  \\
+  \label{eqn:attention-math-safe}
+  &=\left[
+      \cfrac {e^{\mathbf{S}_{i,j} - m_i}} 
+             {\sum_{n=0}^{N} e^{\mathbf{S}_{i,n} - m_i}}
+    \right]
+    \mathbf{V}
+    \qquad \text{ where } m_i = \max_{i}(\mathbf{S}_i)
+\end{align}
+
+The mathematical definition of attention is provided in \autoref{eqn:attention}, which we then expand with the definition of $\softmax$ in \autoref{eqn:attention-math}. However, raising $e$ to the power of values traditionally in the $QK^T$ matrix results in values far beyond the limit of what 32-bit floating point is able to capture. Hence, a safe version of softmax is applied by subtracting the maximum row value from the exponent, which we can see in \autoref{eqn:attention-math-safe}.
+
+This presents us with an issue when it comes to loop fusion.
+
+Loop tiling is the transformation that allows us to partition the loop to obtain a subtile that can be transformed into a dispatch to the GPU. However, if we are unable to fuse the loop, we have to tile each loop separately, resulting in multiple dispatch calls which is inefficient. Fortunately, by applying the online softmax transformation as described in \cite{milakovOnlineNormalizerCalculation2018}, a single rewrite turns the imperative program into a single loop. Not only is this loop tileable, it also allows the programmer to automatically derive the same kernel as devised in Flash Attention 2\cite{daoFlashAttention2FasterAttention2023}. Unlike Flash Attention, which is written as a low-level Triton kernel, our attention implementation is written as a high-level neural network. This allows us to perform subsequent tiling and optimizations on the attention mechanism such as quantization, conversion to MXFP formats and the like, while still retaining the high-level representation.
+
+This paper is still a work in progress, as we have not fully integrated the functionality into IREE for a proper benchmark using the Meta attention gym. However, a demo is planned to be presented at CC's C4ML (deadline of December 2025) followed by a submission at OOPSLA in 2026. Through the process of writing this paper, we have become familiar with the design of MLIR's Transform dialect\cite{luckeMLIRTransformDialect2024}, its extensions, and how to progressively lower linear algebra operators to the hardware.
 
 
 
@@ -346,7 +380,7 @@ Hence, we treat the tiling of the render pass as a program rewrite. Unlike linea
 
 RQ1 will be addressed by the raytracing paper, as we apply compiler techniques to not only apply the raytracing pipeline to sparse linear algebra, but fuse adjacent computations into the loop as well. Success will be determined by how our compiler-based solution holds up against the state of the art sparse linear algebra libraries such as cuSPARSE\cite{CuSPARSE}, MAGMA\cite{abdelfattahMAGMAEnablingExascale2024}, and \cite{zhangRTSpMSpMHarnessingRay2025}, comparing the metrics of performance, maintainability and GPU utilization.
 
-To answer RQ2, the raster rewrite paper will only partially answer it. As rendering engines are immensely complex and configurable engines, there are far too many intricate details to handle. Hence, we will benchmark our prototype graphics engine against tutorial projects by LearnOpenGL\cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems\cite{SaschaWillemsVulkanExamples}, which implement deferred shading and other techniques atomically to form a more stable control. If this first paper proves successful, implementing advanced techniques such as radiance cascades or those found Unreal Engine 5's Lumen\cite{LumenGlobalIllumination} will allow us to verify the claim that program rewrites can yield an effective, maintainable codebase for a render engine with comparable performance to the state of the art.
+As for RQ2, the raster rewrite paper will only partially answer it. As rendering engines are immensely complex and configurable engines, there are far too many intricate details to handle. Hence, we will benchmark our prototype graphics engine against tutorial projects by LearnOpenGL\cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems\cite{SaschaWillemsVulkanExamples}, which implement deferred shading and other techniques atomically to form a more stable control. If this first paper proves successful, implementing advanced techniques such as radiance cascades or those found Unreal Engine 5's Lumen\cite{LumenGlobalIllumination} will allow us to verify the claim that program rewrites can yield an effective, maintainable codebase for a render engine with comparable performance to the state of the art.
 
 \section {Timeplan}
 
