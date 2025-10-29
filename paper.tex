@@ -106,7 +106,7 @@
 \definecolor{pairedSixDarkRed}{HTML}{e31a1c}
 
 \createtodoauthor{grosser}{pairedOneLightBlue}
-\createtodoauthor{authorTwo}{pairedTwoDarkBlue}
+\createtodoauthor{ivan}{pairedTwoDarkBlue}
 \createtodoauthor{authorThree}{pairedThreeLightGreen}
 \createtodoauthor{authorFour}{pairedFourDarkGreen}
 \createtodoauthor{authorFive}{pairedFiveLightRed}
@@ -200,13 +200,13 @@
 \begin{abstract}
 It has been about 22 years since the raster pipeline of the GPU was first used for general compute, sparking off a worldwide, multi-decade, multi-trillion dollar investment into accelerating linear algebra on hardware initially designed for entertainment. With the advent of artificial intelligence, the majority of the research effort has largely been directed towards generalizing the rendering hardware such that it is more usable by generic compute workflows. Even so hardware accelerators and pipelines designed specifically for computer graphics, such as texture samplers and ray tracing acceleration structures, remain accessible on consumer-grade hardware across all vendors, begging to be exploited.
 
-Therefore, the end goal of this thesis will be to create Oolong\footnote{We dub this toolkit "Oolong", named after a type of tea, to represent computer graphics's eponymous Utah teapot, whose name also contains "long" (the Chinese word for dragon) to represent compilers.}, a high-level compiler toolkit for dispatching work to the GPU, allowing the user to utilize all three of the architectural pipelines available. Research will be focused on the workflows that are able to exploit cross-pipeline interactions by using accelerators designed for one domain in another. As the program dispatch will be split across different pipelines, the toolkit will be designed using MLIR, a multi-level compiler toolkit which separates program semantics into different dialects. This permits separation of concerns when deciding between optimizing the computation or the underlying pipelines that the computation would be dispatched to, and drastically limits the search space required for compilers and engineers alike to perform whole-program optimization. 
+Therefore, the end goal of this thesis will be to create Oolong\footnote{We dub this toolkit "Oolong", named after a type of tea, to represent computer graphics's eponymous Utah teapot, whose name also contains "long" (the Chinese word for dragon) to represent compilers.}, a mid-level compiler toolkit for dispatching work to the GPU, allowing the user to utilize all three of the architectural pipelines available. Research will be focused on the workflows that are able to exploit cross-pipeline interactions by using accelerators designed for one domain in another. As the program dispatch will be split across different pipelines, the toolkit will be designed using MLIR, a multi-level compiler toolkit which separates program semantics into different dialects. This permits separation of concerns when deciding between optimizing the computation or the underlying pipelines that the computation would be dispatched to, and drastically limits the search space required for compilers and engineers alike to perform whole-program optimization. 
 
 The research questions that Oolong will answer are as follows:
 \begin{itemize}
-  \item RQ1: Can we exploit hardware-accelerated pipelines in the GPU to accelerate linear algebra operations?
-  \item RQ2: Does declaratively expressing render pipelines as a high-level programming language enable whole program optimization?
-  \item RQ3: 
+  \item RQ1: To what extent can we exploit hardware-accelerated pipelines in the GPU to accelerate linear algebra operations?
+  \item RQ2: Does declaratively expressing real-time render pipelines as a high-level programming language enable effective whole program optimization?
+  \item \ivan{Truthfully I could not come up with an RQ3} RQ3: 
 \end{itemize}
 \end{abstract}
 
@@ -328,7 +328,7 @@ Target Venue: SIGGRAPH / SIGGRAPH ASIA
 
 The rasterization pipeline is a well-understood programming model utilized by graphics engineers all across the video game industry. One of the most crucial optimizations one could perform to their graphics pipeline is to reduce the amount of overdraw in the scene, and a common way of doing this is with deferred shading. As stated in \autoref{sssec:rasterization}, deferred shading reduces overdraw by only performing the expensive lighting computations on fragments that are actually visible on the screen. While this reduces overdraw and usually results in a performance improvement, many intermediate textures (collectively known as the G-buffer or geometry buffer) must be materialized to cache the values for the lighting computation. This is both memory intensive and exhausts the limited texture units available in the hardware. To mitigate the latter, the classical approach is to pack the results into as few textures as possible, as each texture is able to store 4 separate values corresponding to the RGBA channels, and to utilize formats that reduce accuracy where it is not needed --- for instance, normals are typically stored in a 16 bit float format. A more effective approach to reducing memory overhead, and the one taken by most game engines, is to \emph{tile} the render parts, in a manner not unlike their compute counterparts.
 
-We treat the tiling of the render pass as a program rewrite. Unlike linear algebra workloads, the iteration domain is not the only tiling target. The draw command's viewport and the frustum corresponding to the projection matrix must be tiled as well, respestively corresponding to pipeline and geometric semantics. By subdividing and rotating the frustum, however, the inter-tile depth buffer becomes incoherent, resulting in non-trivial adjustment for use in post-processing passes that rely on the depth buffer. One example of such a pass is depth-based edge detection. We will investigate the effects of tiling on the geometric semantics of the render pass, and attempt to resolve it with whole program optimization that is only possible with multi-level compilers. This will allow us to investigate the use of compiler rewrites as a means to optimize pipelines.
+We treat the tiling of the render pass as a program rewrite. Unlike linear algebra workloads, the iteration domain is not the only tiling target. The draw command's viewport and the frustum corresponding to the projection matrix must be tiled as well, respectively corresponding to pipeline and geometric semantics. By subdividing and rotating the frustum, however, the inter-tile depth buffer becomes incoherent, resulting in non-trivial adjustment for use in post-processing passes that rely on the depth buffer. One example of such a pass is depth-based edge detection. We will investigate the effects of tiling on the geometric semantics of the render pass, and attempt to resolve it with whole program optimization that is only possible with multi-level compilers. This will allow us to investigate the use of compiler rewrites as a means to optimize pipelines.
 
 \subsection{Criteria for Success}
 
