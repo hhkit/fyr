@@ -751,6 +751,14 @@
   file = {/Users/ihkh2/Zotero/storage/HQ9CRJEZ/Frigo and Johnson - 1998 - FFTW an adaptive software architecture for the FFT.pdf;/Users/ihkh2/Zotero/storage/H6UQ2CKZ/681704.html}
 }
 
+@article{frostigCompilingMachineLearning,
+  title = {Compiling Machine Learning Programs via High-Level Tracing},
+  author = {Frostig, Roy and Johnson, Matthew James and Leary, Chris},
+  abstract = {We describe JAX, a domain-specific tracing JIT compiler for generating high-performance accelerator code from pure Python and Numpy machine learning programs. JAX uses the XLA compiler infrastructure to generate optimized code for the program subroutines that are most favorable for acceleration, and these optimized subroutines can be called and orchestrated by arbitrary Python. Because the system is fully compatible with Autograd, it allows forward- and reverse-mode automatic differentiation of Python functions to arbitrary order. Because JAX supports structured control flow, it can generate code for sophisticated machine learning algorithms while maintaining high performance. We show that by combining JAX with Autograd and Numpy we get an easily programmable and highly performant ML system that targets CPUs, GPUs, and TPUs, capable of scaling to multi-core Cloud TPUs.},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/YHY5HNI7/Frostig et al. - Compiling machine learning programs via high-level tracing.pdf}
+}
+
 @misc{GameEnginesShader,
   title = {Game Engines and Shader Stuttering: {{Unreal Engine}}'s Solution to the Problem},
   shorttitle = {Game Engines and Shader Stuttering},
@@ -1081,6 +1089,13 @@
   file = {/Users/ihkh2/Zotero/storage/CF75VR7A/Iooss et al. - SARCASM Set-Associative Rotating Cache AnalyticalSimulating Model.pdf}
 }
 
+@misc{IRDLIRDefinition,
+  title = {{{IRDL}}: An {{IR}} Definition Language for {{SSA}} Compilers {\textbar} {{Proceedings}} of the 43rd {{ACM SIGPLAN International Conference}} on {{Programming Language Design}} and {{Implementation}}},
+  urldate = {2025-10-29},
+  howpublished = {https://dl.acm.org/doi/10.1145/3519939.3523700},
+  file = {/Users/ihkh2/Zotero/storage/3ZLNANHX/3519939.html}
+}
+
 @article{jakobDRJITJustintimeCompiler2022,
   title = {{{DR}}.{{JIT}}: A Just-in-Time Compiler for Differentiable Rendering},
   shorttitle = {{{DR}}.{{JIT}}},
@@ -1252,9 +1267,9 @@
   pages = {908--916},
   issn = {0730-0301},
   doi = {10.1145/882262.882363},
-  urldate = {2025-10-23},
+  urldate = {2025-10-29},
   abstract = {In this work, the emphasis is on the development of strategies to realize techniques of numerical computing on the graphics chip. In particular, the focus is on the acceleration of techniques for solving sets of algebraic equations as they occur in numerical simulation. We introduce a framework for the implementation of linear algebra operators on programmable graphics processors (GPUs), thus providing the building blocks for the design of more complex numerical algorithms. In particular, we propose a stream model for arithmetic operations on vectors and matrices that exploits the intrinsic parallelism and efficient communication on modern GPUs. Besides performance gains due to improved numerical computations, graphics algorithms benefit from this model in that the transfer of computation results to the graphics processor for display is avoided. We demonstrate the effectiveness of our approach by implementing direct solvers for sparse matrices, and by applying these solvers to multi-dimensional finite difference equations, i.e. the 2D wave equation and the incompressible Navier-Stokes equations.},
-  file = {/Users/ihkh2/Zotero/storage/DCXULRVW/Krüger and Westermann - 2003 - Linear algebra operators for GPU implementation of numerical algorithms.pdf}
+  file = {/Users/ihkh2/Zotero/storage/CWSECQ58/Krüger and Westermann - 2003 - Linear algebra operators for GPU implementation of numerical algorithms.pdf}
 }
 
 @misc{kwonEfficientMemoryManagement2023,
@@ -1369,11 +1384,21 @@
   file = {/Users/ihkh2/Zotero/storage/RGYYFTK8/RationaleLinalgDialect.html}
 }
 
+@misc{LinalgExtIntroduceLinalg_extexp_reduction,
+  title = {[{{LinalgExt}}] {{Introduce}} Linalg\_ext.Exp\_reduction by Hhkit {$\cdot$} {{Pull Request}} \#21761 {$\cdot$} Iree-Org/Iree},
+  journal = {GitHub},
+  urldate = {2025-10-29},
+  abstract = {In the online softmax algorithm, there are two reductions: the calculation of the maximum term, and the accumulation of the sum term which is sum of e{\textasciicircum}(value[i] - max). Combined, we call this reduc...},
+  howpublished = {https://github.com/iree-org/iree/pull/21761},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/WUNHQPUS/21761.html}
+}
+
 @misc{LinearAlgebraOperators,
   title = {Linear Algebra Operators for {{GPU}} Implementation of Numerical Algorithms {\textbar} {{ACM Transactions}} on {{Graphics}}},
-  urldate = {2025-03-13},
+  urldate = {2025-10-29},
   howpublished = {https://dl.acm.org/doi/10.1145/882262.882363},
-  file = {/Users/ihkh2/Zotero/storage/TUBNUNUA/Linear algebra operators for GPU implementation of numerical algorithms  ACM Transactions on Graphi.pdf}
+  file = {/Users/ihkh2/Zotero/storage/ILGK8QD6/882262.html}
 }
 
 @inproceedings{linParrotEfficientServing2024,
@@ -1615,6 +1640,16 @@
   langid = {english},
   keywords = {Computer Science - Artificial Intelligence,Computer Science - Computation and Language,Computer Science - Performance},
   file = {/Users/ihkh2/Zotero/storage/ITC8KJD5/Milakov and Gimelshein - 2018 - Online normalizer calculation for softmax.pdf}
+}
+
+@misc{MLIRIRDLAddedIRDL,
+  title = {[{{MLIR}}][{{IRDL}}] {{Added IRDL}} to {{C}}++ {{Translation}} by Hhkit {$\cdot$} {{Pull Request}} \#141248 {$\cdot$} Llvm/Llvm-Project},
+  journal = {GitHub},
+  urldate = {2025-10-29},
+  abstract = {A re-attempt at merging IRDL-to-CPP (\#133982) after a sanitizer check failed in post-merge CI (resolving \#138285). This PR introduces a new tool, mlir-irdl-to-cpp, that converts IRDL to C++ defini...},
+  howpublished = {https://github.com/llvm/llvm-project/pull/141248},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/MCL9V2IE/141248.html}
 }
 
 @misc{MLIRLinalgDialect2022,
@@ -2571,6 +2606,23 @@
   urldate = {2025-10-17},
   abstract = {The advancements in hardware have drawn more attention than ever to high-quality offline rendering with modern stream processors, both in the industry and in research fields. However, the graphics APIs are fragmented and existing shading languages lack high-level constructs such as polymorphism, which adds complexity to developing and maintaining cross-platform high-performance renderers. We present LuisaRender1, a high-performance rendering framework for modern stream-architecture hardware. Our main contribution is an expressive C++-embedded DSL for kernel programming with JIT code generation and compilation. We also implement a unified runtime layer with resource wrappers and an optimized Monte Carlo renderer. Experiments on test scenes show that LuisaRender achieves much higher performance than existing research renderers on modern graphics hardware, e.g., 5--11{\texttimes} faster than PBRT-v4 and 4--16{\texttimes} faster than Mitsuba 3.},
   file = {/Users/ihkh2/Zotero/storage/UZPBESTD/Zheng et al. - 2022 - LuisaRender A High-Performance Rendering Framework with Layered and Unified Interfaces on Stream Ar.pdf}
+}
+
+@article{zhengLuisaRenderHighPerformanceRendering2022a,
+  title = {{{LuisaRender}}: {{A High-Performance Rendering Framework}} with {{Layered}} and {{Unified Interfaces}} on {{Stream Architectures}}},
+  shorttitle = {{{LuisaRender}}},
+  author = {Zheng, Shaokun and Zhou, Zhiqian and Chen, Xin and Yan, Difei and Zhang, Chuyan and Geng, Yuefeng and Gu, Yan and Xu, Kun},
+  year = 2022,
+  month = nov,
+  journal = {ACM Trans. Graph.},
+  volume = {41},
+  number = {6},
+  pages = {232:1--232:19},
+  issn = {0730-0301},
+  doi = {10.1145/3550454.3555463},
+  urldate = {2025-10-29},
+  abstract = {The advancements in hardware have drawn more attention than ever to high-quality offline rendering with modern stream processors, both in the industry and in research fields. However, the graphics APIs are fragmented and existing shading languages lack high-level constructs such as polymorphism, which adds complexity to developing and maintaining cross-platform high-performance renderers. We present LuisaRender1, a high-performance rendering framework for modern stream-architecture hardware. Our main contribution is an expressive C++-embedded DSL for kernel programming with JIT code generation and compilation. We also implement a unified runtime layer with resource wrappers and an optimized Monte Carlo renderer. Experiments on test scenes show that LuisaRender achieves much higher performance than existing research renderers on modern graphics hardware, e.g., 5--11{\texttimes} faster than PBRT-v4 and 4--16{\texttimes} faster than Mitsuba 3.},
+  file = {/Users/ihkh2/Zotero/storage/ASBQSZ66/Zheng et al. - 2022 - LuisaRender A High-Performance Rendering Framework with Layered and Unified Interfaces on Stream Ar.pdf}
 }
 
 @article{zhouAppearancePreservingSceneAggregation2025,
