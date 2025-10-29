@@ -828,6 +828,16 @@
   file = {/Users/ihkh2/Zotero/storage/XNELWFBT/Hagedorn et al. - 2020 - Fireiron A Data-Movement-Aware Scheduling Language for GPUs.pdf}
 }
 
+@article{haradaForwardBringingDeferred2012,
+  title = {Forward+: {{Bringing Deferred Lighting}} to the {{Next Level}}},
+  author = {Harada, Takahiro and McKee, Jay and Yang, Jason C},
+  year = 2012,
+  journal = {Computer Graphics Forum},
+  abstract = {This paper presents Forward+, a method of rendering many lights by culling and storing only lights that contribute to the pixel. Forward+ is an extension to traditional forward rendering. Light culling, implemented using the compute capability of the GPU, is added to the pipeline to create lists of lights; that list is passed to the final rendering shader, which can access all information about the lights. Although Forward+ increases workload to the final shader, it theoretically requires less memory traffic compared to compute-based deferred lighting. Furthermore, it removes the major drawback of deferred techniques, which is a restriction of materials and lighting models. Experiments are performed to compare the performance of Forward+ and deferred lighting.},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/CYJEF4NB/Harada et al. - 2012 - Forward+ Bringing Deferred Lighting to the Next Level.pdf}
+}
+
 @misc{heFFTcMLIRDialect2022,
   title = {{{FFTc}}: {{An MLIR Dialect}} for {{Developing HPC Fast Fourier Transform Libraries}}},
   shorttitle = {{{FFTc}}},
@@ -1854,6 +1864,16 @@
   file = {/Users/ihkh2/Zotero/storage/NHYN64LM/Szafarczyk et al. - 2025 - Dynamic Loop Fusion in High-Level Synthesis.pdf}
 }
 
+@misc{theireeauthorsIREE2019,
+  title = {{{IREE}}},
+  author = {{The IREE Authors}},
+  year = 2019,
+  month = sep,
+  urldate = {2025-10-28},
+  abstract = {A retargetable MLIR-based machine learning compiler and runtime toolkit.},
+  copyright = {Apache-2.0}
+}
+
 @inproceedings{thempiforumMPIMessagePassing1993,
   title = {{{MPI}}: A Message Passing Interface},
   shorttitle = {{{MPI}}},
@@ -1869,6 +1889,24 @@
   urldate = {2025-01-27},
   isbn = {978-0-8186-4340-8},
   file = {/Users/ihkh2/Zotero/storage/EWFGI9SK/The MPI Forum - 1993 - MPI a message passing interface.pdf}
+}
+
+@inproceedings{tilletTritonIntermediateLanguage2019,
+  title = {Triton: An Intermediate Language and Compiler for Tiled Neural Network Computations},
+  shorttitle = {Triton},
+  booktitle = {Proceedings of the 3rd {{ACM SIGPLAN International Workshop}} on {{Machine Learning}} and {{Programming Languages}}},
+  author = {Tillet, Philippe and Kung, H. T. and Cox, David},
+  year = 2019,
+  month = jun,
+  series = {{{MAPL}} 2019},
+  pages = {10--19},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  doi = {10.1145/3315508.3329973},
+  urldate = {2025-10-28},
+  abstract = {The validation and deployment of novel research ideas in the field of Deep Learning is often limited by the availability of efficient compute kernels for certain basic primitives. In particular, operations that cannot leverage existing vendor libraries (e.g., cuBLAS, cuDNN) are at risk of facing poor device utilization unless custom implementations are written by experts -- usually at the expense of portability. For this reason, the development of new programming abstractions for specifying custom Deep Learning workloads at a minimal performance cost has become crucial. We present Triton, a language and compiler centered around the concept of tile, i.e., statically shaped multi-dimensional sub-arrays. Our approach revolves around (1) a C-based language and an LLVM-based intermediate representation (IR) for expressing tensor programs in terms of operations on parametric tile variables and (2) a set of novel tile-level optimization passes for compiling these programs into efficient GPU code. We demonstrate how Triton can be used to build portable implementations of matrix multiplication and convolution kernels on par with hand-tuned vendor libraries (cuBLAS / cuDNN), or for efficiently implementing recent research ideas such as shift convolutions.},
+  isbn = {978-1-4503-6719-6},
+  file = {/Users/ihkh2/Zotero/storage/I2U946P9/Tillet et al. - 2019 - Triton an intermediate language and compiler for tiled neural network computations.pdf}
 }
 
 @article{tolmachevVkFFTAPerformantCrossPlatform2023,
