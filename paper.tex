@@ -231,7 +231,7 @@ Each streaming multiprocessor is also home to a set of hardware accelerators, th
 
 \paragraph{Programming for the GPU} To program for the GPU, programmers write what is known as a \emph{kernel}. The kernel is executed over a large number of threads known as a \emph{grid} which is a tuple $(G,B)$ of $G$ thread blocks each containing $B$ threads. Each invocation of the kernel is assigned a block identifier and a thread identifier, allowing the program to branch based on the invocation index. Within a block, threads are able to share memory and synchronization primitives, although grid-level synchronization is made available by a driver. On kernel dispatch, each block is issued to a streaming multiprocessor, which then partitions the block into warps for execution. Programmers for Nvidia architectures may use CUDA to write kernels, and for programmers who wish to target a wider variety of hardware, they may write the kernel as a compute shader compiled to SPIR-V and execute it using the Vulkan API.
 
-Typically, a kernel dispatch is performed from the CPU (also known as the host device). However, the ability to dispatch kernels from the GPU grows increasingly supported, reducing the need for ping-pong between the CPU and GPU. In CUDA, the feature is known as Dynamic Parallelism, and in Vulkan, the extension is known as \emph{Device-Generated Commands}\cite{VK_EXT_device_generated_commands3VulkanDocumentation}.
+Typically, a kernel dispatch is performed from the CPU (also known as the host device). However, the ability to dispatch kernels from the GPU grows increasingly supported, reducing the need for ping-pong between the CPU and GPU. In CUDA, the feature is known as Dynamic Parallelism\cite{CUDADynamicParallelism2014}, and in Vulkan, the extension is known as \emph{Device-Generated Commands}\cite{VK_EXT_device_generated_commands3VulkanDocumentation}.
 
 \subsection{Compilers for the GPU}
 
@@ -342,9 +342,16 @@ Hence, we treat the tiling of the render pass as a program rewrite. Unlike linea
 
 RQ1 will be addressed by the raytracing paper, as we apply compiler techniques to not only apply the raytracing pipeline to sparse linear algebra, but fuse adjacent computations into the loop as well. Success will be determined by how our compiler-based solution holds up against the state of the art sparse linear algebra libraries such as cuSPARSE\cite{CuSPARSE} and MAGMA\cite{abdelfattahMAGMAEnablingExascale2024}.
 
-RQ2 will 
+To answer RQ2, the raster rewrite paper will only partially answer it. As rendering engines are immensely complex and configurable engines, there are far too many intricate details to handle. Hence, we will benchmark our prototype graphics engine against tutorial projects by LearnOpenGL\cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems\cite{SaschaWillemsVulkanExamples}, which implement deferred shading and other techniques atomically to form a more stable control. If this first paper proves successful, implementing the advanced techniques in engines such as Unreal Engine 5's Lumen\cite{LumenGlobalIllumination} will allow us to verify the claim that program rewrites can yield an effective, maintainable codebase for a render engine with comparable performance to the state of the art.
 
 \section {Timeplan}
+
+The biggest issue pointed out by my supervisor is that of \emph{risk}. Compilers are exceedingly good at optimizing for low-level semantics, and linear algebra in particular very neatly lowers to perfectly nested loops which are perfect for optimizations such as vectorization and memory tiling. In comparison, a compiler for dealing with high-level constructs such as render pipelines may not yield as much.
+
+Thus, this timeplan will prioritize the more generally applicable papers of attention and sparse matrix multiplication, all the while building a GPU-targeted dispatch dialect in the background, such that a pivot to a safer, more applicable research direction in the third year would not derail the course of the PhD.
+
+Our proposed timeline is therefore as follows:
+
 %% Bibliography
 \bibliography{references}
 
