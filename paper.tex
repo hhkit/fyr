@@ -199,15 +199,15 @@
 \begin{abstract}
 It has been about two decades since the raster pipeline of the GPU was first used for general compute, sparking off a worldwide, multi-decade, multi-trillion dollar investment into accelerating linear algebra on hardware initially designed for entertainment. With the advent of artificial intelligence, the majority of the research effort has largely been directed towards generalizing the rendering hardware such that it is more usable by generic compute workflows. In particular, linear algebra stands out as the class of programs that is trivially easy to optimize for the GPU, due to the parallelizability of its underlying algorithms. In lieu of this observation, custom architectures spring up in an attempt to further optimize linear algebra workflows. However, we observe that consumer-grade GPUs across all vendors continue to retain hardware accelerators and pipelines designed specifically for computer graphics, with texture samplers and ray tracing acceleration structures as examples. Such functionality goes largely ignored or unused by the majority of the high performance computing community.
 
-Our thesis is as follows: compiling to optimize a program for the GPU is more than just tiling parallelizable loops generically and instruction selection. We aim to do what has been done in the past to GPU architecture, to open up the raytracing pipeline and other aspects of graphics-oriented architecture to a wider class of computer programs. These pipelines have been proven to improve on performance; our goal is to provide a workflow for engineers to invisibly take advantage of these pipelines. We achieve this by using MLIR's hybrid IR to handle \emph{pipeline semantics} separately from computations, designating specific operations for specialized pipelining and then fusing dependent operations into the resulting kernels.
+Our thesis is as follows: compiling to optimize a program for the GPU is more than just tiling parallelizable loops generically and instruction selection. We aim to repeat history with GPU architecture, to open up the raytracing pipeline and other aspects of graphics-oriented architecture to a wider class of programs. These pipelines have already been proven to improve performance outside of computer graphics; our goal is to provide a workflow for engineers to invisibly take advantage of these pipelines. We will achieve this by using MLIR's hybrid IR to handle \emph{pipeline semantics} separately from computations, designating specific operations for specialized pipelining and then fusing dependent operations into the resulting kernels.
 
-Surprisingly, there is a class of programs that fully utilizes all three pipelines of the GPU. Real-time interactive simulations utilize raytracing to calculate global illumination, the raster pipeline to render the scene, and the compute pipeline for miscelleanous computations such as animations and physics. 
+Surprisingly, there is an existing class of programs that currently utilizes all three pipelines of the GPU. Real-time interactive simulations utilize raytracing to calculate global illumination, the raster pipeline to render the scene, and the compute pipeline for miscelleanous computations such as animation skeleton updates and physics. To demonstrate the flexibility of enabling and optimizing for pipeline semantics, we will attempt to declaratively define and optimize the engine for a real-time interative simulation.
 
-In other words, we will attempt to ansewr the following research questions:
+In summary, we will attempt to answer the following research questions:
 \begin{itemize}
-  \item RQ1: What conditions restrict a linear algebra program from being tiled, and how can we overcome these conditions?
-  \item RQ2: What is a suitable abstraction for designating a program to use the raytracing pipeline, such that we continue to apply tile-and-fuse techniques on the resultant program?
-  \item RQ3: Can our abstraction sufficiently describe a complex program utilizing all GPU pipelines such that the performance is comparable with state-of-the-art, handwritten results? 
+  \item RQ1: What are the restrictions with regards to optimizing linear algebra programs?
+  \item RQ2: What is a suitable abstraction for designating a program to use the raytracing pipeline, such that we can apply tile-and-fuse techniques on the resultant program?
+  \item RQ3: Can our abstraction sufficiently describe and optimize a complex program utilizing all GPU pipelines, such that the resulting performance is comparable with the handwritten state-of-the-art? 
 \end{itemize}
 \end{abstract}
 
@@ -223,11 +223,16 @@ This literature review will span the three topics that the thesis will cover: th
 
 \subsection{GPU and General Purpose Compute}
 
-\emph{Note: GPU terminology is not standardized and inconsistent across vendors. This section will be using Nvidia's terminology, but mention the more vendor-agnostic Vulkan\cite{vulkanHomeVulkanCross2025} where modern features are concerned.}
+\emph{Note: GPU terminology is not standardized and inconsistent across vendors. This section will be using Nvidia's terminology, but where modern features are concerned, similar terminology for the vendor-agnostic Vulkan \cite{vulkanHomeVulkanCross2025} will be mentioned as well.}
 
-The GPU, or graphics processing unit, is a single-instruction multiple-data (or SIMD) architecture that consists of a massive number of streaming multiprocessors (or SMs). A streaming multiprocessor consists of a set of CUDA cores and a set of warp schedulers, and execute bundles of threads known as warps. On Nvidia architectures, an SM receives a warp of 32 threads that share four warp schedulers. % Pre-Volta, threads would conditionally execute the same instruction eight times in parallel four times in sequence for the total of 32 threads. However, as of Volta, each thread has its own program counter, and programmers are encouraged to treat each thread as its own instance in a paradigm known as SIMT (single-instruction multiple-thread). The underlying hardware attempts to retain the performance granted by SIMD by grouping threads with similar control flow, however, if inter-lane control flow diverges too much, they become subject to performance degradation in what is known as \emph{warp divergence}.
+\begin{figure}
+  \includegraphics[scale=0.5]{GPU Architecture.pdf}
+  \caption{A heavily simplified block diagram of Nvidia's GB202 GPU, also known as the RTX 5090 \cite{NVIDIABlackwellArchitecture2025}. \label{fig:gpuarch}}
+\end{figure}
 
-Each streaming multiprocessor is also home to a set of hardware accelerators, the number of which are standardized across all SMs within an architecture. In recent years, attention has been drawn to the introduction of tensor cores into the SMs, allowing for fast 4x4 tensor fused-multiply-add across the warp. It bears reminding, however, that as a result of its historical purpose, the streaming multiprocessors have always had access to \emph{texture mapping units} (TMUs) as well, which accelerate linear and bilinear interpolation of values in the bound texture resource. As an example of accelerator allocation, Nvidia's RTX 5090 has four tensor cores and four TMUs per SM, for a total of 680 units each across 170 SMs\cite{NVIDIABlackwellArchitecture}.
+The GPU, or graphics processing unit, is a single-instruction multiple-data (or SIMD) architecture that consists of a massive number of streaming multiprocessors (or SMs) \autoref{fig:gpuarch}. A streaming multiprocessor consists of a set of CUDA cores and a set of warp schedulers, and execute bundles of threads known as warps. On Nvidia architectures, an SM receives a warp of 32 threads that share four warp schedulers. % Pre-Volta, threads would conditionally execute the same instruction eight times in parallel four times in sequence for the total of 32 threads. However, as of Volta, each thread has its own program counter, and programmers are encouraged to treat each thread as its own instance in a paradigm known as SIMT (single-instruction multiple-thread). The underlying hardware attempts to retain the performance granted by SIMD by grouping threads with similar control flow, however, if inter-lane control flow diverges too much, they become subject to performance degradation in what is known as \emph{warp divergence}.
+
+Each streaming multiprocessor is also home to a set of \emph{application-specific integrated circuits} for accelerating common functions. Tensor cores allow for fast tensor fused-multiply-and-add across the warp, and ray tracing cores accelerate the triangle-ray intersection operation. Moreover, due the GPU's historic purposes, streaming multiprocessors also have access to \emph{texture mapping units} (TMUs) that accelerate linear and bilinear interpolation of values in the bound texture resource.
 
 \paragraph{Programming for the GPU} To program for the GPU, programmers write what is known as a \emph{kernel}. The kernel is executed over a large number of threads known as a \emph{grid} which is a tuple $(G,B)$ of $G$ thread blocks each containing $B$ threads for a total of $G \cdot B$ threads in a dispatch. Each invocation of the kernel is assigned a block identifier and a thread identifier, allowing the program to branch based on the invocation identifier. Within a block, threads are able to share memory and synchronization primitives, although grid-level synchronization is made available by a driver. On kernel dispatch, each block is issued to a streaming multiprocessor, which then partitions the block into warps for execution. Programmers for Nvidia architectures may use CUDA to write kernels, and for programmers who wish to target a wider variety of hardware, they may write the kernel as a compute shader compiled to SPIR-V and execute it using the Vulkan API.
 
@@ -239,7 +244,7 @@ As a massively parallel architecture, compilers for the GPU are closely associat
 
 Polyhedral compilers \cite{grosserPolyhedralASTGeneration2015,GRAPHITEPolyhedralAnalyses,baghdadiTiramisuPolyhedralCompiler2019} are compilers that operate on perfectly nested affine loops known as static control parts (or SCoPs). By restricting array accesses to affine expressions on loop induction variables, formulas can be derived to calculate statistics about programs such as memory limits, cache locality that can then be optimized for. Moreover, loop transformations can be expressed as affine transformations on the loop induction variations, making polyhedral programs closed under loop transformations and can be recursively optimized. Work has also been done on directly targeting the GPU \cite{verdoolaegePolyhedralParallelCode2013}, by tiling the SCoP and using affine expressions to compute the memory requirement of the subtile being dispatched to the GPU.
 
-\subsubsection{User-schedulable languages} User-schedulable languages refer to programming languages that specify two languages, a declarative language to describe the computation of the program, and a scheduling language to describe the optimization and gradual lowering of the program to the hardware.
+\subsubsection{User-schedulable languages} User-schedulable languages \cite{ragan-kelleyHalideDecouplingAlgorithms2017,chenTVMAutomatedEndtoEnd2018, ikarashiExo2Growing2025} refer to programming languages that specify two languages, a declarative language to describe the computation of the program, and a scheduling language to describe the optimization and gradual lowering of the program to the hardware. This achieves separation of concerns when reasoning about the numerics of the computation versus its performance.
 
 \subsubsection{MLIR} LLVM's Multi-Level IR (MLIR) \cite{lattnerMLIRCompilerInfrastructure2020} framework specifies an SSA-driven hybrid IR that organizes high- and low-level semantics into separate \emph{dialects}. This can span from the high-level \dialect{linalg} dialect which specifies perfectly nested loops \cite{LinalgDialectRationale}, the \dialect{tensor} dialect which describes the layout and allocation of dense multidimensional arrays, to the low-level \dialect{SPIR-V} that targets Vulkan compute and \dialect{LLVM} for CPUs. Dialect-agnostic optimizations such as constant subexpression elimination and dead code elimination are implemented and executed by the framework's drivers.
 
@@ -257,12 +262,11 @@ To dispatch work to the GPU and select the appropriate pipelines, render engines
 
 \subsubsection{The Raster Pipeline}
 
-The raster pipeline, depicted in \autoref{fig:rasterpipe}, is what directs the graphics card to transform vertex buffers through primitives into fragments that get written into the output texture. Vertex, tesselation and geometry shaders are collectively the \emph{geometry} step of the raster pipeline, producing primitives that are then rasterized into fragments that are \emph{shaded} by the fragment shader.
+The raster pipeline (\autoref{fig:rasterpipe}) is what directs the graphics card to transform vertex buffers through primitives into fragments that get written into the output texture. Vertex, tesselation and geometry shaders are collectively the \emph{geometry} step of the raster pipeline, producing primitives that are then rasterized into fragments that are \emph{shaded} by the fragment shader.
 
 \begin{figure}
-\includegraphics[scale=0.25,keepaspectratio]{RasterizationPipeline.drawio.png}
-
-\caption{The raster pipeline. Programmable stages are highlighted in red, with optional components outlined with dotted lines.\label{fig:rasterpipe}}  
+\includegraphics[scale=0.45,keepaspectratio]{Raster Pipeline.pdf}
+\caption{The raster pipeline.\label{fig:rasterpipe}}  
 \end{figure}
 
 \label{sssec:rasterization}
@@ -275,17 +279,11 @@ The raster pipeline, depicted in \autoref{fig:rasterpipe}, is what directs the g
 
 \subsubsection{The Raytracing Pipeline}
 
-The raytracing pipeline, depicted in \autoref{fig:raytracepipe}, is a different pipeline that graphics programmers can opt to use that is optimized for raytracing workflows. Compared to the rasterization and compute pipelines, the raytracing pipeline allows the program to loop back and generate more shader invocations. Rays are generated by the Ray Generation Shader (RGS), which are then raycast into a hardware-accelerated bounding volume hierarchy (BVH) known as the acceleration structure, depicted in \autoref{fig:tlas}.
-
-The primary advantage offered by the raytracing pipeline is the hardware acceleration of raycasts into the BVH, which was abused by Zhang et al. in their work on accelerating sparse matrix-matrix multiplications using the ray tracing pipeline \cite{zhangRTSpMSpMHarnessingRay2025}.
+The raytracing pipeline (\autoref{fig:raytracepipe}) is a different pipeline that graphics programmers can opt to use that is optimized for raytracing workflows. Compared to the rasterization and compute pipelines, the raytracing pipeline allows the program to loop back and generate more shader invocations. Rays are generated by the Ray Generation Shader (RGS), which are then raycast into a hardware-accelerated bounding volume hierarchy (BVH) utilizing the raytracing core ASICs. 
 
 \begin{figure}
-\includegraphics[scale=0.25,keepaspectratio]{RayTracingPipeline.drawio.png}
-\caption{The ray tracing pipeline. Programmable stages are highlighted in green.\label{fig:raytracepipe}}  
-\end{figure}
-\begin{figure}
-\includegraphics[scale=0.25,keepaspectratio]{AS.drawio.png}
-\caption{The acceleration structure (AS) layout as described in Nvidia's DirectX 12 Raytracing tutorial \cite{DX12RaytracingTutorial}. The top-level acceleration structures (TLAS) instance the bottom-level acceleration structures (BLAS), not unlike how objects in a scene instance the same meshes. \label{fig:tlas}}  
+\includegraphics[scale=0.55,keepaspectratio]{Raytrace Pipeline.pdf}
+\caption{The ray tracing pipeline and its associated acceleration structures (AS). \label{fig:raytracepipe}}  
 \end{figure}
 
 
