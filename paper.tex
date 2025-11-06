@@ -244,6 +244,8 @@ As a massively parallel architecture, compilers for the GPU are closely associat
 
 Polyhedral compilers \cite{grosserPolyhedralASTGeneration2015,GRAPHITEPolyhedralAnalyses,baghdadiTiramisuPolyhedralCompiler2019} are compilers that operate on perfectly nested affine loops known as static control parts (or SCoPs). By restricting array accesses to affine expressions on loop induction variables, formulas can be derived to calculate statistics about programs such as memory limits, cache locality that can then be optimized for. Moreover, loop transformations can be expressed as affine transformations on the loop induction variations, making polyhedral programs closed under loop transformations and can be recursively optimized. Work has also been done on directly targeting the GPU \cite{verdoolaegePolyhedralParallelCode2013}, by tiling the SCoP and using affine expressions to compute the memory requirement of the subtile being dispatched to the GPU.
 
+\subsubsection{Stencil compilers}
+
 \subsubsection{User-schedulable languages} User-schedulable languages \cite{ragan-kelleyHalideDecouplingAlgorithms2017,chenTVMAutomatedEndtoEnd2018, ikarashiExo2Growing2025} refer to programming languages that specify two languages, a declarative language to describe the computation of the program, and a scheduling language to describe the optimization and gradual lowering of the program to the hardware. This achieves separation of concerns when reasoning about the numerics of the computation versus its performance.
 
 \subsubsection{MLIR} LLVM's Multi-Level IR (MLIR) \cite{lattnerMLIRCompilerInfrastructure2020} framework specifies an SSA-driven hybrid IR that organizes high- and low-level semantics into separate \emph{dialects}. This can span from the high-level \dialect{linalg} dialect which specifies perfectly nested loops \cite{LinalgDialectRationale}, the \dialect{tensor} dialect which describes the layout and allocation of dense multidimensional arrays, to the low-level \dialect{SPIR-V} that targets Vulkan compute and \dialect{LLVM} for CPUs. Dialect-agnostic optimizations such as constant subexpression elimination and dead code elimination are implemented and executed by the framework's drivers.
@@ -310,18 +312,18 @@ Inverse rendering derives geometry and materials from one or more final images o
 
 \section{Thesis Proposal}
 
-When certain conditions are right, compilers are really good at doing certain types of automatic optimization: loop fusion and loop tiling in particular. However, other types of optimization require guidance, either because transformations are mathematically illegal or just impossible to derive. User-schedulable languages provide a means to specify the optimization schedule manually, however, users are required to either specify every step of compiler optimization or leave it up to a previously-derived pipeline. In the domain of GPU compilation, where tensor and parallel operations reign, we propose that the compiler only needs a little bit of guidance, and all subsequent tilings, fusions, and peephole optimizations may be left up to the compiler to greedily perform.
+When certain conditions are right, compilers are fantastic at doing certain types of automatic optimization: in particular, loop fusion and loop tiling. However, other types of optimization require guidance, either because transformations are mathematically illegal or just impossible to derive. User-schedulable languages provide a means to specify the optimization schedule manually, however, users are required to either specify every step of compiler optimization or leave it up to a previously-derived pipeline. In the domain of GPU programming, where tensor and parallel programs dominate the problem space, we propose that the compiler only needs a little bit of guidance, and all subsequent tilings, fusions, and peephole optimizations may be left up to the compiler to greedily perform.
 
 To address each, we are proposing the following papers, each targeting a different optimization technique on the GPU:
 \begin{itemize}
   \item Extensible Compiler Optimization of Attention Kernels (In Progress)
   \item Compiling to Accelerate Block-Sparse Linear Algebra with Raytracing Hardware
-  \item Raster Pipeline Optimizations as Program Rewrites
+  \item Automatic End-to-End Optimization of Real-Time Graphics Engines
 \end{itemize}
-
 
 \subsection{Extensible Compiler Optimization of Attention Kernels}
 
+Collaborator(s): Kunwar Grover, AMD \\
 Workshop Demo: C4ML @ CGO (1 February 2026) \\
 Target venue: OOPSLA 2026 (17 March 2026)
 \newcommand{\Attention}{\mathsf{Attention}}
@@ -348,9 +350,11 @@ Target venue: OOPSLA 2026 (17 March 2026)
     \qquad \text{ where } m_i = \max_{i}(\mathbf{S}_i)
 \end{align}
 
-The attention mechanism (\autoref{eqn:attention}) in large language models is what gives it the ability to infer context. As it has rather famously been decreed to be "all you need" \cite{vaswaniAttentionAllYou2023}, optimization of attention has become a heavily researched topic \cite{daoFlashAttentionFastMemoryEfficient2022,daoFlashAttention2FasterAttention2023,dongFlexAttentionProgramming2024}, especially with regards to targeting the GPU. The state-of-the-art in the field is PyTorch's FlexAttention \cite{dongFlexAttentionProgramming2024}, which admits a large variety of attention variants by providing two key configuration points: $\mathsf{score_mod}$ to modify the values of $QK^T$ and $\mathsf{mask_mod}$, a heavily configurable masking engine.
+The attention mechanism (\autoref{eqn:attention}) in large language models is what gives it the ability to infer context. As it has rather famously been decreed to be "all you need" \cite{vaswaniAttentionAllYou2023}, optimization of attention has become a heavily researched topic \cite{daoFlashAttentionFastMemoryEfficient2022,daoFlashAttention2FasterAttention2023,dongFlexAttentionProgramming2024}, especially with regards to targeting the GPU. The state-of-the-art in the field is PyTorch's FlexAttention \cite{dongFlexAttentionProgramming2024}, which admits a large variety of attention variants by providing two key configuration points: $\mathsf{score\_mod}$ to modify the values of $QK^T$ and $\mathsf{mask\_mod}$, a heavily configurable masking engine. Our key insight is that by manually specifying the optimization of one step of the attention kernel, the rest of the mechanism becomes completely configurable by the user, while leaving the compiler free to perform automatic compiler optimizations that distribute the kernel to the GPU.
 
-Attention (\autoref{eqn:attention-math}) utilizes the $\softmax$ operation to create a probability distribution of the tokens in embedding space. However, taking the exponent of the values in the $QK^T$ results in values that far exceed the range of even 32-bit floating point numbers. A safer version of softmax (\autoref{eqn:attention-math-safe}) involves normalizing the elements by subtracting the max from the exponent, such that the probable range of the exponentiation results rests between 0 and 1. This normalization is mandatory to execute attention meaningfully on any machine. However, maximum and accumulation are both reductions, and the result of the maximum operation is used in the accumulation operation. These dependent reductions make loop fusion impossible for the compiler to perform automatically.
+\subsubsection{Limitations of Optimizing Attention}
+
+Attention (\autoref{eqn:attention-math}) utilizes the $\softmax$ operation to create a probability distribution of the tokens in embedding space. However, taking the exponent of the values in the $QK^T$ results in values that far exceed the range of even 32-bit floating point numbers. To execute on real machinery, a safer version of softmax (\autoref{eqn:attention-math-safe}) is used that normalizes the elements by subtracting the row's maximum, such that the range of the exponentiation rests between 0 and 1. As maximum and accumulation are both reductions, and the denominator's accumulation is dependent on the maximum computation, the loop fusion is impossible for the compiler to perform automatically.
 
 \begin{figure}
 \includegraphics[width=\textwidth, keepaspectratio]{attention-unfusable.png}  
@@ -413,24 +417,30 @@ Through the process of writing this paper, we have become familiar with the desi
 Target Venue: ASPLOS 2026 Summer Cycle (August 2026) \\
 Backup Deadline: PLDI 2027 (est. November 2026)
 
-The general idea of tackling linear algebra as a geometry problem is not a particularly novel innovation. Why, even dense GEMM is often modelled as a polyhedral program. Therefore, the idea of modelling sparse-sparse matrix multiplication as a geometric problem should not come as a surprise either. By converting the elements of sparse matrices into triangles and utilizing the ray tracing pipeline's acceleration structure, Zhang et al. \cite{zhangRTSpMSpMHarnessingRay2025} manage to harness the ray tracing hardware to optimize the sparse linear algebra problem, achieving a 1.85x speedup over cuSPARSE.
+The initial innovation of hacking the GPU raster pipeline to be used for general compute transformed the GPU from a graphics processing unit to a massively parallel processor in the eyes of the research community, and there have been many attempts to coax lightning into striking twice by doing the same with the GPU raytracing pipeline. Many of these attempts are successful at achieving better performance, and our insight is to generalize this approach by making the compiler aware of the pipeline optimization, then allowing tensor compilers to greedily fuse subsequent operations into the raytracing kernel dispatch. GPU programming, after all, is more than matrix-matrix multiplications.
 
-We observe that Zhang's approach uses OptiX, Nvidia's SDK for ray tracing, and posit that their approach can still be further refined by treating the lowering of the sparse computation to the raytracing pipeline as a compiler optimization. We will attempt to use compiler techniques to not only simplify the writing of the dispatch for the frontend programmer, but also enable well-known optimizations such as block-sparse formats. The block semantics available to block-sparse matrices more easily permit tensor core acceleration, and as geometric primitives with larger volume, should be more efficiently handled by the bounding volume acceleration structures. This approach is clearly cross-pipeline, utilizing both the compute and raytracing pipelines to optimize a linear algebra problem, and is simple to implement and explore with existing tools, allowing us to dedicate engineering effort to building a well-rounded GPU dispatch framework.
+Accelerating sparse matrix-matrix multiplication with raytracing hardware has been shown by Zhang et al. \cite{zhangRTSpMSpMHarnessingRay2025} to be performant, achieving a 1.85x speedup over cuSPARSE. We would like to generalize this approach with block-sparse formats, to take advantage of the tensor cores in the streaming multiprocessor and to demonstrate the flexiblity of optimizations afforded by using a tensor compiler. We will also compare our results with Taichi
+\cite{huTaichiLanguageHighperformance2019}, a Python-embedded DSL that targets computer graphics with support for sparse geometry.
 
-\subsection{Raster Pipeline Optimizations as Program Rewrites}
+\subsection{Automatic End-to-End Optimization of Real-Time Graphics Pipelines}
 
-Target Venue: SIGGRAPH Asia 2027 (June 2027)
+Target Venue: SIGGRAPH Asia 2027 (June 2027) \\
 Backup: SIGGRAPH 2028 (January 2028)
 
-The raster pipeline is a well-understood programming model utilized by graphics engineers all across the video game industry. One of the most crucial optimizations one could perform to their graphics pipeline is to reduce the amount of overdraw in the scene, and a common way of doing this is with deferred shading. As stated in \autoref{sssec:rasterization}, deferred shading reduces overdraw by only performing the expensive lighting computations on fragments that are actually visible on the screen, but comes at the cost of maintaining a memory-intensive G-buffer. To mitigate the memory overhead, the deferred shading operation may be tiled, not unlike that of the machine learning counterparts.
+% 0. We need a diagram that shows tiled-deferred and its impact on downstream post-processing shaders
+% 1. We are doing real-time pipelines as program rewrites 
+% 2. Tiled deferred is a surprisingly involved operation, as geometry needs to be tiled as well
+% 3. We want to optimize for temporal locality when optimizing for real-time performance.
 
-Hence, we treat the tiling of the render pass as a program rewrite. Unlike linear algebra workloads, the iteration domain is not the only tiling target. The draw command's viewport and the frustum corresponding to the projection matrix must be tiled as well, respectively corresponding to a change in pipeline and geometric semantics. By subdividing and rotating the camera frustum, however, the inter-tile depth buffer becomes incoherent, resulting in non-trivial adjustment for use in post-processing passes that rely on the depth buffer. One example of such a pass is depth-based edge detection. We will investigate the effects of tiling on the geometric semantics of the render pass, and attempt to resolve it with whole program optimization that is only possible with multi-level compilers. This will allow us to investigate the use of compiler rewrites as a means to optimize pipelines.
+The state-of-the-art for high performance computing DSLs in computer graphics is Taichi \cite{huTaichiLanguageHighperformance2019}, a Python-embedded DSL that has its user-schedulable language separate the computation from the data format. Taichi is very performant for its target use case, but it struggles to achieve even cinematic performance of 24 frames per second. We argue that the optimization of the pipeline, performed for many years in game engines, is critical to achieving real-time performance.
 
-\subsection{Criteria for Success}
+\subsubsection{Criteria for Success} As a control, we have to turn to tutorial projects by LearnOpenGL \cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems \cite{SaschaWillemsVulkanExamples}, as many graphics engines do not make it easy to isolate features of their graphics pipeline for an apples-to-apples comparison. Success is when we can achieve real-time framerates and apply transformations that further optimize the OpenGL/Vulkan tutorial examples with minimal (<20) lines of code expressed as program transformations.
 
-RQ1 will be addressed by the raytracing paper, as we apply compiler techniques to not only apply the raytracing pipeline to sparse linear algebra, but fuse adjacent computations into the loop as well. Success will be determined by how our compiler-based solution holds up against the state of the art sparse linear algebra libraries such as cuSPARSE \cite{CuSPARSE}, MAGMA \cite{abdelfattahMAGMAEnablingExascale2024}, and RTSpMSpM \cite{zhangRTSpMSpMHarnessingRay2025}, comparing the metrics of performance, maintainability and GPU utilization.
-
-As for RQ2, the raster rewrite paper will only partially answer it. As rendering engines are immensely complex and configurable engines, there are far too many intricate details to handle. Hence, we will benchmark our prototype graphics engine against tutorial projects by LearnOpenGL \cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems \cite{SaschaWillemsVulkanExamples}, which implement deferred shading and other techniques atomically to form a more stable control. If this first paper proves successful, implementing advanced techniques such as radiance cascades or those found Unreal Engine 5's Lumen \cite{LumenGlobalIllumination} will allow us to verify the claim that program rewrites can yield an effective, maintainable codebase for a render engine with comparable performance to the state of the art.
+A groundbreaking success would have occurred if either of the following were achieved: 
+\begin{itemize}
+  \item We surpass Taichi's performance, achieving cinematic performance in their domain without loss in fidelity or significant increase in code complexity.
+  \item We can achieve real-time performance in an apples-to-apples comparison with Unreal Engine 5's Lumen Engine \cite{LumenGlobalIllumination} in fewer lines of code.
+\end{itemize}
 
 \section {Timeplan}
 
