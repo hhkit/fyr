@@ -206,7 +206,7 @@ Surprisingly, there is an existing class of programs that currently utilizes all
 In summary, we will attempt to answer the following research questions:
 \begin{itemize}
   \item RQ1: What are the restrictions with regards to optimizing linear algebra programs?
-  \item RQ2: What is a suitable abstraction for designating a program to use the raytracing pipeline, such that we can apply tile-and-fuse techniques on the resultant program?
+  \item RQ2: What is a suitable abstraction for designating parts of a program to use the raytracing pipeline, such that we can apply compiler techniques to achieve a performant program that fully utilizes all capabilities of the GPU?
   \item RQ3: Can our abstraction sufficiently describe and optimize a complex program utilizing all GPU pipelines, such that the resulting performance is comparable with the handwritten state-of-the-art? 
 \end{itemize}
 \end{abstract}
@@ -308,17 +308,22 @@ A number of DSLs have been devised, some specfically for computer graphics, othe
 
 Inverse rendering derives geometry and materials from one or more final images of a target scene. This is achieved through machine learning; specifically, the approach of \emph{differentiable rendering} uses \emph{automatic differentiation} (or autodiff) of the shaders to produce geometry and textures that would produce the same target images. State of the art in the field includes Mitsuba (and its underlying IR, DR.JIT \cite{jakobDRJITJustintimeCompiler2022}), which is able to automatically differentiate the whole pipeline and train for both geometry and render simultaneously, and SlangD \cite{bangaruSLANGDFastModular2023}, which performs automatic differentiation at the per-shader level which improves performance but forces geometry and render to be trained separately. Crucially, both papers include performance comparisons with the autodiff in machine learning frameworks such as JAX \cite{frostigCompilingMachineLearning2018} and Enzyme \cite{enzymeadEnzymeCon2023HackableAutodiff2024}. We include this as an interesting exploration of compiler techniques in computer graphics, and a potential research pivot should initial plans go awry.
 
-\section{Progress Report}
-\label{sec:progressreport}
+\section{Thesis Proposal}
 
-To begin research into making a compiler for the GPU, we must first delve into what the state of the art of compilers for the GPU are. After being introduced to MLIR's metainfrastructure by working on IRDL \cite{MLIRIRDLAddedIRDL,fehrIRDLIRDefinition2022}, we then started work on implementing an optimization of the attention mechanism in IREE in the latter half of 2025. 
+When certain conditions are right, compilers are really good at doing certain types of automatic optimization: loop fusion and loop tiling in particular. However, other types of optimization require guidance, either because transformations are mathematically illegal or just impossible to derive. User-schedulable languages provide a means to specify the optimization schedule manually, however, users are required to either specify every step of compiler optimization or leave it up to a previously-derived pipeline. In the domain of GPU compilation, where tensor and parallel operations reign, we propose that the compiler only needs a little bit of guidance, and all subsequent tilings, fusions, and peephole optimizations may be left up to the compiler to greedily perform.
 
-\subsection{Attention Comprehension: Extensible compiler optimization of attention kernels}
+To address each, we are proposing the following papers, each targeting a different optimization technique on the GPU:
+\begin{itemize}
+  \item Extensible Compiler Optimization of Attention Kernels (In Progress)
+  \item Compiling to Accelerate Block-Sparse Linear Algebra with Raytracing Hardware
+  \item Raster Pipeline Optimizations as Program Rewrites
+\end{itemize}
 
-Target venue: OOPSLA
 
-The attention mechanism \cite{vaswaniAttentionAllYou2023} in large language models is a parallel algorithm that gives the transformer the ability to infer context. Optimization of attention for GPUs is a heavily researched topic \cite{daoFlashAttentionFastMemoryEfficient2022,daoFlashAttention2FasterAttention2023,dongFlexAttentionProgramming2024}, but by studying the Flash Attention 2 kernel, we observe that it is actually a tiling of the attention mechanism. The issue arises because at the high level, attention is not trivially tileable.
-%
+\subsection{Extensible Compiler Optimization of Attention Kernels}
+
+Workshop Demo: C4ML @ CGO (1 February 2026) \\
+Target venue: OOPSLA 2026 (17 March 2026)
 \newcommand{\Attention}{\mathsf{Attention}}
 \newcommand{\softmax}{\mathsf{softmax}}
 \begin{align}
@@ -343,9 +348,9 @@ The attention mechanism \cite{vaswaniAttentionAllYou2023} in large language mode
     \qquad \text{ where } m_i = \max_{i}(\mathbf{S}_i)
 \end{align}
 
-The mathematical definition of attention is provided in \autoref{eqn:attention}, which we then expand with the definition of $\softmax$ in \autoref{eqn:attention-math}. However, raising $e$ to the power of values traditionally in the $QK^T$ matrix results in values far beyond the limit of what 32-bit floating point is able to capture. Hence, a safe version of softmax is applied by subtracting the maximum row value from the exponent, which we can see in \autoref{eqn:attention-math-safe}.
+The attention mechanism (\autoref{eqn:attention}) in large language models is what gives it the ability to infer context. As it has rather famously been decreed to be "all you need" \cite{vaswaniAttentionAllYou2023}, optimization of attention has become a heavily researched topic \cite{daoFlashAttentionFastMemoryEfficient2022,daoFlashAttention2FasterAttention2023,dongFlexAttentionProgramming2024}, especially with regards to targeting the GPU. The state-of-the-art in the field is PyTorch's FlexAttention \cite{dongFlexAttentionProgramming2024}, which admits a large variety of attention variants by providing two key configuration points: $\mathsf{score_mod}$ to modify the values of $QK^T$ and $\mathsf{mask_mod}$, a heavily configurable masking engine.
 
-This presents us with an issue when it comes to loop fusion. Maximum and accumulation are both reductions, and the result of the maximum operation is used in the accumulation operation. The compiler is unable to perform loop fusion of the two loops depicted in \autoref{alg:attention}.
+Attention (\autoref{eqn:attention-math}) utilizes the $\softmax$ operation to create a probability distribution of the tokens in embedding space. However, taking the exponent of the values in the $QK^T$ results in values that far exceed the range of even 32-bit floating point numbers. A safer version of softmax (\autoref{eqn:attention-math-safe}) involves normalizing the elements by subtracting the max from the exponent, such that the probable range of the exponentiation results rests between 0 and 1. This normalization is mandatory to execute attention meaningfully on any machine. However, maximum and accumulation are both reductions, and the result of the maximum operation is used in the accumulation operation. These dependent reductions make loop fusion impossible for the compiler to perform automatically.
 
 \begin{figure}
 \includegraphics[width=\textwidth, keepaspectratio]{attention-unfusable.png}  
@@ -403,18 +408,10 @@ This paper is still a work in progress, as we have not fully integrated the func
 
 Through the process of writing this paper, we have become familiar with the design of MLIR's Transform dialect \cite{luckeMLIRTransformDialect2024}, its extensions, and how to progressively lower linear algebra operators to the GPU.
 
-
-\section{Thesis Proposal}
-
-The programmable deliverable of this thesis is to develop an MLIR dialect for dispatching work to the GPU. The research value of such a project is not immediately apparent, however, it does lay the groundwork and an overarching research theme for research ideas exploring cross-pipeline optimizations. In the short term, the concrete paper ideas are:
-\begin{itemize}
-  \item Compiling to Accelerate Block-Sparse Linear Algebra with Raytracing Hardware
-  \item Raster Pipeline Optimizations as Program Rewrites
-\end{itemize}
-
 \subsection{Compiling to Accelerate Block-Sparse Linear Algebra with Raytracing Hardware}
 
-Target Venue: ASPLOS 
+Target Venue: ASPLOS 2026 Summer Cycle (August 2026) \\
+Backup Deadline: PLDI 2027 (est. November 2026)
 
 The general idea of tackling linear algebra as a geometry problem is not a particularly novel innovation. Why, even dense GEMM is often modelled as a polyhedral program. Therefore, the idea of modelling sparse-sparse matrix multiplication as a geometric problem should not come as a surprise either. By converting the elements of sparse matrices into triangles and utilizing the ray tracing pipeline's acceleration structure, Zhang et al. \cite{zhangRTSpMSpMHarnessingRay2025} manage to harness the ray tracing hardware to optimize the sparse linear algebra problem, achieving a 1.85x speedup over cuSPARSE.
 
@@ -422,7 +419,8 @@ We observe that Zhang's approach uses OptiX, Nvidia's SDK for ray tracing, and p
 
 \subsection{Raster Pipeline Optimizations as Program Rewrites}
 
-Target Venue: SIGGRAPH / SIGGRAPH ASIA
+Target Venue: SIGGRAPH Asia 2027 (June 2027)
+Backup: SIGGRAPH 2028 (January 2028)
 
 The raster pipeline is a well-understood programming model utilized by graphics engineers all across the video game industry. One of the most crucial optimizations one could perform to their graphics pipeline is to reduce the amount of overdraw in the scene, and a common way of doing this is with deferred shading. As stated in \autoref{sssec:rasterization}, deferred shading reduces overdraw by only performing the expensive lighting computations on fragments that are actually visible on the screen, but comes at the cost of maintaining a memory-intensive G-buffer. To mitigate the memory overhead, the deferred shading operation may be tiled, not unlike that of the machine learning counterparts.
 
@@ -443,7 +441,7 @@ Thus, this timeplan will prioritize the more generally applicable papers of atte
 Our proposed timeline is therefore as follows:
 
 \noindent
-\includegraphics[width=\textwidth,keepaspectratio]{gantt.png}
+\includegraphics[width=\textwidth,keepaspectratio]{Gantt.pdf}
 
 %% Bibliography
 \bibliography{references}
