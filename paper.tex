@@ -427,24 +427,26 @@ Accelerating sparse matrix-matrix multiplication with raytracing hardware has be
 Target Venue: SIGGRAPH Asia 2027 (June 2027) \\
 Backup: SIGGRAPH 2028 (January 2028)
 
-% 0. We need a diagram that shows tiled-deferred and its impact on downstream post-processing shaders
-% 1. We are doing real-time pipelines as program rewrites 
+% 1. We are doing optimization of real-time pipelines as program rewrites 
 % 2. Tiled deferred is a surprisingly involved operation, as geometry needs to be tiled as well
 % 3. We want to optimize for temporal locality when optimizing for real-time performance.
 
+While advances in rendering techniques have pushed the envelope of real-time rendering techniques closer towards realism over the past decade, the state of programming real-time simulation engines has largely remained the same: program in C++ and the shader language of the platform. The argument has always been that C++ allows fine-grained control over the low-level semantics, however, given the prominance of Python in the machine learning ecosystem to accelerate machine learning models to maximize computational throughput, we would like to call this argument into question. We will define a user-schedulable DSL for render pipelines, where engineers can use a scheduling language to guide the transformation while still allowing the compiler to greedily fuse and optimize the resulting render pass. This brings all the benefits of user-schedulable languages --- mainly, the separation of concerns between computation and optimization --- to the world of real-time rendering, allowing for more maintainable code and faster iteration by users.
+
 \begin{figure}
   \includegraphics[width=\textwidth, keepaspectratio]{Deferred_Tiled Deferred.pdf}
-  \caption{An example of a compiler rewrite to transform a render pipeline. In this case, we transform the deferred shading pipeline (left) to a tiled deferred shading pipeline (right). \\
-  *Note that Frustum Culling and SSAO need special handling when tiling. Frustum Culling needs the frustum to be appropriately tiled, and SSAO is a stencil kernel that requires the halo region to be recomputed. \label{fig:deferred}}
+  \caption{Our proposal to use compiler rewrites to optimize a render pipeline. In this case, we transform the deferred shading pipeline (left) to a tiled deferred shading pipeline (right). Render image credit to LearnOpenGL's SSAO tutorial \cite{vriesJoeyDeVriesLearnOpenGL2025}. Tiling of frustum cull and SSAO can be performed automatically, but implementation is non-trivial. \label{fig:deferred}}
 \end{figure}
 
-\subsubsection{}
+\subsubsection{State-of-the-art} 
+The state-of-the-art for high performance computing DSLs in computer graphics is Taichi \cite{huTaichiLanguageHighperformance2019}, a Python-embedded DSL that has its user-schedulable language separate the computation from the data format. Taichi is very performant for its target use case, but it struggles to achieve even cinematic performance of 24 frames per second. We argue that the optimization of the pipeline, performed for many years in real-time simulation engines, and caching of frame-to-frame state is critical to achieving real-time performance.
 
-\subsubsection{Reactive programming} Real-time workloads
+The state-of-the-art real-time simulation engine for comparison is Unreal Engine 5's Lumen engine \cite{LumenGlobalIllumination}, which adopts many advanced graphics techniques to achieve realistic graphics. Global illumination is achieved by accumulating light data over several frames. As with machine learning models, beating the handwritten equivalent is often out of reach, but achieving comparable performance alone would prove more than viable for the use case of exploring graphics techniques.
 
-The state-of-the-art for high performance computing DSLs in computer graphics is Taichi \cite{huTaichiLanguageHighperformance2019}, a Python-embedded DSL that has its user-schedulable language separate the computation from the data format. Taichi is very performant for its target use case, but it struggles to achieve even cinematic performance of 24 frames per second. We argue that the optimization of the pipeline, performed for many years in game engines, is critical to achieving real-time performance.
+\subsubsection{Reactive programming} A key feature of real-time simulation engines that stands out from offline rendering engines is the expectation of temporal locality, resulting in stateful functions executed from frame to frame. This frame-to-frame state can be captured with reactive programming, which has been modelled in MLIR as the \dialect{lus} dialect \cite{caspiLUSTREDeclarativeLanguage}.
 
-\subsubsection{Criteria for Success} As a control, we have to turn to tutorial projects by LearnOpenGL \cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems \cite{SaschaWillemsVulkanExamples}, as many graphics engines do not make it easy to isolate features of their graphics pipeline for an apples-to-apples comparison. Success is when we can achieve real-time framerates and apply transformations that further optimize the OpenGL/Vulkan tutorial examples with minimal (<20) lines of code expressed as program transformations.
+
+\subsubsection{Criteria for Success} As control set ups, we have to turn to tutorial projects by LearnOpenGL \cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems \cite{SaschaWillemsVulkanExamples}, as many graphics engines do not make it easy to isolate features of their graphics pipeline for apples-to-apples comparisons. Success is defined by achieving real-time framerates while applying transformations that further optimize the OpenGL/Vulkan tutorial examples with minimal (<20) lines of code expressed as program transformations.
 
 A groundbreaking success would have occurred if either of the following were achieved: 
 \begin{itemize}
