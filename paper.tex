@@ -170,7 +170,7 @@
 
 \begin{document}
 %% Title information
-\title[Oolong]{Compiling for GPU Acceleration is More Than Tiling Linear Algebra}
+\title[Oolong]{Compiling for GPU Acceleration is More Than Tiling Nested Loop}
 % \subtitle{Hint: It's in the Name}                   %% \subtitle is optional
 
 %% Author information
@@ -201,13 +201,13 @@ It has been about two decades since the raster pipeline of the GPU was first use
 
 Our thesis is as follows: compiling to optimize a program for the GPU is more than just tiling parallelizable loops generically and instruction selection. We aim to repeat history with GPU architecture, to open up the raytracing pipeline and other aspects of graphics-oriented architecture to a wider class of programs. These pipelines have already been proven to improve performance outside of computer graphics; our goal is to provide a workflow for engineers to invisibly take advantage of these pipelines. We will achieve this by using MLIR's hybrid IR to handle \emph{pipeline semantics} separately from computations, designating specific operations for specialized pipelining and then fusing dependent operations into the resulting kernels.
 
-Surprisingly, there is an existing class of programs that currently utilizes all three pipelines of the GPU. Real-time interactive simulations utilize raytracing to calculate global illumination, the raster pipeline to render the scene, and the compute pipeline for miscelleanous computations such as animation skeleton updates and physics. To demonstrate the flexibility of enabling and optimizing for pipeline semantics, we will attempt to declaratively define and optimize the engine for a real-time interative simulation.
+Surprisingly, there is an existing class of programs that currently utilizes all three pipelines of the GPU. Real-time simulations utilize raytracing to calculate global illumination, the raster pipeline to render the scene, and the compute pipeline for miscelleanous computations such as animation skeleton updates and physics. To demonstrate the flexibility of enabling and optimizing for pipeline semantics, we will attempt to declaratively define and optimize the engine for a real-time interative simulation.
 
 In summary, we will attempt to answer the following research questions:
 \begin{itemize}
   \item RQ1: What are the restrictions with regards to optimizing linear algebra programs?
   \item RQ2: What is a suitable abstraction for designating parts of a program to use the raytracing pipeline, such that we can apply compiler techniques to achieve a performant program that fully utilizes all capabilities of the GPU?
-  \item RQ3: Can our abstraction sufficiently describe and optimize a complex program utilizing all GPU pipelines, such that the resulting performance is comparable with the handwritten state-of-the-art? 
+  \item RQ3: Can program rewrites help surpass the real-time performance gap between raytraced and rasterized workflows? 
 \end{itemize}
 \end{abstract}
 
@@ -250,7 +250,7 @@ Polyhedral compilers \cite{grosserPolyhedralASTGeneration2015,GRAPHITEPolyhedral
 
 \subsubsection{MLIR} LLVM's Multi-Level IR (MLIR) \cite{lattnerMLIRCompilerInfrastructure2020} framework specifies an SSA-driven hybrid IR that organizes high- and low-level semantics into separate \emph{dialects}. This can span from the high-level \dialect{linalg} dialect which specifies perfectly nested loops \cite{LinalgDialectRationale}, the \dialect{tensor} dialect which describes the layout and allocation of dense multidimensional arrays, to the low-level \dialect{SPIR-V} that targets Vulkan compute and \dialect{LLVM} for CPUs. Dialect-agnostic optimizations such as constant subexpression elimination and dead code elimination are implemented and executed by the framework's drivers.
 
-Triton \cite{tilletTritonIntermediateLanguage2019} is an MLIR-based compiler that provides a high-level Python-embedded DSL for specifying tile semantics, which is immediately translated to its own eponymously-named tile-based MLIR dialect. Other machine learning compilers, such as TorchInductor \cite{anselPyTorch2Faster2024}, XLA \cite{XLACompilingMachine}, and IREE \cite{theireeauthorsIREE2019}, aim to consume neural networks as a sequence of computations and each have their own methods of lowering. We will further elaborate on our work in IREE in \autoref{sec:progressreport}.
+Triton \cite{tilletTritonIntermediateLanguage2019} is an MLIR-based compiler that provides a high-level Python-embedded DSL for specifying tile semantics, which is immediately translated to its own eponymously-named tile-based MLIR dialect. Other machine learning compilers, such as TorchInductor \cite{anselPyTorch2Faster2024}, XLA \cite{XLACompilingMachine}, and IREE \cite{theireeauthorsIREE2019}, aim to consume neural networks as a sequence of computations and each have their own methods of lowering.
 
 \subsection{GPU and Processing Graphics}
 
@@ -281,7 +281,7 @@ The raster pipeline (\autoref{fig:rasterpipe}) is what directs the graphics card
 
 \subsubsection{The Raytracing Pipeline}
 
-The raytracing pipeline (\autoref{fig:raytracepipe}) is a different pipeline that graphics programmers can opt to use that is optimized for raytracing workflows. Compared to the rasterization and compute pipelines, the raytracing pipeline allows the program to loop back and generate more shader invocations. Rays are generated by the Ray Generation Shader (RGS), which are then raycast into a hardware-accelerated bounding volume hierarchy (BVH) utilizing the raytracing core ASICs. 
+The raytracing pipeline (\autoref{fig:raytracepipe}) is a different pipeline that graphics programmers can opt to use that is optimized for raytracing workflows. Rays are generated by the Ray Generation Shader (RGS), which are then raycast into a hardware-accelerated bounding volume hierarchy (BVH) utilizing the raytracing core ASICs. The standout features of the raytracing pipeline are the hardware accelerated raycasts, which are non-programmable, and the option to loop back to a previous stage of the pipeline without another draw call.
 
 \begin{figure}
 \includegraphics[scale=0.55,keepaspectratio]{Raytrace Pipeline.pdf}
@@ -350,7 +350,7 @@ Target venue: OOPSLA 2026 (17 March 2026)
     \qquad \text{ where } m_i = \max_{i}(\mathbf{S}_i)
 \end{align}
 
-The attention mechanism (\autoref{eqn:attention}) in large language models is what gives it the ability to infer context. As it has rather famously been decreed to be "all you need" \cite{vaswaniAttentionAllYou2023}, optimization of attention has become a heavily researched topic \cite{daoFlashAttentionFastMemoryEfficient2022,daoFlashAttention2FasterAttention2023,dongFlexAttentionProgramming2024}, especially with regards to targeting the GPU. The state-of-the-art in the field is PyTorch's FlexAttention \cite{dongFlexAttentionProgramming2024}, which admits a large variety of attention variants by providing two key configuration points: $\mathsf{score\_mod}$ to modify the values of $QK^T$ and $\mathsf{mask\_mod}$, a heavily configurable masking engine. Our key insight is that by manually specifying the optimization of one step of the attention kernel, the rest of the mechanism becomes completely configurable by the user, while leaving the compiler free to perform automatic compiler optimizations that distribute the kernel to the GPU.
+The attention mechanism (\autoref{eqn:attention}) is the mechanism that gives large language models the ability to infer context. As it has rather famously been decreed to be "all you need" \cite{vaswaniAttentionAllYou2023}, optimization of attention has become a heavily researched topic \cite{daoFlashAttentionFastMemoryEfficient2022,daoFlashAttention2FasterAttention2023,dongFlexAttentionProgramming2024}, especially with regards to targeting the GPU. The state-of-the-art in the field is PyTorch's FlexAttention \cite{dongFlexAttentionProgramming2024}, which admits a large variety of attention variants by providing two key configuration points: $\mathsf{score\_mod}$ to modify the values of $QK^T$ and $\mathsf{mask\_mod}$, a heavily configurable masking engine. Our key insight is that by manually specifying the optimization of one step of the attention kernel, the rest of the mechanism becomes completely configurable by the user, while leaving the compiler free to perform automatic compiler optimizations that distribute the kernel to the GPU.
 
 \subsubsection{Limitations of Optimizing Attention}
 
@@ -431,6 +431,16 @@ Backup: SIGGRAPH 2028 (January 2028)
 % 1. We are doing real-time pipelines as program rewrites 
 % 2. Tiled deferred is a surprisingly involved operation, as geometry needs to be tiled as well
 % 3. We want to optimize for temporal locality when optimizing for real-time performance.
+
+\begin{figure}
+  \includegraphics[width=\textwidth, keepaspectratio]{Deferred_Tiled Deferred.pdf}
+  \caption{An example of a compiler rewrite to transform a render pipeline. In this case, we transform the deferred shading pipeline (left) to a tiled deferred shading pipeline (right). \\
+  *Note that Frustum Culling and SSAO need special handling when tiling. Frustum Culling needs the frustum to be appropriately tiled, and SSAO is a stencil kernel that requires the halo region to be recomputed. \label{fig:deferred}}
+\end{figure}
+
+\subsubsection{}
+
+\subsubsection{Reactive programming} Real-time workloads
 
 The state-of-the-art for high performance computing DSLs in computer graphics is Taichi \cite{huTaichiLanguageHighperformance2019}, a Python-embedded DSL that has its user-schedulable language separate the computation from the data format. Taichi is very performant for its target use case, but it struggles to achieve even cinematic performance of 24 frames per second. We argue that the optimization of the pipeline, performed for many years in game engines, is critical to achieving real-time performance.
 

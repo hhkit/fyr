@@ -1670,6 +1670,22 @@
   file = {/Users/ihkh2/Zotero/storage/L59EMPQY/Peng et al. - 2018 - CURD a dynamic CUDA race detector.pdf}
 }
 
+@article{pompougnacWeavingSynchronousReactions2022,
+  title = {Weaving {{Synchronous Reactions}} into the {{Fabric}} of {{SSA-form Compilers}}},
+  author = {Pompougnac, Hugo and Beaugnon, Ulysse and Cohen, Albert and Butucaru, Dumitru Potop},
+  year = 2022,
+  month = mar,
+  journal = {ACM Trans. Archit. Code Optim.},
+  volume = {19},
+  number = {2},
+  pages = {22:1--22:25},
+  issn = {1544-3566},
+  doi = {10.1145/3506706},
+  urldate = {2025-11-06},
+  abstract = {We investigate the programming of reactive systems combining closed-loop control with performance-intensive components such as Machine Learning (ML). Reactive control systems are often safety-critical and associated with real-time execution requirements, a domain of predilection for synchronous programming languages. Extending the high levels of assurance found in reactive control systems to computationally intensive code remains an open issue. We tackle it by unifying concepts and algorithms from synchronous languages with abstractions commonly found in general-purpose and ML compilers. This unification across embedded and high-performance computing enables a high degree of reuse of compiler abstractions and code. We first recall commonalities between dataflow synchronous languages and the static single assignment (SSA) form of general-purpose/ML compilers. We highlight the key mechanisms of synchronous languages that SSA does not cover---denotational concepts such as synchronizing computations with an external time base, cyclic and reactive I/O, as well as the operational notions of relaxing control flow dominance and the modeling of absent values. We discover that initialization-related static analyses and code generation aspects can be fully decoupled from other aspects of synchronous semantics such as memory management and causality analysis, the latter being covered by existing dominance-based algorithms of SSA-form compilers. We show how the SSA form can be seamlessly extended to enable all SSA-based transformations and optimizations on reactive programs with synchronous concurrency. We derive a compilation flow suitable for both high-performance and reactive aspects of a control application, by embedding the Lustre dataflow synchronous language into the SSA-based MLIR/LLVM compiler infrastructure. This allows the modeling of signal processing and deep neural network inference in the (closed) loop of feedback-directed control systems. With only minor efforts leveraging the MLIR infrastructure, the generated code matches or outperforms state-of-the-art synchronous language compilers on computationally intensive ML applications.},
+  file = {/Users/ihkh2/Zotero/storage/R8426TTZ/Pompougnac et al. - 2022 - Weaving Synchronous Reactions into the Fabric of SSA-form Compilers.pdf}
+}
+
 @article{qinShoggothFormalFoundation2024,
   title = {Shoggoth: {{A Formal Foundation}} for {{Strategic Rewriting}}},
   shorttitle = {Shoggoth},
