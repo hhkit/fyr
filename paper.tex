@@ -170,7 +170,7 @@
 
 \begin{document}
 %% Title information
-\title[Oolong]{Compiling for GPU Acceleration is More Than Tiling Nested Loop}
+\title[Oolong]{Compiling for GPU Acceleration is More Than Tiling Nested Loops}
 % \subtitle{Hint: It's in the Name}                   %% \subtitle is optional
 
 %% Author information
@@ -356,71 +356,31 @@ The attention mechanism (\autoref{eqn:attention}) is the mechanism that gives la
 
 Attention (\autoref{eqn:attention-math}) utilizes the $\softmax$ operation to create a probability distribution of the tokens in embedding space. However, taking the exponent of the values in the $QK^T$ results in values that far exceed the range of even 32-bit floating point numbers. To execute on real machinery, a safer version of softmax (\autoref{eqn:attention-math-safe}) is used that normalizes the elements by subtracting the row's maximum, such that the range of the exponentiation rests between 0 and 1. As maximum and accumulation are both reductions, and the denominator's accumulation is dependent on the maximum computation, the loop fusion is impossible for the compiler to perform automatically.
 
-\begin{figure}
-\includegraphics[width=\textwidth, keepaspectratio]{attention-unfusable.png}  
-\caption{The pink and blue reductions are unfusable, as the result of the former is used in the latter as shown by the red line.\label{alg:attention}}
-\end{figure}
-
-\begin{algorithm}
-  \caption{Attention, optimized with online softmax\label{alg:online-attention}}
-  \begin{algorithmic}[1]
-  \Function{Attention}{
-    $Q : \mathbb{R}^{N \times d}$,
-    $K : \mathbb{R}^{N \times d}$,
-    $V : \mathbb{R}^{N \times d}$}
-
-    \State $S, P : \mathbb{R}^{N \times N} \qquad 
-            O : \mathbb{R}^{N \times d} \qquad
-            m, \sigma :\mathbb{R}^N$
-    \State Initialize $m = (-\infty)^N \quad \sigma = (0)^N$,
-
-    % matmul
-    \ForAll {$i,j \in [0,N) \times [0, N)$}  
-      \For {$k \in [0, d)$}  
-        \State $S_{i,j} := S_{i,j} + Q_{i,k} \cdot K_{j,k}$
-      \EndFor
-    \EndFor
-
-    % softmax
-    \ForAll {$i \in [0,N)$} 
-      \For {$j \in [0,N)$} 
-        \State $m' := m_i$
-        \State $m_i := \text{max}(m_i, S_{i,j})$
-        \State $\alpha_i := e^{m' - m_i}$
-        \State $P_{i,j} := e^{S_{i,j} - m_i} $
-        \State $\ell_i := \alpha_i \ell_i + P_{i,j}$
-        \For{$k \in [0,d]$}
-        \State $O_{i,k} := O_{i,k} + P_{i,j} \cdot V_{j,k} $
-        \EndFor
-      \EndFor
-    \EndFor
-
-    \ForAll {$i \in [0,N)$} 
-      \ForAll {$j \in [0,N)$} 
-        \State $O_{i,j} := O_{i,j} / \ell_i$
-      \EndFor
-    \EndFor
-
-    \Return $O$
-  \EndFunction
-  \end{algorithmic}
-\end{algorithm}
 
 Loop tiling is the transformation that allows us to partition the loop to obtain a subtile that can be transformed into a dispatch to the GPU. However, if we are unable to fuse the loop, each loop must be tiled separately, resulting in multiple dispatch calls which is inefficient. Fortunately, by applying the online softmax transformation as described in \cite{milakovOnlineNormalizerCalculation2018}, we are able to derive a single nested loop as in \autoref{alg:online-attention}. Not only is this loop tileable, it also allows the programmer to automatically derive the same kernel as devised in Flash Attention 2 \cite{daoFlashAttention2FasterAttention2023}. Unlike Flash Attention, which is written as a low-level Triton kernel, our attention implementation is written as a high-level neural network. This allows us to perform subsequent tiling and optimizations on the attention mechanism such as quantization, conversion to MXFP \cite{rouhaniMicroscalingDataFormats2023} formats and other low-level optimizations, while still retaining the high-level representation.
 
-This paper is still a work in progress, as we have not fully integrated the functionality into IREE for a proper benchmark. Once implemented, we will be using the Meta attention gym \cite{MetapytorchAttentiongym2025} to do an apples-to-apples comparison with PyTorch's FlexAttention \cite{dongFlexAttentionProgramming2024}. In terms of timeline, a demo is planned to be presented at CC's C4ML (deadline of December 2025) followed by a submission at OOPSLA in 2026. 
+\subsubsection{Progress Report}
 
-Through the process of writing this paper, we have become familiar with the design of MLIR's Transform dialect \cite{luckeMLIRTransformDialect2024}, its extensions, and how to progressively lower linear algebra operators to the GPU.
+This paper is still a work in progress, as we have not fully integrated the functionality into IREE for a proper benchmark. Once implemented, we will be using the Meta attention gym \cite{metaMetapytorchAttentiongym2025} to do an apples-to-apples comparison with PyTorch's FlexAttention engine \cite{dongFlexAttentionProgramming2024}. In terms of timeline, a demo is planned to be presented at CC's C4ML (deadline of December 2025) followed by a submission at OOPSLA in 2026. 
 
 \subsection{Compiling to Accelerate Block-Sparse Linear Algebra with Raytracing Hardware}
 
 Target Venue: ASPLOS 2026 Summer Cycle (August 2026) \\
 Backup Deadline: PLDI 2027 (est. November 2026)
 
-The initial innovation of hacking the GPU raster pipeline to be used for general compute transformed the GPU from a graphics processing unit to a massively parallel processor in the eyes of the research community, and there have been many attempts to coax lightning into striking twice by doing the same with the GPU raytracing pipeline. Many of these attempts are successful at achieving better performance, and our insight is to generalize this approach by making the compiler aware of the pipeline optimization, then allowing tensor compilers to greedily fuse subsequent operations into the raytracing kernel dispatch. GPU programming, after all, is more than matrix-matrix multiplications.
+General purpose GPU computing has its origins as a repurposing of the raster pipeline \cite{bolzSparseMatrixSolvers2003,krugerLinearAlgebraOperators2003}, resulting in the pipeline's subsequent generalization and abstraction that culminated in the current year's compute pipeline of launch grids and thread blocks. However, when adapting the general pipeline for raytracing, the limitations of compute were laid clear: as a SIMD architecture, performance would degrade quickly due to the heavy branching and recursion present in raytraced workflows. Thus, the raytracing pipeline (\autoref{fig:raytracepipe}) was introduced, with the ability to reorganize threads \cite{adinetCUDADynamicParallelism2014}, to loop back to previous stages and built-in acceleration of the bounding volume hierarchy traversal. In an attempt to coax lightning into striking twice, work began immediately on utilizing the pipeline for non-geometric workflows. While many of these attempts were successful \cite{menesesAcceleratingRangeMinimum2024,bauerVisibilityAlgorithmsDynamic2023,haGeneralizingRayTracing2024,Evangelou2021RadiusSearch,zhangMLIRLinalgDialect2022,hennebergRTIndeXExploitingHardwareAccelerated2023}, reformulating the algorithm as a geometric problem and separating the program into the components of a raytracing pass requires low-level, domain-specific knowledge of manipulating graphics pipelines and resources. There currently exists no abstraction that maps to the utilization of the raytracing pipeline as perfectly nested loops do for the tiling of the compute pipeline.
 
-Accelerating sparse matrix-matrix multiplication with raytracing hardware has been shown by Zhang et al. \cite{zhangRTSpMSpMHarnessingRay2025} to be performant, achieving a 1.85x speedup over cuSPARSE. We would like to generalize this approach with block-sparse formats, to take advantage of the tensor cores in the streaming multiprocessor and to demonstrate the flexiblity of optimizations afforded by using a tensor compiler. We will also compare our results with Taichi
-\cite{huTaichiLanguageHighperformance2019}, a Python-embedded DSL that targets computer graphics with support for sparse geometry.
+\subsubsection{Abstraction candidates} The natural candidate for abstraction is \emph{sparse linear algebra}. The art of treating linear algebra programs like geometric problems is not new; polyhedral computations treat the iteration space and tensors as integer polyhedra \cite{grosserPolyhedralASTGeneration2015}. Likewise, the row and column indices of sparse linear algebra could be treated as coordinates in geometric space, and retrieving all sparse elements in a row could be done with a raycast along the row's index. Zhang et al. \cite{zhangRTSpMSpMHarnessingRay2025} devised an algorithm to accelerate sparse matrix-sparse matrix multiplication with raytracing. By specifying the lowering of certain sparse operators to be optimized for RT cores, there is reason to hypothesize that more complex programs could be fused into the subsequent kernels to yield performant GPU-accelerated code. Additionally, block-sparse data structures naturally lend themselves to being treated like quads in geometric space, and would subsequently better take advantage of the GPU's SIMD architecture.
+
+\paragraph{Hash} A common pattern across the various raytrace-targeted formulations of non-geometric problems is the \emph{hash}ing of the stored elements into a tuple of nine $\mathsf{float32}$ elements. This arises due to the ray-traced pipeline's acceleration structures that are fixed to storing three-dimensional geometry, however, hashing itself is inherent to some of these problems as well.
+
+Taichi \cite{huTaichiLanguageHighperformance2019} is a high-performance user-schedulable language that separates computation from data structures. Computations are always written as if accessing a dense structure, while a separate schedule designates the layout of the data being accessed. Data structures are devised with three structural nodes: \emph{dense} arrays, \emph{dynamic} arrays and crucially, \emph{hash}, lending credence to hash's candidacy as a stand-in for raytrace-accelerated access.
+
+Lastly, if the hash were specified to be \emph{order-preserving}, the accompanying bounding volume hierarchy would be able to take advantage of this feature to cull early in the recursion process.
+
+\subsubsection{The Future of Ray-traced Accelerators} As current raytracing cores are heavily optimized towards solving the graphics problem, Barnes et. al propose a more generic accelerator, the Hierarchical Search Unit \cite{barnesExtendingGPURayTracing2024}, to abstract the programming model for general purpose. Issues with the current raytracing cores presented are the inability to handle more than three dimensions and the lack of visibility over the BVH data structures.
+
+\subsubsection{Criteria for Success} Achieving an abstraction that lowers to ray-traced acceleration as efficiently as tensor computations do for tiled computation would be a massive success.
 
 \subsection{Automatic End-to-End Optimization of Real-Time Graphics Pipelines}
 
@@ -431,7 +391,7 @@ Backup: SIGGRAPH 2028 (January 2028)
 % 2. Tiled deferred is a surprisingly involved operation, as geometry needs to be tiled as well
 % 3. We want to optimize for temporal locality when optimizing for real-time performance.
 
-While advances in rendering techniques have pushed the envelope of real-time rendering techniques closer towards realism over the past decade, the state of programming real-time simulation engines has largely remained the same: program in C++ and the shader language of the platform. The argument has always been that C++ allows fine-grained control over the low-level semantics, however, given the prominance of Python in the machine learning ecosystem to accelerate machine learning models to maximize computational throughput, we would like to call this argument into question. We will define a user-schedulable DSL for render pipelines, where engineers can use a scheduling language to guide the transformation while still allowing the compiler to greedily fuse and optimize the resulting render pass. This brings all the benefits of user-schedulable languages --- mainly, the separation of concerns between computation and optimization --- to the world of real-time rendering, allowing for more maintainable code and faster iteration by users.
+While advances in rendering techniques have pushed the envelope of real-time rendering techniques closer towards realism over the past decade, the state of programming real-time simulation engines has largely remained the same: program the host in C++ and the device in the shader language of the platform. The argument has always been that C++ allows fine-grained control over the low-level semantics, however, given the prominence of Python in the machine learning ecosystem to accelerate machine learning models, we would like to question this hypothesis. We will define a user-schedulable DSL for render pipelines, and allow engineers to use a scheduling language to guide the transformation while still allowing the compiler to greedily fuse and optimize the resulting render pass. This brings all the benefits of user-schedulable languages --- mainly, the separation of concerns between computation and optimization --- to the world of real-time rendering, allowing for more maintainable code and faster iteration by users.
 
 \begin{figure}
   \includegraphics[width=\textwidth, keepaspectratio]{Deferred_Tiled Deferred.pdf}
@@ -441,9 +401,9 @@ While advances in rendering techniques have pushed the envelope of real-time ren
 \subsubsection{State-of-the-art} 
 The state-of-the-art for high performance computing DSLs in computer graphics is Taichi \cite{huTaichiLanguageHighperformance2019}, a Python-embedded DSL that has its user-schedulable language separate the computation from the data format. Taichi is very performant for its target use case, but it struggles to achieve even cinematic performance of 24 frames per second. We argue that the optimization of the pipeline, performed for many years in real-time simulation engines, and caching of frame-to-frame state is critical to achieving real-time performance.
 
-The state-of-the-art real-time simulation engine for comparison is Unreal Engine 5's Lumen engine \cite{LumenGlobalIllumination}, which adopts many advanced graphics techniques to achieve realistic graphics. Global illumination is achieved by accumulating light data over several frames. As with machine learning models, beating the handwritten equivalent is often out of reach, but achieving comparable performance alone would prove more than viable for the use case of exploring graphics techniques.
+The state-of-the-art real-time simulation engine for comparison is Unreal Engine 5's Lumen engine \cite{LumenGlobalIllumination}, which adopts many advanced graphics techniques to achieve realistic graphics. Global illumination is achieved by accumulating light data over several frames, known as \emph{temporal sampling} \cite{lambruTemporalSamplingRealTime2021}. As with our machine learning compatriats, beating the hand-tuned equivalent is nigh impossible, but achieving comparable real-time performance alone would be a fantastic result.
 
-\subsubsection{Reactive programming} A key feature of real-time simulation engines that stands out from offline rendering engines is the expectation of temporal locality, resulting in stateful functions executed from frame to frame. This frame-to-frame state can be captured with reactive programming, which has been modelled in MLIR as the \dialect{lus} dialect \cite{caspiLUSTREDeclarativeLanguage}.
+\subsubsection{Reactive programming} A key feature of real-time simulation engines that stands out from offline rendering engines is the expectation of temporal locality, resulting in stateful functions executed from frame to frame. The semantics of frame-to-frame state can be captured with an aspect of reactive programming known as \emph{synchronous reactions} \cite{pompougnacWeavingSynchronousReactions2022}.
 
 
 \subsubsection{Criteria for Success} As control set ups, we have to turn to tutorial projects by LearnOpenGL \cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems \cite{SaschaWillemsVulkanExamples}, as many graphics engines do not make it easy to isolate features of their graphics pipeline for apples-to-apples comparisons. Success is defined by achieving real-time framerates while applying transformations that further optimize the OpenGL/Vulkan tutorial examples with minimal (<20) lines of code expressed as program transformations.

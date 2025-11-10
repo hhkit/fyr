@@ -209,6 +209,38 @@
   file = {/Users/ihkh2/Zotero/storage/SN9Q6R7F/Bangerth - 2025 - Experience converting a large mathematical software package written in C++ to C++20 modules.pdf}
 }
 
+@inproceedings{barnesExtendingGPURayTracing2024,
+  title = {Extending {{GPU Ray-Tracing Units}} for {{Hierarchical Search Acceleration}}},
+  booktitle = {2024 57th {{IEEE}}/{{ACM International Symposium}} on {{Microarchitecture}} ({{MICRO}})},
+  author = {Barnes, Aaron and Shen, Fangjia and Rogers, Timothy G.},
+  year = 2024,
+  month = nov,
+  pages = {1027--1040},
+  issn = {2379-3155},
+  doi = {10.1109/MICRO61859.2024.00079},
+  urldate = {2025-11-10},
+  abstract = {Specialized ray-tracing acceleration units have become a common feature in GPU hardware, enabling real-time ray-tracing of complex scenes for the first time. The ray-tracing unit accelerates the traversal of a hierarchical tree data structure called a bounding volume hierarchy to determine whether rays have intersected triangle primitives. Hierarchical search algorithms are a fundamental software pattern common in many important domains, such as recommendation systems and point cloud registration, but are difficult for GPUs to accelerate because they are characterized by extensive branching and recursion. The ray-tracing unit overcomes these limitations with specialized hardware to traverse hierarchical data structures efficiently, but is mired by a highly specialized graphics API, which is not readily adaptable to general-purpose computation. We present the Hierarchical Search Unit (HSU), a flexible datapath to accelerate a more general class of hierarchical search algorithms, of which ray-tracing is one. We synthesize a baseline ray-intersection datapath and maximize functional unit reuse while extending the ray-tracing unit to support additional computations and a more general set of instructions. We demonstrate that the unit can improve the performance of three hierarchical search data structures in approximate nearest neighbors search algorithms and a B-tree key-value store index. For a minimal extension to the existing unit, our HSU improves the state-of-the-art GPU approximate nearest neighbor implementation by an average of 24.8\% using the GPU's general computing interface.},
+  keywords = {Approximation algorithms,BVH,GPU,Graphics processing units,Hardware,Nearest Neighbors,Ray tracing,Ray-Tracing,Recommender systems,Search problems,Software,Software algorithms,Standards,Tree data structures},
+  file = {/Users/ihkh2/Zotero/storage/HSHCA3WN/Barnes et al. - 2024 - Extending GPU Ray-Tracing Units for Hierarchical Search Acceleration.pdf}
+}
+
+@inproceedings{bauerVisibilityAlgorithmsDynamic2023,
+  title = {Visibility {{Algorithms}} for {{Dynamic Dependence Analysis}} and {{Distributed Coherence}}},
+  booktitle = {Proceedings of the 28th {{ACM SIGPLAN Annual Symposium}} on {{Principles}} and {{Practice}} of {{Parallel Programming}}},
+  author = {Bauer, Michael and Slaughter, Elliott and Treichler, Sean and Lee, Wonchan and Garland, Michael and Aiken, Alex},
+  year = 2023,
+  month = feb,
+  pages = {218--231},
+  publisher = {ACM},
+  address = {Montreal QC Canada},
+  doi = {10.1145/3572848.3577515},
+  urldate = {2025-11-10},
+  abstract = {Implicitly parallel programming systems must solve the joint problems of dependence analysis and coherence to ensure apparently-sequential semantics for applications run on distributed memory machines. Solving these problems in the presence of data-dependent control flow and arbitrary aliasing is a challenge that most existing systems eschew by compromising the expressivity of their programming models and/or the performance of their implementations. We demonstrate a general class of solutions to these problems via a reduction to the visibility problem from computer graphics.},
+  isbn = {979-8-4007-0015-6},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/VS5PHFN8/Bauer et al. - 2023 - Visibility Algorithms for Dynamic Dependence Analysis and Distributed Coherence.pdf}
+}
+
 @inproceedings{bhatLambdaUltimateSSA2022,
   title = {Lambda the {{Ultimate SSA}}: {{Optimizing Functional Programs}} in {{SSA}}},
   shorttitle = {Lambda the {{Ultimate SSA}}},
@@ -593,6 +625,19 @@
   urldate = {2025-09-15}
 }
 
+@article{Evangelou2021RadiusSearch,
+  title = {Fast Radius Search Exploiting Ray Tracing Frameworks},
+  author = {Evangelou, I. and Papaioannou, G. and Vardis, K. and Vasilakis, A. A.},
+  year = 2021,
+  month = feb,
+  journal = {Journal of Computer Graphics Techniques (JCGT)},
+  volume = {10},
+  number = {1},
+  pages = {25--48},
+  issn = {2331-7418},
+  file = {/Users/ihkh2/Zotero/storage/ENZQ9V4Z/Evangelou et al. - 2021 - Fast radius search exploiting ray tracing frameworks.pdf}
+}
+
 @article{fanStreamingAwareNeuralMonte2025,
   title = {Streaming-{{Aware Neural Monte Carlo Rendering Framework}} with {{Unified Denoising-Compression}} and {{Client Collaboration}}},
   author = {Fan, Hangming and Huo, Yuchi and Zheng, Chuankun and Hu, Chonghao and Yuan, Yazhen and Wang, Rui},
@@ -853,6 +898,21 @@
   file = {/Users/ihkh2/Zotero/storage/XNELWFBT/Hagedorn et al. - 2020 - Fireiron A Data-Movement-Aware Scheduling Language for GPUs.pdf}
 }
 
+@inproceedings{haGeneralizingRayTracing2024,
+  title = {Generalizing {{Ray Tracing Accelerators}} for {{Tree Traversals}} on {{GPUs}}},
+  booktitle = {2024 57th {{IEEE}}/{{ACM International Symposium}} on {{Microarchitecture}} ({{MICRO}})},
+  author = {Ha, Dongho and Liu, Lufei and Chou, Yuan Hsi and Go, Seokjin and Ro, Won Woo and Tseng, Hung-Wei and Aamodt, Tor M.},
+  year = 2024,
+  month = nov,
+  pages = {1041--1057},
+  issn = {2379-3155},
+  doi = {10.1109/MICRO61859.2024.00080},
+  urldate = {2025-11-10},
+  abstract = {Tree traversal is a fundamental operation in many applications, such as database indexing and physics simulations. Although tree traversals feature high parallelism, they are inherently divergent and irregular, leading to inefficient performance on GPUs. Tree traversals are also prevalent in ray tracing, which is executed on dedicated Ray-Tracing Accelerators (RTAs) in modern GPUs to mitigate inefficiencies such as control flow divergence and underutilization of memory bandwidth by irregular memory accesses. In this paper, we propose the Tree Traversal Accelerator (TTA) to replicate the success of RTAs in ray tracing for general tree traversal applications. TTAs extend RTAs to support tree structures and operations beyond those in ray tracing, such as B- Tree search and radius search algorithms, by modifying existing computing units. Despite TTAs' effectiveness, they still rely on fixed-function computations, making it challenging to support other tree-based applications such as N-Body simulation fully. Thus, we introduce TTA + as an alternative design, which modularizes the RTA computing units and makes them programmable, trading some efficiency for flexibility. With less than 1 \% increase in RTA area, our proposals can achieve up to S.4x speedup for B-Tree search, 1.7x for N-Body simulation, and 1.2x for select ray-tracing applications.},
+  keywords = {Accelerator,Computational modeling,GPU,Graphics processing units,Indexing,Microarchitecture,Parallel processing,Physics,Pipelines,Proposals,Ray tracing,Tree traversal,Tree Traversal},
+  file = {/Users/ihkh2/Zotero/storage/SCH93Z2Z/Ha et al. - 2024 - Generalizing Ray Tracing Accelerators for Tree Traversals on GPUs.pdf}
+}
+
 @article{haradaForwardBringingDeferred2012,
   title = {Forward+: {{Bringing Deferred Lighting}} to the {{Next Level}}},
   author = {Harada, Takahiro and McKee, Jay and Yang, Jason C},
@@ -910,6 +970,23 @@
   archiveprefix = {arXiv},
   keywords = {Computer Science - Mathematical Software,fft},
   file = {/Users/ihkh2/Zotero/storage/SXU8T8G6/He et al. - 2023 - Leveraging MLIR for Loop Vectorization and GPU Porting of FFT Libraries.pdf;/Users/ihkh2/Zotero/storage/Z8832Z9B/2308.html}
+}
+
+@article{hennebergRTIndeXExploitingHardwareAccelerated2023,
+  title = {{{RTIndeX}}: {{Exploiting Hardware-Accelerated GPU Raytracing}} for {{Database Indexing}}},
+  shorttitle = {{{RTIndeX}}},
+  author = {Henneberg, Justus and Schuhknecht, Felix},
+  year = 2023,
+  month = sep,
+  journal = {Proc. VLDB Endow.},
+  volume = {16},
+  number = {13},
+  pages = {4268--4281},
+  issn = {2150-8097},
+  doi = {10.14778/3625054.3625063},
+  urldate = {2025-11-10},
+  abstract = {Data management on GPUs has become increasingly relevant due to a tremendous rise in processing power and available GPU memory. Similar to main-memory systems, there is a need for performant GPU-resident index structures to speed up query processing. Unfortunately, mapping indexes efficiently to the highly parallel and hard-to-program hardware is challenging and often fails to yield the desired performance and flexibility. Instead of proposing yet another hand-tailored index, we investigate whether we can exploit an indexing mechanism that is already built into modern GPUs: The raytracing hardware accelerator provided by NVIDIA RTX GPUs. To do so, we re-phrase the database indexing problem as a raytracing problem, where we express the dataset to be indexed as objects in a 3D scene, and point/range lookups as rays across the scene. In this combination, coined RX in the following, lookups are performed as intersection tests in hardware by dedicated raytracing cores. To analyze the pros, cons, and usefulness of the raytracing pipeline for database indexing, we carefully evaluate RX along fourteen dimensions and demonstrate its competitiveness and potential in a large variety of situations.},
+  file = {/Users/ihkh2/Zotero/storage/2EXVWRPI/Henneberg and Schuhknecht - 2023 - RTIndeX Exploiting Hardware-Accelerated GPU Raytracing for Database Indexing.pdf}
 }
 
 @article{heSlangLanguageMechanisms2018,
@@ -1170,6 +1247,21 @@
   file = {/Users/ihkh2/Zotero/storage/R3UEECSF/Kwon et al. - 2023 - Efficient Memory Management for Large Language Model Serving with PagedAttention.pdf}
 }
 
+@inproceedings{lambruTemporalSamplingRealTime2021,
+  title = {Temporal {{Sampling}} for {{Real-Time Global Illumination}}},
+  booktitle = {2021 25th {{International Conference}} on {{System Theory}}, {{Control}} and {{Computing}} ({{ICSTCC}})},
+  author = {Lambru, Cristian and Morar, Anca and Moldoveanu, Florica and Asavei, Victor},
+  year = 2021,
+  month = oct,
+  pages = {75--80},
+  issn = {2372-1618},
+  doi = {10.1109/ICSTCC52150.2021.9607159},
+  urldate = {2025-11-07},
+  abstract = {Photorealism in real-time rendering is a topic of recent interest due to technological advances of the graphics processing units. The light transport and in particular the diffuse light reflections are some of the most important components of photorealism in computer graphics. In this paper, we present an improvement of an instant radiosity approach which simulates the diffuse reflections of the light by sampling a set of virtual point lights from multi-view renderings of the scene. Our proposed method obtains the VPLs from a sequence of frames, instead of sampling the results from a single frame. It uses a very small number of samples per frame that are combined with the results obtained from the samples evaluated in the previous frames. This strategy offers a performance improvement of up to 3 times with similar visual results.},
+  keywords = {computer graphics,Control systems,Graphics processing units,Lighting,Photorealism,real-time global illumination,Reflection,Rendering (computer graphics),temporal sampling,Visualization},
+  file = {/Users/ihkh2/Zotero/storage/YBB4KL4R/Lambru et al. - 2021 - Temporal Sampling for Real-Time Global Illumination.pdf}
+}
+
 @article{lanPenetrationfreeProjectiveDynamics,
   title = {Penetration-Free Projective Dynamics on the {{GPU}}},
   author = {Lan, Lei},
@@ -1236,13 +1328,6 @@
   howpublished = {https://github.com/iree-org/iree/pull/21761},
   langid = {english},
   file = {/Users/ihkh2/Zotero/storage/WUNHQPUS/21761.html}
-}
-
-@misc{LinearAlgebraOperators,
-  title = {Linear Algebra Operators for {{GPU}} Implementation of Numerical Algorithms \textbar{} {{ACM Transactions}} on {{Graphics}}},
-  urldate = {2025-10-29},
-  howpublished = {https://dl.acm.org/doi/10.1145/882262.882363},
-  file = {/Users/ihkh2/Zotero/storage/ILGK8QD6/882262.html}
 }
 
 @inproceedings{linParrotEfficientServing2024,
@@ -1467,14 +1552,15 @@
   file = {/Users/ihkh2/Zotero/storage/W9B8M9M6/Meneses et al. - 2024 - Accelerating range minimum queries with ray tracing cores.pdf}
 }
 
-@misc{MetapytorchAttentiongym2025,
+@misc{metaMetapytorchAttentiongym2025,
   title = {Meta-Pytorch/Attention-Gym},
+  author = {Meta},
   year = 2025,
   month = oct,
   urldate = {2025-10-29},
   abstract = {Helpful tools and examples for working with flex-attention},
   copyright = {BSD-3-Clause},
-  howpublished = {Meta PyTorch}
+  howpublished = {https://github.com/meta-pytorch/attention-gym}
 }
 
 @misc{microsoftvisualstudioHowDebuggersWork2025,
@@ -1605,13 +1691,14 @@
   file = {/Users/ihkh2/Zotero/storage/IEGSAB35/nvidia-blackwell-architecture-technical-brief.pdf;/Users/ihkh2/Zotero/storage/33SEVYUD/en-us-blackwell-architecture.html}
 }
 
-@misc{NVIDIARTXNVRHI2025,
+@misc{nvidiaNVIDIARTXNVRHI2025,
   title = {{{NVIDIA-RTX}}/{{NVRHI}}},
+  author = {NVIDIA},
   year = 2025,
   month = oct,
   urldate = {2025-10-29},
   copyright = {MIT},
-  howpublished = {NVIDIA-RTX}
+  howpublished = {https://github.com/NVIDIA-RTX/NVRHI}
 }
 
 @misc{O3deO3de2025,
@@ -1620,7 +1707,7 @@
   month = oct,
   urldate = {2025-10-29},
   abstract = {Open 3D Engine (O3DE) is an Apache 2.0-licensed multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations.},
-  howpublished = {O3DE},
+  howpublished = {https://github.com/o3de/o3de},
   keywords = {3d-graphics,3d-graphics-engine,animation,game-development,game-engine,gamedev}
 }
 
@@ -1980,7 +2067,7 @@
   urldate = {2025-11-05},
   abstract = {A contact solver for physics-based simulations involving 👚 shells, 🪵 solids and 🪢 rods.},
   copyright = {Apache-2.0},
-  howpublished = {ZOZO, Inc.},
+  howpublished = {https://github.com/st-tech/ppf-contact-solver},
   keywords = {cloth,collision,contact,physics,simulation}
 }
 
@@ -2008,7 +2095,8 @@
   month = sep,
   urldate = {2025-10-28},
   abstract = {A retargetable MLIR-based machine learning compiler and runtime toolkit.},
-  copyright = {Apache-2.0}
+  copyright = {Apache-2.0},
+  howpublished = {https://github.com/iree-org/iree}
 }
 
 @inproceedings{thempiforumMPIMessagePassing1993,
@@ -2209,7 +2297,8 @@
   year = 2025,
   month = oct,
   urldate = {2025-10-29},
-  abstract = {Code repository of all OpenGL chapters from the book and its accompanying website https://learnopengl.com}
+  abstract = {Code repository of all OpenGL chapters from the book and its accompanying website https://learnopengl.com},
+  howpublished = {https://github.com/JoeyDeVries/LearnOpenGL}
 }
 
 @misc{vulkanHomeVulkanCross2025,
