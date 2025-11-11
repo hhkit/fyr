@@ -1176,6 +1176,15 @@
   file = {/Users/ihkh2/Zotero/storage/YFTDPQME/Kerbl et al. - 2023 - 3D Gaussian Splatting for Real-Time Radiance Field Rendering.pdf;/Users/ihkh2/Zotero/storage/CZUEVFZD/2308.html}
 }
 
+@misc{khronosSPIRVSpecification2025,
+  title = {{{SPIR-V Specification}}},
+  author = {Khronos},
+  year = 2025,
+  urldate = {2025-11-11},
+  howpublished = {https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html},
+  file = {/Users/ihkh2/Zotero/storage/QI3KR9X8/SPIRV.html}
+}
+
 @article{kjolstadTensorAlgebraCompiler2017,
   title = {The Tensor Algebra Compiler},
   author = {Kjolstad, Fredrik and Kamil, Shoaib and Chou, Stephen and Lugato, David and Amarasinghe, Saman},
@@ -1502,6 +1511,20 @@
   file = {/Users/ihkh2/Zotero/storage/PRB8TLJP/Macklin et al. - 2016 - XPBD position-based simulation of compliant constrained dynamics.pdf}
 }
 
+@misc{markidisNVIDIATensorCore2018,
+  title = {{{NVIDIA Tensor Core Programmability}}, {{Performance}} \& {{Precision}}},
+  author = {Markidis, Stefano and Der Chien, Steven Wei and Laure, Erwin and Peng, Ivy Bo and Vetter, Jeffrey S.},
+  year = 2018,
+  month = mar,
+  journal = {arXiv.org},
+  doi = {10.1109/IPDPSW.2018.00091},
+  urldate = {2025-11-11},
+  abstract = {The NVIDIA Volta GPU microarchitecture introduces a specialized unit, called "Tensor Core" that performs one matrix-multiply-and-accumulate on 4x4 matrices per clock cycle. The NVIDIA Tesla V100 accelerator, featuring the Volta microarchitecture, provides 640 Tensor Cores with a theoretical peak performance of 125 Tflops/s in mixed precision. In this paper, we investigate current approaches to program NVIDIA Tensor Cores, their performances and the precision loss due to computation in mixed precision. Currently, NVIDIA provides three different ways of programming matrix-multiply-and-accumulate on Tensor Cores: the CUDA Warp Matrix Multiply Accumulate (WMMA) API, CUTLASS, a templated library based on WMMA, and cuBLAS GEMM. After experimenting with different approaches, we found that NVIDIA Tensor Cores can deliver up to 83 Tflops/s in mixed precision on a Tesla V100 GPU, seven and three times the performance in single and half precision respectively. A WMMA implementation of batched GEMM reaches a performance of 4 Tflops/s. While precision loss due to matrix multiplication with half precision input might be critical in many HPC applications, it can be considerably reduced at the cost of increased computation. Our results indicate that HPC applications using matrix multiplications can strongly benefit from using of NVIDIA Tensor Cores.},
+  howpublished = {https://arxiv.org/abs/1803.04014v1},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/FWSXKQSP/Markidis et al. - 2018 - NVIDIA Tensor Core Programmability, Performance & Precision.pdf}
+}
+
 @article{mcintoshEfficientlySimulatingBokeh2012,
   title = {Efficiently {{Simulating}} the {{Bokeh}} of {{Polygonal Apertures}} in a {{Post-Process Depth}} of {{Field Shader}}},
   author = {McIntosh, L. and Riecke, B. E. and DiPaola, S.},
@@ -1680,6 +1703,16 @@
   file = {/Users/ihkh2/Zotero/storage/9UA877NH/Niu et al. - 2021 - DNNFusion accelerating deep neural networks execution with advanced operator fusion.pdf}
 }
 
+@misc{NVIDIABlackwellArchitecture,
+  title = {{{NVIDIA Blackwell Architecture Technical Overview}}},
+  journal = {NVIDIA},
+  urldate = {2025-11-11},
+  abstract = {NVIDIA's Blackwell GPU architecture revolutionizes AI with unparalleled performance, scalability and efficiency. Anchored by the Grace Blackwell GB200 superchip and GB200 NVL72, it boasts 30X more performance and 25X more energy efficiency over its predecessor.},
+  howpublished = {https://resources.nvidia.com/en-us-blackwell-architecture},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/LB39GDJM/en-us-blackwell-architecture.html}
+}
+
 @misc{NVIDIABlackwellArchitecture2025,
   title = {{{NVIDIA Blackwell Architecture Technical Overview}}},
   year = 2025,
@@ -1771,6 +1804,16 @@
   urldate = {2025-11-06},
   abstract = {We investigate the programming of reactive systems combining closed-loop control with performance-intensive components such as Machine Learning (ML). Reactive control systems are often safety-critical and associated with real-time execution requirements, a domain of predilection for synchronous programming languages. Extending the high levels of assurance found in reactive control systems to computationally intensive code remains an open issue. We tackle it by unifying concepts and algorithms from synchronous languages with abstractions commonly found in general-purpose and ML compilers. This unification across embedded and high-performance computing enables a high degree of reuse of compiler abstractions and code. We first recall commonalities between dataflow synchronous languages and the static single assignment (SSA) form of general-purpose/ML compilers. We highlight the key mechanisms of synchronous languages that SSA does not cover---denotational concepts such as synchronizing computations with an external time base, cyclic and reactive I/O, as well as the operational notions of relaxing control flow dominance and the modeling of absent values. We discover that initialization-related static analyses and code generation aspects can be fully decoupled from other aspects of synchronous semantics such as memory management and causality analysis, the latter being covered by existing dominance-based algorithms of SSA-form compilers. We show how the SSA form can be seamlessly extended to enable all SSA-based transformations and optimizations on reactive programs with synchronous concurrency. We derive a compilation flow suitable for both high-performance and reactive aspects of a control application, by embedding the Lustre dataflow synchronous language into the SSA-based MLIR/LLVM compiler infrastructure. This allows the modeling of signal processing and deep neural network inference in the (closed) loop of feedback-directed control systems. With only minor efforts leveraging the MLIR infrastructure, the generated code matches or outperforms state-of-the-art synchronous language compilers on computationally intensive ML applications.},
   file = {/Users/ihkh2/Zotero/storage/R8426TTZ/Pompougnac et al. - 2022 - Weaving Synchronous Reactions into the Fabric of SSA-form Compilers.pdf}
+}
+
+@inproceedings{popGRAPHITEPolyhedralAnalyses2006,
+  title = {{{GRAPHITE}} : {{Polyhedral Analyses}} and {{Optimizations}} for {{GCC}}},
+  shorttitle = {{{GRAPHITE}}},
+  author = {Pop, Sebastian and Cohen, Albert and Bastoul, C{\'e}dric and Girbal, Sylvain and Silber, Georges-Andr{\'e} and Vasilache, Nicolas},
+  year = 2006,
+  urldate = {2025-11-11},
+  abstract = {We present a plan to add loop nest optimizations in GCC based on polyhedral representations of loop nests. We advocate a static analysis approach based on a hierarchy of interchangeable abstractions with solvers that range from the exact solvers such as OMEGA, to faster but less precise solvers based on more coarse abstractions. The intermediate representationGRAPHITE (GIMPLE Represented as Polyhedra with Interchangeable Envelopes), built on GIMPLE and the natural loops, hosts the high level loop transformations. We base this presentation on the WRaP-IT project developed in theAlchemy group at INRIA Futurs and Paris-Sud University, on the PIPS compiler developed at \'Ecole des mines de Paris, and on a joint work with several members of the static analysis and polyhedral compilation community in France. The main goal of this project is to bring more high level loop optimizations toGCC: loop fusion, tiling, strip mining, etc. Thanks to the WRaP-IT experience, we know that the polyhedral analyzes and transformations are affordable in a production compiler. A second goal of this project is to experiment with compile time reduction versus attainable precision when replacing operations on polyhedra with faster operations on more abstract domains. However, the use of a too coarse representation for computing might also result in an over approximated solution that cannot be used in subsequent computations. There exists a trade off between speed of the computation and the attainable precision that has not yet been analyzed for real world programs.},
+  file = {/Users/ihkh2/Zotero/storage/TUC5K5YT/Pop et al. - 2006 - GRAPHITE  Polyhedral Analyses and Optimizations for GCC.pdf}
 }
 
 @article{qinShoggothFormalFoundation2024,
@@ -1908,6 +1951,12 @@
   file = {/Users/ihkh2/Zotero/storage/ZVLBJAPT/Rouhani et al. - 2023 - Microscaling Data Formats for Deep Learning.pdf}
 }
 
+@misc{sabneXLACompilingMachine2020,
+  title = {{{XLA}} : {{Compiling}} Machine Learning for Peak Performance},
+  author = {Sabne, Amit},
+  year = 2020
+}
+
 @article{sagebaumHighPerformanceDerivativeComputations2019,
   title = {High-{{Performance Derivative Computations}} Using {{CoDiPack}}},
   author = {Sagebaum, Max and Albring, Tim and Gauger, Nicolas R.},
@@ -1964,6 +2013,14 @@
   archiveprefix = {arXiv},
   keywords = {Computer Science - Programming Languages,Computer Science - Software Engineering},
   file = {/Users/ihkh2/Zotero/storage/A6IVKCRY/Savidis and Tsiatsianas - 2021 - Implementation of Live Reverse Debugging in LLDB.pdf;/Users/ihkh2/Zotero/storage/D5D7KN4Q/2105.html}
+}
+
+@article{segalOpenGLTMGraphicsSystem1994,
+  title = {The {{OpenGLTM Graphics System A Speci}} Cation {{Version}}},
+  author = {Segal, Mark and Akeley, Kurt and Frazier, Chris},
+  year = 1994,
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/4MSQTQ69/Segal et al. - 1994 - The OpenGLTM Graphics System A Speci cation Version.pdf}
 }
 
 @article{silvennoinenRealtimeGlobalIllumination2017,
@@ -2284,6 +2341,21 @@
   file = {/Users/ihkh2/Zotero/storage/8PDDNAW6/Vieira et al. - 2020 - Fast Packet Processing with eBPF and XDP Concepts, Code, Challenges, and Applications.pdf}
 }
 
+@inproceedings{visserStrategoLanguageProgram2001,
+  title = {Stratego: {{A Language}} for {{Program Transformation Based}} on {{Rewriting Strategies}}},
+  shorttitle = {Stratego},
+  booktitle = {Proceedings of the 12th {{International Conference}} on {{Rewriting Techniques}} and {{Applications}}},
+  author = {Visser, Eelco},
+  year = 2001,
+  month = may,
+  series = {{{RTA}} '01},
+  pages = {357--362},
+  publisher = {Springer-Verlag},
+  address = {Berlin, Heidelberg},
+  urldate = {2025-11-11},
+  isbn = {978-3-540-42117-7}
+}
+
 @misc{VK_EXT_device_generated_commands3VulkanDocumentation,
   title = {{{VK}}\_{{EXT}}\_device\_generated\_commands(3) :: {{Vulkan Documentation Project}}},
   urldate = {2025-10-27},
@@ -2357,6 +2429,37 @@
   howpublished = {https://research.google/pubs/xla-compiling-machine-learning-for-peak-performance/},
   langid = {english},
   file = {/Users/ihkh2/Zotero/storage/WUHU4UB4/xla-compiling-machine-learning-for-peak-performance.html}
+}
+
+@article{xueTilingLoopTransformation2011,
+  title = {On {{Tiling}} as a {{Loop Transformation}}},
+  author = {Xue, Jingling},
+  year = 2011,
+  month = nov,
+  journal = {Parallel Processing Letters},
+  publisher = {World Scientific Publishing Company},
+  doi = {10.1142/S0129626497000401},
+  urldate = {2025-11-11},
+  abstract = {PPL fills the need for an information vehicle which can convey recent achievements and further the exchange of scientific information in the field in the form of short papers.},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/FNIMVYXL/Xue - 2011 - On Tiling as a Loop Transformation.pdf;/Users/ihkh2/Zotero/storage/9WTQKSWZ/ppl.html}
+}
+
+@article{xueUnimodularTransformationsNonperfectly1997,
+  title = {Unimodular Transformations of Non-Perfectly Nested Loops},
+  author = {Xue, Jingling},
+  year = 1997,
+  month = feb,
+  journal = {Parallel Computing},
+  volume = {22},
+  number = {12},
+  pages = {1621--1645},
+  issn = {0167-8191},
+  doi = {10.1016/S0167-8191(96)00063-4},
+  urldate = {2025-11-11},
+  abstract = {A framework is described in which a class of imperfectly nested loops can be restructured using unimodular transformations. In this framework, an imperfect loop nest is converted to a perfect loop nest using Abu-Sufah's Non-Basic-to-Basic-Loop transformation. Conditions for the legality of this transformation and techniques for their verification are discussed. An iteration space, which extends the usual concept so as to represent explicitly the executions of individual statements, is proposed to model the converted loop nest. Since the converted loop nest is a perfect loop nest, data dependences can be extracted and optimal transformations can be selected for parallelism and/or locality in the normal manner. To generate the restructured code for a unimodular transformation, a code generation method is provided that produces the restructured code that is free of if statements by construction.},
+  keywords = {Data dependence,Feautrier's PIP,Fourier-Motzkin elimination,Imperfect loop nest,Non-Basic-to-Basic-Loop transformation,Unimodular transformation},
+  file = {/Users/ihkh2/Zotero/storage/RKGFRY7I/Xue - 1997 - Unimodular transformations of non-perfectly nested loops.pdf;/Users/ihkh2/Zotero/storage/83VBZ29T/S0167819196000634.html}
 }
 
 @article{yangRenderKernelHighlevelProgramming2024,

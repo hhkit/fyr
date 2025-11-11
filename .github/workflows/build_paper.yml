@@ -22,6 +22,10 @@ jobs:
       run: |
         bash ./tools/create_latexminted_config.sh
         make .latexminted_config
+    
+    # Remove uv run from .latexmkrc
+    - name: Remove 'uv run -p 3.13 ' from .latexmkrc
+      run: sed -i 's/uv run -p 3.13 //g' .latexmkrc
 
     # Uses the latest TeXLive distribution (currently with minted v3+)
     - name: Compile paper
@@ -55,6 +59,9 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v3
 
+    # Remove uv run from .latexmkrc
+    - name: Remove 'uv run -p 3.13 ' from .latexmkrc
+      run: sed -i 's/uv run -p 3.13 //g' .latexmkrc
     # Uses an older TeXLive distribution (with minted v2.9)
     - name: Compile paper
       uses: xu-cheng/latex-action@master
@@ -75,6 +82,9 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v3
+    # Remove uv run from .latexmkrc
+    - name: Remove 'uv run -p 3.13 ' from .latexmkrc
+      run: sed -i 's/uv run -p 3.13 //g' .latexmkrc
 
     # Uses an older TeXLive distribution (with minted v2.6)
     - name: Compile paper
