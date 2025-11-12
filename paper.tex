@@ -227,7 +227,7 @@ This literature review will span the three topics that the thesis will cover: th
 
 \begin{figure}
   \includegraphics[scale=0.5]{GPUArchitecture.pdf}
-  \caption{A heavily simplified block diagram of Nvidia's GB202 GPU, also known as the RTX 5090 \cite{NVIDIABlackwellArchitecture2025}. \label{fig:gpuarch}}
+  \caption{A heavily simplified block diagram of Nvidia's GB202 GPU, also known as the RTX 5090 \cite{nvidiaNvidiartxblackwellgpuarchitecture2025}. \label{fig:gpuarch}}
 \end{figure}
 
 The GPU, or graphics processing unit, is a single-instruction multiple-data (or SIMD) architecture that consists of a massive number of streaming multiprocessors (or SMs) \autoref{fig:gpuarch}. A streaming multiprocessor consists of a set of CUDA cores and a set of warp schedulers, and execute bundles of threads known as warps. On Nvidia architectures, an SM receives a warp of 32 threads that share four warp schedulers. % Pre-Volta, threads would conditionally execute the same instruction eight times in parallel four times in sequence for the total of 32 threads. However, as of Volta, each thread has its own program counter, and programmers are encouraged to treat each thread as its own instance in a paradigm known as SIMT (single-instruction multiple-thread). The underlying hardware attempts to retain the performance granted by SIMD by grouping threads with similar control flow, however, if inter-lane control flow diverges too much, they become subject to performance degradation in what is known as \emph{warp divergence}.
@@ -236,7 +236,7 @@ Each streaming multiprocessor is also home to a set of \emph{application-specifi
 
 \paragraph{Programming for the GPU} To program for the GPU, programmers write what is known as a \emph{kernel}. The kernel is executed over a large number of threads known as a \emph{grid} which is a tuple $(G,B)$ of $G$ thread blocks each containing $B$ threads for a total of $G \cdot B$ threads in a dispatch. Each invocation of the kernel is assigned a block identifier and a thread identifier, allowing the program to branch based on the invocation identifier. Within a block, threads are able to share memory and synchronization primitives, although grid-level synchronization is made available by a driver. On kernel dispatch, each block is issued to a streaming multiprocessor, which then partitions the block into warps for execution. Programmers for Nvidia architectures may use CUDA to write kernels, and for programmers who wish to target a wider variety of hardware, they may write the kernel as a compute shader compiled to SPIR-V and execute it using the Vulkan API.
 
-Typically, a kernel dispatch is performed from the CPU (also known as the host device). However, the ability to dispatch kernels from the GPU grows increasingly supported, reducing the need for ping-pong between the CPU and GPU. In CUDA, the feature is known as \emph{Dynamic Parallelism} \cite{adinetCUDADynamicParallelism2014}, and in Vulkan, the extension is known as \emph{Device-Generated Commands} \cite{VK_EXT_device_generated_commands3VulkanDocumentation}.
+Typically, a kernel dispatch is performed from the CPU (also known as the host device). However, the ability to dispatch kernels from the GPU grows increasingly supported, reducing the need for ping-pong between the CPU and GPU. In CUDA, the feature is known as \emph{Dynamic Parallelism} \cite{adinetCUDADynamicParallelism2014}, and in Vulkan, the extension is known as \emph{Device-Generated Commands} \cite{blumenkrantzVK_EXT_device_generated_commands3VulkanDocumentation2024}.
 
 \subsection{Compilers for the GPU}
 
@@ -266,9 +266,10 @@ S:      c[i] = c[i] + a[i][j];
 \vfill
 \end{tabular}
 
-As in many loop optimization models \cite{xueUnimodularTransformationsNonperfectly1997,grosserPolyhedralASTGeneration2015}, we will assume the program iterates through $\domain$ lexicographically. The specific invocation of a statement $S$ executed with induction variables $v \in \domain$ is denoted as $S_{v \in \domain}$, and the set of all statement invocations as $\mathcal{D}_S$.  The dependency relation $\mathbf{D}_r : \mathcal{D}_S \times \mathcal{D}_S $ may be derived with program analysis, and defines a partial order on the statement invocations that must be fulfilled to preserve the semantics of the executing program. 
+As in many loop optimization models \cite{xueUnimodularTransformationsNonperfectly1997,grosserPolyhedralASTGeneration2015}, we will assume the program iterates through $\domain$ lexicographically. The specific invocation of a statement $S$ executed with induction variables $v \in \domain$ is denoted as $S_{v}$, and the set of all statement invocations as $\mathcal{D}_S$.  The dependency relation $\mathbf{D}_r : \mathcal{D}_S \times \mathcal{D}_S $ may be derived with program analysis%CITE
+, and defines a partial order on the statement invocations that must be fulfilled to preserve the semantics of the executing program. 
 
-We now define a loop transformation $T: \domain \to \domain$ as a transformation of a loop's iteration domain. For $T$ to be a legal transformation, it must preserve program semantics, which requires the dependency relation to remain satisfied under $T$ (i.e. $\forall (S_u,S_v) \in \mathbf{D}_r . (S_{T(u)}, S_{T(v)}) \in \mathbf{D}_r$).
+We now define a loop transformation $T: \domain \to \domain$ as a transformation of a loop's iteration domain. For $T$ to be a legal transformation, it must preserve program semantics, which requires the dependency relation to remain satisfied under $T$ (i.e. $\forall (S_u,S_v) \in \mathbf{D}_r . T(u) \prec T(v)$).
 
 % I hate every word I've written here
 
@@ -319,13 +320,13 @@ $\xrightarrow{\mathsf{fuse}~t~\mathsf{into}~o}$
     \For {$k \in [0,32)$}
       \State $o_{i,j} = a_{i,k} m_{j,k}$
     \EndFor
-  \EndFor
+  \EndFor4
 \end{algorithmic}
 \end{tabular}
 
-\subsubsection{Polyhedral compilers} Polyhedral compilers \cite{grosserPolyhedralASTGeneration2015,popGRAPHITEPolyhedralAnalyses2006,baghdadiTiramisuPolyhedralCompiler2019,sadayappan298PUBLICATIONS8186} are compilers that operate on perfectly nested affine loops known as static control parts (or SCoPs). By restricting array accesses to affine expressions on loop induction variables, formulas can be derived to calculate statistics about programs such as memory limits, cache locality that can then be optimized for. Moreover, loop transformations can be expressed as affine transformations on the loop induction variations, making polyhedral programs closed under loop transformations and can be recursively optimized.
+\subsubsection{Polyhedral compilers}  Polyhedral compilers \cite{grosserPolyhedralASTGeneration2015,popGRAPHITEPolyhedralAnalyses2006,baghdadiTiramisuPolyhedralCompiler2019,sadayappan298PUBLICATIONS8186} operate on perfectly nested loops that are restricted to having loop bounds that are Presburger expressions over the upper loops' induction variables \cite{feautrier1988parametric}. If all memory accesses within the statement are also Presburger expressions on the loops' induction variables, the programs are known as static control parts (or SCoPs). As an abstract model of the program, the polyhedral representation of a SCoP is an exact approximation.
 
-Work has also been done on directly targeting the GPU \cite{verdoolaegePolyhedralParallelCode2013}, by tiling the SCoP and using affine expressions to compute the memory requirement of the subtile being dispatched to the GPU.
+Affine expressions may be derived to derive heuristics such as memory usage \cite{quillere2000optimizing} and cache locality \cite{zinenko2017unified}. Such heuristics can be derived about the subtile of a perfectly nested loop, allowing us to extract a memory-optimal tile as a kernel to extract on the GPU as in PPCG \cite{verdoolaegePolyhedralParallelCode2013}.
 
 \subsubsection{User-schedulable languages} User-schedulable languages \cite{visserStrategoLanguageProgram2001, ragan-kelleyHalideDecouplingAlgorithms2017,chenTVMAutomatedEndtoEnd2018, ikarashiExo2Growing2025} refer to programming languages that specify two languages, a declarative language to describe the computation of the program, and a scheduling language to describe the optimization and gradual lowering of the program to the hardware. This achieves separation of concerns when reasoning about the numerics of the computation versus its performance.
 
@@ -339,7 +340,7 @@ Work has also been done on directly targeting the GPU \cite{verdoolaegePolyhedra
 We highlight the following dialects which we regularly use in our work:
 \begin{itemize} 
   \item \dialect{tensor}: High-level types and operations for $N$-dimensional shaped arrays
-  \item \dialect{linalg} \cite{LinalgDialectRationale}: Perfectly nested loops operating on shaped values such as \dialect{tensor}s
+  \item \dialect{linalg} \cite{thellvmfoundationLinalgDialectMLIR2025}: Perfectly nested loops operating on shaped values such as \dialect{tensor}s
   \item \dialect{spirv}: Low-level IR targeting GPU code generation using Vulkan's SPIR-V \cite{khronosSPIRVSpecification2025}
   \item \dialect{llvm}: Low-level IR that can be optimized by the LLVM backend
   \item \dialect{transform} \cite{luckeMLIRTransformDialect2024}: MLIR's scheduling language for program transformations 
@@ -351,13 +352,13 @@ Triton \cite{tilletTritonIntermediateLanguage2019} is an MLIR-based compiler tha
 
 \subsection{GPU and Processing Graphics}
 
-As we saw with general compute, computing on the GPU has come a long way from being a fixed-function pipeline, manually plugging in transformation matrices and lights to draw to the screen texture \cite{segalOpenGLTMGraphicsSystem1994}. However, while data center GPUs \cite{NVIDIABlackwellArchitecture2025} have discarded their graphical capabilities to further accelerate block \cite{rouhaniMicroscalingDataFormats2023} and tensor \cite{markidisNVIDIATensorCore2018} operations, consumer grade GPUs retain their historic purpose: graphics processing. In other words, the compute pipeline, while the most general, is far from the only pipeline available on the GPU. In fact, there are two other pipelines dedicated to graphics rendering available:
+As we saw with general compute, computing on the GPU has come a long way from being a fixed-function pipeline, manually plugging in transformation matrices and lights to draw to the screen texture \cite{segalOpenGLTMGraphicsSystem1994}. However, while data center GPUs \cite{nvidiaNVIDIABlackwellArchitecture2025} have discarded their graphical capabilities to further accelerate block \cite{rouhaniMicroscalingDataFormats2023} and tensor \cite{markidisNVIDIATensorCore2018} operations, consumer grade GPUs retain their historic purpose: graphics processing. In other words, the compute pipeline, while the most general, is far from the only pipeline available on the GPU. In fact, there are two other pipelines dedicated to graphics rendering available:
 \begin{itemize}
   \item Raster pipeline (\autoref{fig:rasterpipe})
   \item Raytracing pipeline (\autoref{fig:raytracepipe})
 \end{itemize}
 
-To dispatch work to the GPU and select the appropriate pipelines, render engines interface with the graphics card using low-level APIs such as DirectX \cite{stevewhimsDirect3D12Reference}, Metal, and Vulkan \cite{vulkanHomeVulkanCross2025}. One common abstraction implemented by graphics engines, such as O3DE \cite{O3DERenderHardware} and NVIDIA-RTX \cite{nvidiaNVIDIARTXNVRHI2025}, is to abstract access to the underlying API with a \emph{rendering hardware interface} (RHI), which allows for multi-API targeting while restricting optimization for API-specific features.
+To dispatch work to the GPU and select the appropriate pipelines, render engines interface with the graphics card using low-level APIs such as DirectX \cite{stevewhimsDirect3D12Reference}, Metal, and Vulkan \cite{vulkanHomeVulkanCross2025}. One common abstraction implemented by graphics engines, such as O3DE \cite{open3denginecontributorsO3DERenderHardware2025} and NVIDIA-RTX \cite{nvidiaNVIDIARTXNVRHI2025}, is to abstract access to the underlying API with a \emph{rendering hardware interface} (RHI), which allows for multi-API targeting while restricting optimization for API-specific features.
 
 \subsubsection{The Raster Pipeline}
 
@@ -392,7 +393,7 @@ Ultimately, both render pipelines were designed to solve the render equation \ci
   \int_\Omega L_i(\omega_i)f(\omega_i,\omega_o,\theta)\langle \mathbf{n}, \omega_i \rangle \mathsf{d} \omega_i
 \end{align}
 
-The integral over the hemisphere is what allows for computing global illumination in a realistic manner. By nature of being an integral over a 2D manifold, it is also computationally intensive, yet must be performed for every fragment in the render target to achieve realistic lighting. In real-time workflows, radiance probes \cite{silvennoinenRealtimeGlobalIllumination2017} placed throughout the scene collect global illumination. Radiance cascades \cite{RadianceCascadesPaperOut_latexmk2RadianceCascadespdf} are a modern technique that utilize the mipmap feature of TMUs to accelerate the interpolation of irradiance data from adjacent radiance probes.
+The integral over the hemisphere is what allows for computing global illumination in a realistic manner. By nature of being an integral over a 2D manifold, it is also computationally intensive, yet must be performed for every fragment in the render target to achieve realistic lighting. In real-time workflows, radiance probes \cite{silvennoinenRealtimeGlobalIllumination2017} placed throughout the scene collect global illumination. Radiance cascades \cite{raikiriRaikiriRadianceCascadesPaper2025} are a modern technique that utilize the mipmap feature of TMUs to accelerate the interpolation of irradiance data from adjacent radiance probes.
 
 \subsection{Compilers in Computer Graphics}
 
@@ -403,7 +404,7 @@ A number of DSLs have been devised, some specfically for computer graphics, othe
 
 \subsubsection{Inverse Rendering}
 
-Inverse rendering derives geometry and materials from one or more final images of a target scene. This is achieved through machine learning; specifically, the approach of \emph{differentiable rendering} uses \emph{automatic differentiation} (or autodiff) of the shaders to produce geometry and textures that would produce the same target images. State of the art in the field includes Mitsuba (and its underlying IR, DR.JIT \cite{jakobDRJITJustintimeCompiler2022}), which is able to automatically differentiate the whole pipeline and train for both geometry and render simultaneously, and SlangD \cite{bangaruSLANGDFastModular2023}, which performs automatic differentiation at the per-shader level which improves performance but forces geometry and render to be trained separately. Crucially, both papers include performance comparisons with the autodiff in machine learning frameworks such as JAX \cite{frostigCompilingMachineLearning2018} and Enzyme \cite{enzymeadEnzymeCon2023HackableAutodiff2024}. We include this as an interesting exploration of compiler techniques in computer graphics, and a potential research pivot should initial plans go awry.
+Inverse rendering derives geometry and materials from one or more final images of a target scene. This is achieved through machine learning; specifically, the approach of \emph{differentiable rendering} uses \emph{automatic differentiation} (or autodiff) of the shaders to produce geometry and textures that would produce the same target images. State of the art in the field includes Mitsuba (and its underlying IR, DR.JIT \cite{jakobDRJITJustintimeCompiler2022}), which is able to automatically differentiate the whole pipeline and train for both geometry and render simultaneously, and SlangD \cite{bangaruSLANGDFastModular2023}, which performs automatic differentiation at the per-shader level which improves performance but forces geometry and render to be trained separately. Crucially, both papers include performance comparisons with the autodiff in machine learning frameworks such as JAX \cite{frostigCompilingMachineLearning2018} and Enzyme \cite{mosesScalableAutomaticDifferentiation2022}. We include this as an interesting exploration of compiler techniques in computer graphics, and a potential research pivot should initial plans go awry.
 
 \section{Thesis Proposal}
 
@@ -500,17 +501,17 @@ While advances in rendering techniques have pushed the envelope of real-time ren
 \subsubsection{State-of-the-art} 
 The state-of-the-art for high performance computing DSLs in computer graphics is Taichi \cite{huTaichiLanguageHighperformance2019}, a Python-embedded DSL that has its user-schedulable language separate the computation from the data format. Taichi is very performant for its target use case, but it struggles to achieve even cinematic performance of 24 frames per second. We argue that the optimization of the pipeline, performed for many years in real-time simulation engines, and caching of frame-to-frame state is critical to achieving real-time performance.
 
-The state-of-the-art real-time simulation engine for comparison is Unreal Engine 5's Lumen engine \cite{LumenGlobalIllumination}, which adopts many advanced graphics techniques to achieve realistic graphics. Global illumination is achieved by accumulating light data over several frames, known as \emph{temporal sampling} \cite{lambruTemporalSamplingRealTime2021}. As with our machine learning compatriats, beating the hand-tuned equivalent is nigh impossible, but achieving comparable real-time performance alone would be a fantastic result.
+The state-of-the-art real-time simulation engine for comparison is Unreal Engine 5's Lumen engine \cite{epicgamesLumenGlobalIllumination2025}, which adopts many advanced graphics techniques to achieve realistic graphics. Global illumination is achieved by accumulating light data over several frames, known as \emph{temporal sampling} \cite{lambruTemporalSamplingRealTime2021}. As with our machine learning compatriats, beating the hand-tuned equivalent is nigh impossible, but achieving comparable real-time performance alone would be a fantastic result.
 
 \subsubsection{Reactive programming} A key feature of real-time simulation engines that stands out from offline rendering engines is the expectation of temporal locality, resulting in stateful functions executed from frame to frame. The semantics of frame-to-frame state can be captured with an aspect of reactive programming known as \emph{synchronous reactions} \cite{pompougnacWeavingSynchronousReactions2022}.
 
 
-\subsubsection{Criteria for Success} As control set ups, we have to turn to tutorial projects by LearnOpenGL \cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems \cite{SaschaWillemsVulkanExamples}, as many graphics engines do not make it easy to isolate features of their graphics pipeline for apples-to-apples comparisons. Success is defined by achieving real-time framerates while applying transformations that further optimize the OpenGL/Vulkan tutorial examples with minimal (<20) lines of code expressed as program transformations.
+\subsubsection{Criteria for Success} As control set ups, we have to turn to tutorial projects by LearnOpenGL \cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems \cite{willemsSaschaWillemsVulkanExamples2025}, as many graphics engines do not make it easy to isolate features of their graphics pipeline for apples-to-apples comparisons. Success is defined by achieving real-time framerates while applying transformations that further optimize the OpenGL/Vulkan tutorial examples with minimal (<20) lines of code expressed as program transformations.
 
 A groundbreaking success would have occurred if either of the following were achieved: 
 \begin{itemize}
   \item We surpass Taichi's performance, achieving cinematic performance in their domain without loss in fidelity or significant increase in code complexity.
-  \item We can achieve real-time performance in an apples-to-apples comparison with Unreal Engine 5's Lumen Engine \cite{LumenGlobalIllumination} in fewer lines of code.
+  \item We can achieve real-time performance in an apples-to-apples comparison with Unreal Engine 5's Lumen Engine \cite{epicgamesLumenGlobalIllumination2025} in fewer lines of code.
 \end{itemize}
 
 \section {Timeplan}
