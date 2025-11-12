@@ -226,7 +226,7 @@ This literature review will span the three topics that the thesis will cover: th
 
 \begin{figure}
   \includegraphics[scale=0.5]{GPUArchitecture.pdf}
-  \caption{A heavily simplified block diagram of Nvidia's GB202 GPU, also known as the RTX 5090 \cite{nvidiaNvidiartxblackwellgpuarchitecture2025}. \label{fig:gpuarch}}
+  \caption{A heavily simplified block diagram of Nvidia's GB202 GPU, also known as the RTX 5090 \cite{nvidiaNVIDIARTXBlackwell2025}. \label{fig:gpuarch}}
 \end{figure}
 
 The GPU, or graphics processing unit, is a single-instruction multiple-data (or SIMD) architecture that consists of a massive number of streaming multiprocessors (or SMs) \autoref{fig:gpuarch}. A streaming multiprocessor consists of a set of CUDA cores and a set of warp schedulers, and execute bundles of threads known as warps. On Nvidia architectures, an SM receives a warp of 32 threads that share four warp schedulers. % Pre-Volta, threads would conditionally execute the same instruction eight times in parallel four times in sequence for the total of 32 threads. However, as of Volta, each thread has its own program counter, and programmers are encouraged to treat each thread as its own instance in a paradigm known as SIMT (single-instruction multiple-thread). The underlying hardware attempts to retain the performance granted by SIMD by grouping threads with similar control flow, however, if inter-lane control flow diverges too much, they become subject to performance degradation in what is known as \emph{warp divergence}.
@@ -321,7 +321,7 @@ $\xrightarrow{\mathsf{fuse}~t~\mathsf{into}~o}$
 \end{algorithmic}
 \end{tabular}
 
-\subsubsection{Polyhedral compilers}  Polyhedral compilers \cite{grosserPolyhedralASTGeneration2015,popGRAPHITEPolyhedralAnalyses2006,baghdadiTiramisuPolyhedralCompiler2019,sadayappan298PUBLICATIONS8186} operate on perfectly nested loops that are restricted to having loop bounds that are Presburger expressions over the upper loops' induction variables \cite{feautrier1988parametric}. If all memory accesses within the statement are also Presburger expressions on the loops' induction variables, the programs are known as static control parts (or SCoPs). As an abstract model of the program, the polyhedral representation of a SCoP is an exact approximation.
+\subsubsection{Polyhedral compilers}  Polyhedral compilers \cite{grosserPolyhedralASTGeneration2015,popGRAPHITEPolyhedralAnalyses2006,baghdadiTiramisuPolyhedralCompiler2019,bondhugula2008pluto} operate on perfectly nested loops that are restricted to having loop bounds that are Presburger expressions over the upper loops' induction variables \cite{feautrier1988parametric}. If all memory accesses within the statement are also Presburger expressions on the loops' induction variables, the programs are known as static control parts (or SCoPs). As an abstract model of the program, the polyhedral representation of a SCoP is an exact approximation.
 
 Affine expressions may be derived to derive heuristics such as memory usage \cite{quillere2000optimizing} and cache locality \cite{zinenko2017unified}. Such heuristics can be derived about the subtile of a perfectly nested loop, allowing us to extract a memory-optimal tile as a kernel to extract on the GPU as in PPCG \cite{verdoolaegePolyhedralParallelCode2013}.
 
@@ -363,7 +363,7 @@ The raster pipeline (\autoref{fig:rasterpipe}) is what directs the graphics card
 
 \begin{figure}
 \includegraphics[scale=0.50,keepaspectratio]{RasterPipeline.pdf}
-\caption{The raster pipeline.\label{fig:rasterpipe}}  
+\caption{The raster pipeline.\label{fig:rasterpipe}} 
 \end{figure}
 
 \paragraph{Deferred Shading} As there are far more fragment shader invocations than vertex shader invocations, significant gains are made by not performing expensive lighting computations. Deferred shading defers the lighting computation to a separate render pass, painting the intermediate values required by the rendering equation into a set of output textures known as the geometry buffer (or G-buffer). While this improved the performance of lighting computations, deferred shading was notoriously memory intensive. As an embarrassingly parallel operation, however, the deferred shading computation could be tiled, saving the memory limits of the G-buffer.
