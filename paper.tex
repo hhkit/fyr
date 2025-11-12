@@ -242,7 +242,9 @@ Typically, a kernel dispatch is performed from the CPU (also known as the host d
 
 As a massively parallel architecture, compilers for the GPU are closely associated with parallel compilers.
 
-\subsubsection{Loop optimizing compilers} Loop optimizing compilers focus on optimizing \emph{perfectly nested loops}, which we define loops that perfectly nest inside each other with no statements between loop headers. We demonstrate this with a C/C++ code example, but also present a corresponding mathematical notation to simply the syntax and emphasize changes effected by loop transformations.
+\newcommand{\domain}{\mathbb{D}}
+
+\subsubsection{Loop optimizations} Loop optimizations are a set of program transformations that target loops; specifically, they target \emph{perfectly nested loops}. Perfectly nested loops are crucial for loop optimization, as by having no statements in between loop headers, the loop can be compactly represented as a 2-tuple of its iteration domain $\domain \in \mathcal{P}(\mathbb{Z}^{n})$ and its body $S \in \domain \to \mathcal{D}_S$, and transformations can be made to either the iteration domain or the statement without necessarily reasoning about the other. We demonstrate this with a C/C++ example, but also present a corresponding notation to simply the syntax and emphasize changes effected by loop transformations. For loops deemed to be embarrassingly parallel, we shall denote them with $\mathbf{for~all}$ instead of $\mathbf{for}$.
 
 \begin{tabular}{p{0.46\textwidth}p{0.46\textwidth}}
 \begin{minted}{cpp}
@@ -264,23 +266,17 @@ S:      c[i] = c[i] + a[i][j];
 \vfill
 \end{tabular}
 
-\newcommand{\domain}{\mathbb{D}}
+As in many loop optimization models \cite{xueUnimodularTransformationsNonperfectly1997,grosserPolyhedralASTGeneration2015}, we will assume the program iterates through $\domain$ lexicographically. The specific invocation of a statement $S$ executed with induction variables $v \in \domain$ is denoted as $S_{v \in \domain}$, and the set of all statement invocations as $\mathcal{D}_S$.  The dependency relation $\mathbf{D}_r : \mathcal{D}_S \times \mathcal{D}_S $ may be derived with program analysis, and defines a partial order on the statement invocations that must be fulfilled to preserve the semantics of the executing program. 
 
-Perfectly nested loops are crucial for loop optimization, as by representing the loop as a 2-tuple of its iteration domain $\domain \in \mathcal{P}(\mathbb{Z}^{n})$ and its body $S \in \domain \to \mathcal{D}_S$, we can transform and reason about the loop's semantics separately. For loops deemed to be embarrassingly parallel, we shall denote them with $\mathbf{for~all}$ instead of $\mathbf{for}$.
-
-As in many loop optimization frameworks \cite{xueUnimodularTransformationsNonperfectly1997,grosserPolyhedralASTGeneration2015}, we will assume the program iterates through $\domain$ lexicographically. The specific invocation of a statement $S$ executed with induction variables $v \in \domain$ is denoted as $S_{v \in \domain}$, and the set of all statement invocations as $\mathcal{D}_S$.  The dependency relation $\mathbf{D}_r : \mathcal{D}_S \times \mathcal{D}_S $ may be derived with program analysis, and defines a partial order on the statement invocations that must be fulfilled to preserve the semantics of the executing program. 
-
-We now define a loop transformation as a transformation of a loop's iteration domain. For a loop transformation $T: \domain \to \domain$ to preserve the program's semantics, the dependency relation must remain satisfied under the transformation (that is, $\forall (S_u,S_v) \in \mathbf{D}_r . (S_{T(u)}, S_{T(v)}) \in \mathbf{D}_r$).
+We now define a loop transformation $T: \domain \to \domain$ as a transformation of a loop's iteration domain. For $T$ to be a legal transformation, it must preserve program semantics, which requires the dependency relation to remain satisfied under $T$ (i.e. $\forall (S_u,S_v) \in \mathbf{D}_r . (S_{T(u)}, S_{T(v)}) \in \mathbf{D}_r$).
 
 % I hate every word I've written here
 
-While there are a myriad of loop transformations such as loop reversal, loop skewing, and loop unrolling, we will specifically discuss the two loop transforms that are required in any loop optimizing framework targeting the GPU. These are \emph{loop tiling} \cite{xueTilingLoopTransformation2011,wonnacottScalabilityLoopTiling2013} and \emph{loop fusion} \cite{manjikianFusionLoopsParallelism1997, darteComplexityLoopFusion1999,qiaoLoopFusionKernel2019,mehtaRevisitingLoopFusion2014}. 
+While there are a myriad of loop transformations such as loop reversal, loop skewing, and loop unrolling, we will specifically discuss the two loop transformations that are required in any loop optimizing framework targeting the GPU: \emph{loop tiling} \cite{xueTilingLoopTransformation2011,wonnacottScalabilityLoopTiling2013} and \emph{loop fusion} \cite{manjikianFusionLoopsParallelism1997, darteComplexityLoopFusion1999,qiaoLoopFusionKernel2019,mehtaRevisitingLoopFusion2014}. 
 
-\paragraph{Loop tiling} Loop tiling splits a loop dimension into multiple smaller dimensions. Tiling is a crucial transformation as perfectly nested loops are \emph{closed} under tiling, allowing the inner loops to be extracted as kernels \cite{wonnacottScalabilityLoopTiling2013} and be further tiled for lower-level optimizations such as vectorization.\\
+\paragraph{Loop tiling} Loop tiling splits a loop dimension into multiple smaller dimensions. Tiling is a crucial transformation as perfectly nested loops are \emph{closed} under tiling, allowing the inner loops to be extracted as kernels \cite{wonnacottScalabilityLoopTiling2013} and be further tiled for lower-level optimizations such as vectorization.
 
-
-\noindent
-\begin{tabular}{m{0.275\textwidth}m{0.05\textwidth}m{0.55\textwidth}}
+\begin{tabular}{m{0.275\textwidth}m{0.08\textwidth}m{0.55\textwidth}} \\
 \multicolumn{3}{p{0.9\textwidth}}{
   $\quad \mathsf{let}~ \lBrack  S \rBrack \left(i\right) \triangleq \left( m_{i} := a_{i} + b_{i} \right) ~\mathsf{in}$ 
 }
@@ -302,7 +298,30 @@ $\xrightarrow{\mathsf{tile}(16)}$
 \end{algorithmic}
 \end{tabular}
 
-\paragraph{Loop fusion} Loop fusion refers to the fusion of dependent loops to reduce the cost of iteration or, combined with tiling, allow the extraction of more complex kernels.  
+\paragraph{Loop fusion} Loop fusion refers to the fusion of dependent loops to reduce the cost of iteration, removes intermediate values, or, when combined with tiling, allows for the extraction of more complex kernels. We demonstrate this below by fusing a transpose into a matrix multiplication --- a common fusion that exploits the cache in the CPU.
+
+\begin{tabular}{m{0.375\textwidth}m{0.08\textwidth}m{0.55\textwidth}} \\
+\begin{algorithmic}
+  \ForAll {$(i, j) \in [0,64) \times [0,32)$}  
+    \State $t_{j,i} = m_{i,j}$
+  \EndFor
+  \ForAll {$(i, j) \in [0,16) \times [0,64)$}  
+    \For {$k \in [0,32)$}
+      \State $o_{i,j} = a_{i,k} t_{k,j}$
+    \EndFor
+  \EndFor
+\end{algorithmic}
+&
+$\xrightarrow{\mathsf{fuse}~t~\mathsf{into}~o}$
+&
+\begin{algorithmic}
+  \ForAll {$(i, j) \in [0,16) \times [0,64)$}  
+    \For {$k \in [0,32)$}
+      \State $o_{i,j} = a_{i,k} m_{j,k}$
+    \EndFor
+  \EndFor
+\end{algorithmic}
+\end{tabular}
 
 \subsubsection{Polyhedral compilers} Polyhedral compilers \cite{grosserPolyhedralASTGeneration2015,popGRAPHITEPolyhedralAnalyses2006,baghdadiTiramisuPolyhedralCompiler2019,sadayappan298PUBLICATIONS8186} are compilers that operate on perfectly nested affine loops known as static control parts (or SCoPs). By restricting array accesses to affine expressions on loop induction variables, formulas can be derived to calculate statistics about programs such as memory limits, cache locality that can then be optimized for. Moreover, loop transformations can be expressed as affine transformations on the loop induction variations, making polyhedral programs closed under loop transformations and can be recursively optimized.
 
@@ -312,6 +331,7 @@ Work has also been done on directly targeting the GPU \cite{verdoolaegePolyhedra
 
 \subsubsection{Hybrid IR: SSA and Regions} LLVM's MLIR \cite{lattnerMLIRCompilerInfrastructure2020} framework specifies an SSA-driven hybrid IR that organizes high- and low-level semantics into separate \emph{dialects}. In MLIR, operations may have regions that contain basic blocks that contain operations, allowing for operations of different dialects to coexist.
 
+% TODO: mlir syntax
 % \begin{minted}{mlir}
   
 % \end{minted}
