@@ -242,37 +242,69 @@ Typically, a kernel dispatch is performed from the CPU (also known as the host d
 
 As a massively parallel architecture, compilers for the GPU are closely associated with parallel compilers.
 
-\subsubsection{Loop optimizing compilers} Loop optimizing compilers focus on optimizing \emph{perfectly nested loops}, which we define loops that perfectly nest inside each other with no statements between loop headers. We demonstrate this with the corresponding C/C++ code, but also present a mathematical notation to simply the syntax and emphasize changes effected by loop transformations.
+\subsubsection{Loop optimizing compilers} Loop optimizing compilers focus on optimizing \emph{perfectly nested loops}, which we define loops that perfectly nest inside each other with no statements between loop headers. We demonstrate this with a C/C++ code example, but also present a corresponding mathematical notation to simply the syntax and emphasize changes effected by loop transformations.
 
 \begin{tabular}{p{0.46\textwidth}p{0.46\textwidth}}
-\vfill
 \begin{minted}{cpp}
 #pragma omp parallel 
 for (int i = 0; i < 1024; ++i)
     for (int j = 0; j < 32; ++j)
-S:      c = c + a[32 * i + j];
+S:      c[i] = c[i] + a[i][j];
 \end{minted}
-\vfill
 &%
-\vfill
+
 \begin{algorithmic}
-  % matmul
+  \State $\mathsf{let }~ \lBrack  S \rBrack (i,j) \triangleq \left( c_i := c_i + a_{i,j} \right) ~\mathsf{in}$ 
   \ForAll {$i \in [0,1024)$}  
     \For {$j \in [0, 32)$}  
-      \State $\lBrack  S_{i,j} \rBrack = \left( c := c + a_{32i + j} \right)$ %todo: is this syntax valid
+      \State $ \lBrack  S \rBrack (i,j) $
     \EndFor
   \EndFor
 \end{algorithmic}
 \vfill
 \end{tabular}
 
-Perfectly nested loops are crucial for loop optimization, as it allows for treating the entire loop nest as a single loop without concerns about statement order. 
+\newcommand{\domain}{\mathbb{D}}
 
-Unimodular loop optimization \cite{xueUnimodularTransformationsNonperfectly1997} represents loop transformations as unimodular matrices applied to a vector of the loop's induction variables. Transformations expressed as a unimodular matrix, however, were unable to tile loops (increasing dimensionality) or skew them (as loops were restricted to be from $0$ to $N$).
+Perfectly nested loops are crucial for loop optimization, as by representing the loop as a 2-tuple of its iteration domain $\domain \in \mathcal{P}(\mathbb{Z}^{n})$ and its body $S \in \domain \to \mathcal{D}_S$, we can transform and reason about the loop's semantics separately. For loops deemed to be embarrassingly parallel, we shall denote them with $\mathbf{for~all}$ instead of $\mathbf{for}$.
 
-The primary transformations required for loop optimizations are \emph{loop tiling} \cite{xueTilingLoopTransformation2011} and \emph{loop fusion}. For demonstration, we will discuss \emph{embarrassingly parallel loops}.
+As in many loop optimization frameworks \cite{xueUnimodularTransformationsNonperfectly1997,grosserPolyhedralASTGeneration2015}, we will assume the program iterates through $\domain$ lexicographically. The specific invocation of a statement $S$ executed with induction variables $v \in \domain$ is denoted as $S_{v \in \domain}$, and the set of all statement invocations as $\mathcal{D}_S$.  The dependency relation $\mathbf{D}_r : \mathcal{D}_S \times \mathcal{D}_S $ may be derived with program analysis, and defines a partial order on the statement invocations that must be fulfilled to preserve the semantics of the executing program. 
 
-\subsubsection{Polyhedral compilers} Polyhedral compilers \cite{grosserPolyhedralASTGeneration2015,popGRAPHITEPolyhedralAnalyses2006,baghdadiTiramisuPolyhedralCompiler2019} are compilers that operate on perfectly nested affine loops known as static control parts (or SCoPs). By restricting array accesses to affine expressions on loop induction variables, formulas can be derived to calculate statistics about programs such as memory limits, cache locality that can then be optimized for. Moreover, loop transformations can be expressed as affine transformations on the loop induction variations, making polyhedral programs closed under loop transformations and can be recursively optimized.
+We now define a loop transformation as a transformation of a loop's iteration domain. For a loop transformation $T: \domain \to \domain$ to preserve the program's semantics, the dependency relation must remain satisfied under the transformation (that is, $\forall (S_u,S_v) \in \mathbf{D}_r . (S_{T(u)}, S_{T(v)}) \in \mathbf{D}_r$).
+
+% I hate every word I've written here
+
+While there are a myriad of loop transformations such as loop reversal, loop skewing, and loop unrolling, we will specifically discuss the two loop transforms that are required in any loop optimizing framework targeting the GPU. These are \emph{loop tiling} \cite{xueTilingLoopTransformation2011,wonnacottScalabilityLoopTiling2013} and \emph{loop fusion} \cite{manjikianFusionLoopsParallelism1997, darteComplexityLoopFusion1999,qiaoLoopFusionKernel2019,mehtaRevisitingLoopFusion2014}. 
+
+\paragraph{Loop tiling} Loop tiling splits a loop dimension into multiple smaller dimensions. Tiling is a crucial transformation as perfectly nested loops are \emph{closed} under tiling, allowing the inner loops to be extracted as kernels \cite{wonnacottScalabilityLoopTiling2013} and be further tiled for lower-level optimizations such as vectorization.\\
+
+
+\noindent
+\begin{tabular}{m{0.275\textwidth}m{0.05\textwidth}m{0.55\textwidth}}
+\multicolumn{3}{p{0.9\textwidth}}{
+  $\quad \mathsf{let}~ \lBrack  S \rBrack \left(i\right) \triangleq \left( m_{i} := a_{i} + b_{i} \right) ~\mathsf{in}$ 
+}
+\\
+\begin{algorithmic}
+  \ForAll {$i \in [0,1024)$}  
+      \State $\lBrack  S \rBrack (i)$
+  \EndFor
+\end{algorithmic}
+&
+$\xrightarrow{\mathsf{tile}(16)}$
+&
+\begin{algorithmic}
+  \ForAll {$i \in [0,64)$}  
+    \ForAll {$i' \in [0,16)$}  
+      \State $\lBrack  S \rBrack (16i + i')$
+    \EndFor
+  \EndFor
+\end{algorithmic}
+\end{tabular}
+
+\paragraph{Loop fusion} Loop fusion refers to the fusion of dependent loops to reduce the cost of iteration or, combined with tiling, allow the extraction of more complex kernels.  
+
+\subsubsection{Polyhedral compilers} Polyhedral compilers \cite{grosserPolyhedralASTGeneration2015,popGRAPHITEPolyhedralAnalyses2006,baghdadiTiramisuPolyhedralCompiler2019,sadayappan298PUBLICATIONS8186} are compilers that operate on perfectly nested affine loops known as static control parts (or SCoPs). By restricting array accesses to affine expressions on loop induction variables, formulas can be derived to calculate statistics about programs such as memory limits, cache locality that can then be optimized for. Moreover, loop transformations can be expressed as affine transformations on the loop induction variations, making polyhedral programs closed under loop transformations and can be recursively optimized.
 
 Work has also been done on directly targeting the GPU \cite{verdoolaegePolyhedralParallelCode2013}, by tiling the SCoP and using affine expressions to compute the memory requirement of the subtile being dispatched to the GPU.
 
@@ -284,7 +316,7 @@ Work has also been done on directly targeting the GPU \cite{verdoolaegePolyhedra
   
 % \end{minted}
 
-We highlight the following dialects which we use regularly in our work:
+We highlight the following dialects which we regularly use in our work:
 \begin{itemize} 
   \item \dialect{tensor}: High-level types and operations for $N$-dimensional shaped arrays
   \item \dialect{linalg} \cite{LinalgDialectRationale}: Perfectly nested loops operating on shaped values such as \dialect{tensor}s

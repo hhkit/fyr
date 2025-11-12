@@ -531,6 +531,21 @@
   file = {/Users/ihkh2/Zotero/storage/BMXHLFSV/Dao et al. - 2022 - FlashAttention Fast and Memory-Efficient Exact Attention with IO-Awareness.pdf}
 }
 
+@inproceedings{darteComplexityLoopFusion1999,
+  title = {On the Complexity of Loop Fusion},
+  booktitle = {1999 {{International Conference}} on {{Parallel Architectures}} and {{Compilation Techniques}} ({{Cat}}. {{No}}.{{PR00425}})},
+  author = {Darte, A.},
+  year = 1999,
+  month = oct,
+  pages = {149--157},
+  issn = {1089-795X},
+  doi = {10.1109/PACT.1999.807510},
+  urldate = {2025-11-12},
+  abstract = {Loop fusion is a program transformation that combines several loops into one. It is used in parallelizing compilers mainly for increasing the granularity of loops and for improving data reuse. The goal of this paper is to study, from a theoretical point of view, several variants of the loop fusion problem-identifying polynomially solvable cases and NP-complete cases-and to make the link between these problems and some scheduling problems that arise from completely different areas. We study among others, the fusion of loops of different types, and the fusion of loops when combined with loop shifting.},
+  keywords = {Compaction,Costs,Law,Legal factors,Polynomials,Processor scheduling,Read only memory,Registers,Software performance,Testing},
+  file = {/Users/ihkh2/Zotero/storage/CYH8JRIB/Darte - 1999 - On the complexity of loop fusion.pdf}
+}
+
 @misc{DeepDiveBSDF,
   title = {Deep Dive into a {{BSDF}} - {{Mitsuba}} 3},
   urldate = {2025-09-15},
@@ -1322,6 +1337,22 @@
   file = {/Users/ihkh2/Zotero/storage/H769VPG5/Li et al. - 2024 - Accelerated Auto-Tuning of GPU Kernels for Tensor Computations.pdf}
 }
 
+@article{liAutomaticTilingIterative2004,
+  title = {Automatic Tiling of Iterative Stencil Loops},
+  author = {Li, Zhiyuan and Song, Yonghong},
+  year = 2004,
+  month = nov,
+  journal = {ACM Trans. Program. Lang. Syst.},
+  volume = {26},
+  number = {6},
+  pages = {975--1028},
+  issn = {0164-0925},
+  doi = {10.1145/1034774.1034777},
+  urldate = {2025-11-12},
+  abstract = {Iterative stencil loops are used in scientific programs to implement relaxation methods for numerical simulation and signal processing. Such loops iteratively modify the same array elements over different time steps, which presents opportunities for the compiler to improve the temporal data locality through loop tiling. This article presents a compiler framework for automatic tiling of iterative stencil loops, with the objective of improving the cache performance. The article first presents a technique which allows loop tiling to satisfy data dependences in spite of the difficulty created by imperfectly nested inner loops. It does so by skewing the inner loops over the time steps and by applying a uniform skew factor to all loops at the same nesting level. Based on a memory cost analysis, the article shows that the skew factor must be minimized at every loop level in order to minimize cache misses. A graph-theoretical algorithm, which takes polynomial time, is presented to determine the minimum skew factor. Furthermore, the memory-cost analysis derives the tile size which minimizes capacity misses. Given the tile size, an efficient and general \&lt;i\&gt;array-padding\&lt;/i\&gt; scheme is applied to remove conflict misses. Experiments were conducted on 16 test programs and preliminary results showed an average speedup of 1.58 and a maximum speedup of 5.06 across those test programs.},
+  file = {/Users/ihkh2/Zotero/storage/ZVIZKUSG/Li and Song - 2004 - Automatic tiling of iterative stencil loops.pdf}
+}
+
 @misc{LinalgDialectRationale,
   title = {Linalg {{Dialect Rationale}}: {{The Case For Compiler-Friendly Custom Operations}} - {{MLIR}}},
   urldate = {2025-07-17},
@@ -1511,6 +1542,23 @@
   file = {/Users/ihkh2/Zotero/storage/PRB8TLJP/Macklin et al. - 2016 - XPBD position-based simulation of compliant constrained dynamics.pdf}
 }
 
+@article{manjikianFusionLoopsParallelism1997,
+  title = {Fusion of Loops for Parallelism and Locality},
+  author = {Manjikian, N. and Abdelrahman, T.S.},
+  year = 1997,
+  month = feb,
+  journal = {IEEE Transactions on Parallel and Distributed Systems},
+  volume = {8},
+  number = {2},
+  pages = {193--209},
+  issn = {1558-2183},
+  doi = {10.1109/71.577265},
+  urldate = {2025-11-12},
+  abstract = {Loop fusion improves data locality and reduces synchronization in data-parallel applications. However, loop fusion is not always legal. Even when legal, fusion may introduce loop-carried dependences which prevent parallelism. In addition, performance losses result from cache conflicts in fused loops. In this paper, we present new techniques to: (1) allow fusion of loop nests in the presence of fusion-preventing dependences, (2) maintain parallelism and allow the parallel execution of fused loops with minimal synchronization, and (3) eliminate cache conflicts in fused loops. We describe algorithms for implementing these techniques in compilers. The techniques are evaluated on a 56-processor KSR2 multiprocessor and on a 18-processor Convex SPP-1000 multiprocessor. The results demonstrate performance improvements for both kernels and complete applications. The results also indicate that careful evaluation of the profitability of fusion is necessary as more processors are used.},
+  keywords = {Application software,Computer Society,Kernel,Law,Legal factors,Parallel processing,Performance loss,Production systems,Profitability,Scalability},
+  file = {/Users/ihkh2/Zotero/storage/QQ4SDUN4/Manjikian and Abdelrahman - 1997 - Fusion of loops for parallelism and locality.pdf}
+}
+
 @misc{markidisNVIDIATensorCore2018,
   title = {{{NVIDIA Tensor Core Programmability}}, {{Performance}} \& {{Precision}}},
   author = {Markidis, Stefano and Der Chien, Steven Wei and Laure, Erwin and Peng, Ivy Bo and Vetter, Jeffrey S.},
@@ -1540,6 +1588,23 @@
   langid = {english},
   keywords = {computer graphics,depth of field,I.3.7Computer Graphics: Three-Dimensional Graphics and Realism: Colour,real-time,rendering,shaders,Shading,Shadowing and Texture},
   file = {/Users/ihkh2/Zotero/storage/2QJIX3WJ/j.1467-8659.2012.02097.html}
+}
+
+@inproceedings{mehtaRevisitingLoopFusion2014,
+  title = {Revisiting Loop Fusion in the Polyhedral Framework},
+  booktitle = {Proceedings of the 19th {{ACM SIGPLAN}} Symposium on {{Principles}} and Practice of Parallel Programming},
+  author = {Mehta, Sanyam and Lin, Pei-Hung and Yew, Pen-Chung},
+  year = 2014,
+  month = feb,
+  pages = {233--246},
+  publisher = {ACM},
+  address = {Orlando Florida USA},
+  doi = {10.1145/2555243.2555250},
+  urldate = {2025-11-12},
+  abstract = {Loop fusion is an important compiler optimization for improving memory hierarchy performance through enabling data reuse. Traditional compilers have approached loop fusion in a manner decoupled from other high-level loop optimizations, missing several interesting solutions. Recently, the polyhedral compiler framework with its ability to compose complex transformations, has proved to be promising in performing loop optimizations for small programs. However, our experiments with large programs using state-ofthe-art polyhedral compiler frameworks reveal suboptimal fusion partitions in the transformed code. We trace the reason for this to be lack of an effective cost model to choose a good fusion partitioning among the possible choices, which increase exponentially with the number of program statements.},
+  isbn = {978-1-4503-2656-8},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/YDBAMT88/Mehta et al. - 2014 - Revisiting loop fusion in the polyhedral framework.pdf}
 }
 
 @misc{menesesAcceleratingRangeMinimum2023,
@@ -1816,6 +1881,21 @@
   file = {/Users/ihkh2/Zotero/storage/TUC5K5YT/Pop et al. - 2006 - GRAPHITE  Polyhedral Analyses and Optimizations for GCC.pdf}
 }
 
+@inproceedings{qiaoLoopFusionKernel2019,
+  title = {From {{Loop Fusion}} to {{Kernel Fusion}}: {{A Domain-Specific Approach}} to {{Locality Optimization}}},
+  shorttitle = {From {{Loop Fusion}} to {{Kernel Fusion}}},
+  booktitle = {2019 {{IEEE}}/{{ACM International Symposium}} on {{Code Generation}} and {{Optimization}} ({{CGO}})},
+  author = {Qiao, Bo and Reiche, Oliver and Hannig, Frank and Teich, J{\"i}rgen},
+  year = 2019,
+  month = feb,
+  pages = {242--253},
+  doi = {10.1109/CGO.2019.8661176},
+  urldate = {2025-11-12},
+  abstract = {Optimizing data-intensive applications such as image processing for GPU targets with complex memory hierarchies requires to explore the tradeoffs among locality, parallelism, and computation. Loop fusion as one of the classical optimization techniques has been proven effective to improve locality at the function level. Algorithms in image processing are increasing their complexities and generally consist of many kernels in a pipeline. The inter-kernel communications are intensive and exhibit another opportunity for locality improvement at the system level. The scope of this paper is an optimization technique called kernel fusion for data locality improvement. We present a formal description of the problem by defining an objective function for locality optimization. By transforming the fusion problem to a graph partitioning problem, we propose a solution based on the minimum cut technique to search fusible kernels recursively. In addition, we develop an analytic model to quantitatively estimate potential locality improvement by incorporating domain-specific knowledge and architecture details. The proposed technique is implemented in an image processing DSL and source-to-source compiler called Hipacc, and evaluated over six image processing applications on three Nvidia GPUs. A geometric mean speedup of up to 2.52 can be observed in our experiments.},
+  keywords = {Image processing,Kernel,Law,Optimization,Parallel processing,Registers},
+  file = {/Users/ihkh2/Zotero/storage/CKKGYXE5/Qiao et al. - 2019 - From Loop Fusion to Kernel Fusion A Domain-Specific Approach to Locality Optimization.pdf}
+}
+
 @article{qinShoggothFormalFoundation2024,
   title = {Shoggoth: {{A Formal Foundation}} for {{Strategic Rewriting}}},
   shorttitle = {Shoggoth},
@@ -1955,6 +2035,14 @@
   title = {{{XLA}} : {{Compiling}} Machine Learning for Peak Performance},
   author = {Sabne, Amit},
   year = 2020
+}
+
+@article{sadayappan298PUBLICATIONS8186,
+  title = {298 {{PUBLICATIONS}} 8,186 {{CITATIONS SEE PROFILE}}},
+  author = {Sadayappan, Ponnuswamy},
+  abstract = {We present the design and implementation of a fully automatic polyhedral source-to-source transformation framework that can optimize regular programs (sequences of possibly imperfectly nested loops) for parallelism and locality simultaneously. Through this work, we show the practicality of analytical model-driven automatic transformation in the polyhedral model -- far beyond what is possible by current production compilers. Unlike previous works, our approach is an end-to-end fully automatic one driven by an integer linear optimization framework that takes an explicit view of finding good ways of tiling for parallelism and locality using affine transformations. We also address generation of tiled code for multiple statement domains of arbitrary dimensionalities under (statement-wise) affine transformations -- an issue that has not been addressed previously. Experimental results from the implemented system show very high speedups for local and parallel execution on multi-cores over state-of-the-art compiler frameworks from the research community as well as the best native compilers. The system also enables the easy use of powerful empirical/iterative optimization for general arbitrarily nested loop sequences.},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/QSFCDG3L/Sadayappan - 298 PUBLICATIONS 8,186 CITATIONS SEE PROFILE.pdf}
 }
 
 @article{sagebaumHighPerformanceDerivativeComputations2019,
@@ -2404,6 +2492,15 @@
   file = {/Users/ihkh2/Zotero/storage/TJHIQR3H/Wang et al. - 2019 - Demystifying Differentiable Programming ShiftReset the Penultimate Backpropagator.pdf}
 }
 
+@inproceedings{wonnacottScalabilityLoopTiling2013,
+  title = {On the {{Scalability}} of {{Loop Tiling Techniques}}},
+  author = {Wonnacott, David and Strout, Michelle},
+  year = 2013,
+  month = jan,
+  abstract = {The Polyhedral model has proven to be a valuable tool for improving memory locality and exploiting parallelism for optimizing dense array codes. This model is expressive enough to describe transformations of imperfectly nested loops, and to capture a variety of program transformations, including many approaches to loop tiling. Tools such as the highly successful PLuTo automatic parallelizer have provided empirical confirmation of the success of polyhedral-based optimization, through experiments in which a number of benchmarks have been executed on machines with small- to medium-scale parallelism. In anticipation of ever higher degrees of parallelism, we have explored the impact of various loop tiling strategies on the asymptotic degree of available parallelism. In our analysis, we consider ``weak scaling'' as described by Gustafson, i.e., in which the data set size grows linearly with the number of processors available. Some, but not all, of the approaches to tiling provide weak scaling. In particular, the tiling currently performed by PLuTo does not scale in this sense. In this article, we review approaches to loop tiling in the published literature, focusing on both scalability and implementation status. We find that fully scalable tilings are not available in general-purpose tools, and call upon the polyhedral compilation community to focus on questions of asymptotic scalability. Finally, we identify ongoing work that may resolve this issue.},
+  file = {/Users/ihkh2/Zotero/storage/88ES6MSX/Wonnacott and Strout - 2013 - On the Scalability of Loop Tiling Techniques.pdf}
+}
+
 @misc{wu4DGaussianSplatting2024,
   title = {{{4D Gaussian Splatting}} for {{Real-Time Dynamic Scene Rendering}}},
   author = {Wu, Guanjun and Yi, Taoran and Fang, Jiemin and Xie, Lingxi and Zhang, Xiaopeng and Wei, Wei and Liu, Wenyu and Tian, Qi and Wang, Xinggang},
@@ -2656,6 +2753,40 @@
   urldate = {2025-09-23},
   abstract = {Creating an appearance-preserving level-of-detail (LoD) representation for arbitrary 3D scenes is a challenging problem. The appearance of a scene is an intricate combination of both geometry and material models and is further complicated by correlation due to the spatial configuration of scene elements. We present a novel volumetric representation for the aggregated appearance of complex scenes and a pipeline for LoD generation and rendering. The core of our representation is the Aggregated Bidirectional Scattering Distribution Function (ABSDF) that summarizes the far-field appearance of all surfaces inside a voxel. We propose a closed-form factorization of the ABSDF that accounts for spatially varying and orientation-varying material parameters. We tackle the challenge of capturing the correlation existing locally within a voxel and globally across different parts of the scene. Our method faithfully reproduces appearance and achieves higher quality than existing scene filtering methods. The memory footprint and rendering cost of our representation are decoupled from the original scene complexity.},
   file = {/Users/ihkh2/Zotero/storage/7ZDMHMZ5/Zhou et al. - 2025 - Appearance-Preserving Scene Aggregation for Level-of-Detail Rendering.pdf}
+}
+
+@article{zhouAppearancePreservingSceneAggregation2025a,
+  title = {Appearance-{{Preserving Scene Aggregation}} for {{Level-of-Detail Rendering}}},
+  author = {Zhou, Yang and Huang, Tao and Ramamoorthi, Ravi and Sen, Pradeep and Yan, Ling-Qi},
+  year = 2025,
+  month = feb,
+  journal = {ACM Transactions on Graphics},
+  volume = {44},
+  number = {1},
+  pages = {1--23},
+  issn = {0730-0301, 1557-7368},
+  doi = {10.1145/3708343},
+  urldate = {2025-11-11},
+  abstract = {Creating an appearance-preserving level-of-detail (LoD) representation for arbitrary 3D scenes is a challenging problem. The appearance of a scene is an intricate combination of both geometry and material models and is further complicated by correlation due to the spatial configuration of scene elements. We present a novel volumetric representation for the aggregated appearance of complex scenes and a pipeline for LoD generation and rendering. The core of our representation is the               Aggregated Bidirectional Scattering Distribution Function               (ABSDF) that summarizes the far-field appearance of all surfaces inside a voxel. We propose a closed-form factorization of the ABSDF that accounts for spatially varying and orientation-varying material parameters. We tackle the challenge of capturing the correlation existing locally within a voxel and globally across different parts of the scene. Our method faithfully reproduces appearance and achieves higher quality than existing scene filtering methods. The memory footprint and rendering cost of our representation are decoupled from the original scene complexity.},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/FI4TNTQ5/Zhou et al. - 2025 - Appearance-Preserving Scene Aggregation for Level-of-Detail Rendering.pdf}
+}
+
+@inproceedings{zhouHierarchicalOverlappedTiling2012,
+  title = {Hierarchical Overlapped Tiling},
+  booktitle = {Proceedings of the {{Tenth International Symposium}} on {{Code Generation}} and {{Optimization}}},
+  author = {Zhou, Xing and Giacalone, Jean-Pierre and Garzar{\'a}n, Mar{\'i}a Jes{\'u}s and Kuhn, Robert H. and Ni, Yang and Padua, David},
+  year = 2012,
+  month = mar,
+  series = {{{CGO}} '12},
+  pages = {207--218},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  doi = {10.1145/2259016.2259044},
+  urldate = {2025-11-12},
+  abstract = {This paper introduces hierarchical overlapped tiling, a transformation that applies loop tiling and fusion to conventional loops. Overlapped tiling is a useful transformation to reduce communication overhead, but it may also generate a significant amount of redundant computation. Hierarchical overlapped tiling performs overlapped tiling hierarchically to balance communication overhead and redundant computation, and thus has the potential to provide better performance.In this paper, we describe the hierarchical overlapped tiling optimization and its implementation in an OpenCL compiler. We also evaluate the effectiveness of this optimization using 8 programs that implement different forms of stencil computation. Our results show that hierarchical overlapped tiling achieves an average 37\% speedup over traditional tiling on a 32-core workstation.},
+  isbn = {978-1-4503-1206-6},
+  file = {/Users/ihkh2/Zotero/storage/TMA9XCTT/Zhou et al. - 2012 - Hierarchical overlapped tiling.pdf}
 }
 
 @misc{zhugeLanguageAgentsOptimizable2024,
