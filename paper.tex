@@ -58,6 +58,7 @@
 \usepackage{hyphenat}
 \usepackage[shortcuts]{extdash}
 \usepackage{tcolorbox}
+\usepackage{subcaption}
 
 \input{tex/setup.tex}
 \input{tex/acm.tex}
@@ -263,7 +264,7 @@ S:      c[i] = c[i] + a[i][j];
 \vfill
 \end{tabular}
 
-As in many loop optimization models \cite{xueUnimodularTransformationsNonperfectly1997,grosserPolyhedralASTGeneration2015}, we will assume the program iterates through $\domain$ lexicographically. The specific invocation of a statement $S$ executed with induction variables $v \in \domain$ is denoted as $S_{v}$, and the set of all statement invocations as $\mathcal{D}_S$.  The dependency relation $\mathbf{D}_r : \mathcal{D}_S \times \mathcal{D}_S $ may be derived with program analysis%CITE
+As in many loop optimization models \cite{xueUnimodularTransformationsNonperfectly1997,grosserPolyhedralASTGeneration2015,chenCHiLLFrameworkComposing}, we will assume the program iterates through $\domain$ lexicographically. The specific invocation of a statement $S$ executed with induction variables $v \in \domain$ is denoted as $S_{v}$, and the set of all statement invocations as $\mathcal{D}_S$.  The dependency relation $\mathbf{D}_r : \mathcal{D}_S \times \mathcal{D}_S $ may be derived with program analysis%CITE
 , and defines a partial order on the statement invocations that must be fulfilled to preserve the semantics of the executing program. 
 
 We now define a loop transformation $T: \domain \to \domain$ as a transformation of a loop's iteration domain. For $T$ to be a legal transformation, it must preserve program semantics, which requires the dependency relation to remain satisfied under $T$ (i.e. $\forall (S_u,S_v) \in \mathbf{D}_r . T(u) \prec T(v)$).
@@ -349,22 +350,29 @@ Triton \cite{tilletTritonIntermediateLanguage2019} is an MLIR-based compiler tha
 
 \subsection{GPU and Processing Graphics}
 
-As we saw with general compute, computing on the GPU has come a long way from being a fixed-function pipeline, manually plugging in transformation matrices and lights to draw to the screen texture \cite{segalOpenGLTMGraphicsSystem1994}. However, while data center GPUs \cite{nvidiaNVIDIABlackwellArchitecture2025} have discarded their graphical capabilities to further accelerate block \cite{rouhaniMicroscalingDataFormats2023} and tensor \cite{markidisNVIDIATensorCore2018} operations, consumer grade GPUs retain their historic purpose: graphics processing. In other words, the compute pipeline, while the most general, is far from the only pipeline available on the GPU. In fact, there are two more pipelines:
+As we saw with general compute, computing on the GPU has come a long way from being a fixed-function pipeline, manually plugging in transformation matrices and lights to draw to the screen texture \cite{segalOpenGLTMGraphicsSystem1994}. However, while data center GPUs \cite{nvidiaNVIDIABlackwellArchitecture2025} have discarded their graphical capabilities to further accelerate block \cite{rouhaniMicroscalingDataFormats2023} and tensor \cite{markidisNVIDIATensorCore2018} operations, consumer grade GPUs retain their historic purpose: graphics processing. In other words, the compute pipeline, while the most general, is far from the only pipeline available on the GPU. In fact, there are two more pipelines (\autoref{fig:pipelines}):
 \begin{itemize}
-  \item Raster pipeline (\autoref{fig:rasterpipe})
-  \item Raytracing pipeline (\autoref{fig:raytracepipe})
+  \item Raster pipeline
+  \item Raytracing pipeline
 \end{itemize}
+
+\begin{figure}
+  \caption{The hardware accelerated rendering pipelines in GPUs. \label{fig:pipelines}}
+  \begin{subfigure}{0.4\textwidth}
+  \includegraphics[scale=0.50,keepaspectratio]{RasterPipeline.pdf}
+  \caption{The raster pipeline.\label{fig:rasterpipe}} 
+  \end{subfigure}
+  \begin{subfigure}{0.55\textwidth}
+    \includegraphics[scale=0.6,keepaspectratio]{RaytracePipeline.pdf}
+    \caption{The ray tracing pipeline and its acceleration structures. \label{fig:raytracepipe}}  
+  \end{subfigure}
+\end{figure}
 
 To dispatch work to the GPU and select the appropriate pipelines, render engines interface with the graphics card using low-level APIs such as DirectX \cite{stevewhimsDirect3D12Reference}, Metal, and Vulkan \cite{vulkanHomeVulkanCross2025}. One common abstraction implemented by graphics engines, such as O3DE \cite{open3denginecontributorsO3DERenderHardware2025} and NVIDIA-RTX \cite{nvidiaNVIDIARTXNVRHI2025}, is to abstract access to the underlying API with a \emph{rendering hardware interface} (RHI), which allows for multi-API targeting while restricting optimization for API-specific features.
 
 \subsubsection{The Raster Pipeline}
 
 The raster pipeline (\autoref{fig:rasterpipe}) is what directs the graphics card to transform vertex buffers through primitives into fragments that get written into the output texture. Vertex, tesselation and geometry shaders are collectively the \emph{geometry} step of the raster pipeline, producing primitives that are then rasterized into fragments that are \emph{shaded} by the fragment shader.
-
-\begin{figure}
-\includegraphics[scale=0.50,keepaspectratio]{RasterPipeline.pdf}
-\caption{The raster pipeline.\label{fig:rasterpipe}} 
-\end{figure}
 
 \paragraph{Deferred Shading} As there are far more fragment shader invocations than vertex shader invocations, significant gains are made by not performing expensive lighting computations. Deferred shading defers the lighting computation to a separate render pass, painting the intermediate values required by the rendering equation into a set of output textures known as the geometry buffer (or G-buffer). While this improved the performance of lighting computations, deferred shading was notoriously memory intensive. As an embarrassingly parallel operation, however, the deferred shading computation could be tiled, saving the memory limits of the G-buffer.
 
@@ -378,10 +386,6 @@ The raster pipeline (\autoref{fig:rasterpipe}) is what directs the graphics card
 
 The raytracing pipeline (\autoref{fig:raytracepipe}) is a different pipeline that graphics programmers can opt to use that is optimized for raytracing workflows. Rays are generated by the Ray Generation Shader (RGS), which are then raycast into a hardware-accelerated bounding volume hierarchy (BVH) utilizing the raytracing core ASICs. The standout features of the raytracing pipeline are the hardware accelerated raycasts, which are non-programmable, and the option to loop back to a previous stage of the pipeline without another draw call.
 
-\begin{figure}
-\includegraphics[scale=0.55,keepaspectratio]{RaytracePipeline.pdf}
-\caption{The ray tracing pipeline and its associated acceleration structures (AS). \label{fig:raytracepipe}}  
-\end{figure}
 
 
 \subsubsection{The Rendering Equation}
