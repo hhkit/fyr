@@ -57,6 +57,7 @@
 \usepackage[noend]{algpseudocode}
 \usepackage{hyphenat}
 \usepackage[shortcuts]{extdash}
+\usepackage{tabularx}
 \usepackage{tcolorbox}
 \usepackage{subcaption}
 
@@ -324,7 +325,7 @@ $\xrightarrow{\mathsf{fuse}~t~\mathsf{into}~o}$
 
 \subsubsection{Polyhedral compilers}  Polyhedral compilers \cite{grosserPolyhedralASTGeneration2015,popGRAPHITEPolyhedralAnalyses2006,baghdadiTiramisuPolyhedralCompiler2019,bondhugula2008pluto} operate on perfectly nested loops that are restricted to having loop bounds that are Presburger expressions over the upper loops' induction variables \cite{feautrier1988parametric}. If all memory accesses within the statement are also Presburger expressions on the loops' induction variables, the programs are known as static control parts (or SCoPs). As an abstract model of the program, the polyhedral representation of a SCoP is an exact approximation.
 
-Affine expressions may be derived to derive heuristics such as memory usage \cite{quillere2000optimizing} and cache locality \cite{zinenko2017unified}. Such heuristics can be derived about the subtile of a perfectly nested loop, allowing us to extract a memory-optimal tile as a kernel to extract on the GPU as in PPCG \cite{verdoolaegePolyhedralParallelCode2013}.
+Affine expressions may be derived to derive heuristics such as memory usage \cite{quillere2000optimizing} and cache locality \cite{zinenko2017unified}. Such heuristics can be derived about the subtile of a perfectly nested loop, allowing us to extract a memory-optimal tile as a kernel to dispatch to the GPU as in PPCG \cite{verdoolaegePolyhedralParallelCode2013}.
 
 \subsubsection{User-schedulable languages} User-schedulable languages \cite{visserStrategoLanguageProgram2001, ragan-kelleyHalideDecouplingAlgorithms2017,chenTVMAutomatedEndtoEnd2018, ikarashiExo2Growing2025} refer to programming languages that specify two languages, a declarative language to describe the computation of the program, and a scheduling language to describe the optimization and gradual lowering of the program to the hardware. This achieves separation of concerns when reasoning about the numerics of the computation versus its performance.
 
@@ -338,9 +339,9 @@ Affine expressions may be derived to derive heuristics such as memory usage \cit
 We highlight the following dialects which we regularly use in our work:
 \begin{itemize} 
   \item \dialect{tensor}: High-level types and operations for $N$-dimensional shaped arrays
-  \item \dialect{linalg} \cite{thellvmfoundationLinalgDialectMLIR2025}: Perfectly nested loops operating on shaped values such as \dialect{tensor}s
+  \item \dialect{linalg} \cite{thellvmfoundationLinalgDialectMLIR2025}: Perfectly nested loops operating on shaped values (\dialect{tensor}s, \dialect{memref}s, etc.)
   \item \dialect{spirv}: Low-level IR targeting GPU code generation using Vulkan's SPIR-V \cite{khronosSPIRVSpecification2025}
-  \item \dialect{llvm}: Low-level IR that can be optimized by the LLVM backend
+  \item \dialect{llvm}: Low-level IR that can be optimized by the LLVM \cite{lattnerLLVMCompilationFramework2004} backend.
   \item \dialect{transform} \cite{luckeMLIRTransformDialect2024}: MLIR's scheduling language for program transformations 
 \end{itemize}
 
@@ -350,7 +351,7 @@ Triton \cite{tilletTritonIntermediateLanguage2019} is an MLIR-based compiler tha
 
 \subsection{GPU and Processing Graphics}
 
-As we saw with general compute, computing on the GPU has come a long way from being a fixed-function pipeline, manually plugging in transformation matrices and lights to draw to the screen texture \cite{segalOpenGLTMGraphicsSystem1994}. However, while data center GPUs \cite{nvidiaNVIDIABlackwellArchitecture2025} have discarded their graphical capabilities to further accelerate block \cite{rouhaniMicroscalingDataFormats2023} and tensor \cite{markidisNVIDIATensorCore2018} operations, consumer grade GPUs retain their historic purpose: graphics processing. In other words, the compute pipeline, while the most general, is far from the only pipeline available on the GPU. In fact, there are two more pipelines (\autoref{fig:pipelines}):
+As we saw with general compute, computing on the GPU has come a long way from being a fixed-function pipeline, manually plugging in transformation matrices and lights to draw to the screen texture \cite{segalOpenGLTMGraphicsSystem1994}. However, while data center GPUs \cite{nvidiaNVIDIABlackwellArchitecture2025} have discarded their graphical capabilities to further accelerate block \cite{rouhaniMicroscalingDataFormats2023} and tensor \cite{markidisNVIDIATensorCore2018} operations, consumer grade GPUs retain their historic purpose: graphics processing. In other words, the compute pipeline, while the most general, is not the only way to dispatch work to the GPU. In fact, there are two more pipelines (\autoref{fig:pipelines}):
 \begin{itemize}
   \item Raster pipeline
   \item Raytracing pipeline
@@ -359,8 +360,8 @@ As we saw with general compute, computing on the GPU has come a long way from be
 \begin{figure}
   \caption{The hardware accelerated rendering pipelines in GPUs. \label{fig:pipelines}}
   \begin{subfigure}{0.4\textwidth}
-  \includegraphics[scale=0.50,keepaspectratio]{RasterPipeline.pdf}
-  \caption{The raster pipeline.\label{fig:rasterpipe}} 
+    \includegraphics[scale=0.50,keepaspectratio]{RasterPipeline.pdf}
+    \caption{The raster pipeline.\label{fig:rasterpipe}} 
   \end{subfigure}
   \begin{subfigure}{0.55\textwidth}
     \includegraphics[scale=0.6,keepaspectratio]{RaytracePipeline.pdf}
@@ -368,7 +369,7 @@ As we saw with general compute, computing on the GPU has come a long way from be
   \end{subfigure}
 \end{figure}
 
-To dispatch work to the GPU and select the appropriate pipelines, render engines interface with the graphics card using low-level APIs such as DirectX \cite{stevewhimsDirect3D12Reference}, Metal, and Vulkan \cite{vulkanHomeVulkanCross2025}. One common abstraction implemented by graphics engines, such as O3DE \cite{open3denginecontributorsO3DERenderHardware2025} and NVIDIA-RTX \cite{nvidiaNVIDIARTXNVRHI2025}, is to abstract access to the underlying API with a \emph{rendering hardware interface} (RHI), which allows for multi-API targeting while restricting optimization for API-specific features.
+To select the appropriate pipelines for computation, render engines interface with the graphics card using low-level APIs such as DirectX \cite{stevewhimsDirect3D12Reference}, Metal \cite{appleinc.MetalOverview2025}, and Vulkan \cite{vulkanHomeVulkanCross2025}. To abstract access to the underlying APIs, graphics engines is define a common interface known as the \emph{rendering hardware interface} (RHI) \cite{open3denginecontributorsO3DERenderHardware2025,nvidiaNVIDIARTXNVRHI2025}, which allows for multi-API targeting.
 
 \subsubsection{The Raster Pipeline}
 
@@ -390,13 +391,13 @@ The raytracing pipeline (\autoref{fig:raytracepipe}) is a different pipeline tha
 
 \subsubsection{The Rendering Equation}
 
-Ultimately, both render pipelines were designed to solve the render equation \cite{kajiyaRenderingEquation1986}, defined in \autoref{eqn:rendering}, which is the equation used to compute the value of a point's irradiance. The computation is done by integrating over the hemisphere $\Omega$, taking in as input the normal at the point $\mathbf{n}$ and incoming and outgoing radiance $L_i$ and $L_o$ along the directions $\omega_i$ and $\omega_o$ respectively. $f$ most often appears as $f_r$, known as the bidirectional reflection function, which is the proportion of light reflectioned from $\omega_i$ to $\omega_o$.
+Ultimately, both render pipelines were designed to solve the rendering equation \cite{kajiyaRenderingEquation1986} (\autoref{eqn:rendering}), which is the equation used to compute the value of a point's irradiance. The computation is done by integrating over the hemisphere $\Omega$, taking in as input the normal at the point $\mathbf{n}$ and incoming and outgoing radiance $L_i$ and $L_o$ along the directions $\omega_i$ and $\omega_o$ respectively. $f$ most often appears as $f_r$, known as the bidirectional reflection function, which is the proportion of light reflectioned from $\omega_i$ to $\omega_o$.
 \begin{align}
   \label{eqn:rendering}
   \int_\Omega L_i(\omega_i)f(\omega_i,\omega_o,\theta)\langle \mathbf{n}, \omega_i \rangle \mathsf{d} \omega_i
 \end{align}
 
-The integral over the hemisphere is what allows for computing global illumination in a realistic manner. By nature of being an integral over a 2D manifold, it is also computationally intensive, yet must be performed for every fragment in the render target to achieve realistic lighting. In real-time workflows, radiance probes \cite{silvennoinenRealtimeGlobalIllumination2017} placed throughout the scene collect global illumination. Radiance cascades \cite{raikiriRaikiriRadianceCascadesPaper2025} are a modern technique that utilize the mipmap feature of TMUs to accelerate the interpolation of irradiance data from adjacent radiance probes.
+The integral over the hemisphere is what allows for computing global illumination in a realistic manner. By nature of being an integral over a 2D manifold, it is also computationally intensive, yet must be performed for every fragment in the render target to achieve realistic lighting. In real-time workflows, radiance probes \cite{silvennoinenRealtimeGlobalIllumination2017} placed throughout the scene collect global illumination. Radiance cascades \cite{raikiriRaikiriRadianceCascadesPaper2025} are a modern technique that utilize the TMUs' mipmapping to accelerate the interpolation of irradiance data from adjacent radiance probes.
 
 \subsection{Compilers in Computer Graphics}
 
@@ -452,11 +453,110 @@ Target venue: OOPSLA 2026 (17 March 2026)
 The attention mechanism (\autoref{eqn:attention}) is the mechanism that gives large language models the ability to infer context. As it has rather famously been decreed to be "all you need" \cite{vaswaniAttentionAllYou2023}, optimization of attention has become a heavily researched topic \cite{daoFlashAttentionFastMemoryEfficient2022,daoFlashAttention2FasterAttention2023,dongFlexAttentionProgramming2024}, especially with regards to targeting the GPU. The state-of-the-art in the field is PyTorch's FlexAttention \cite{dongFlexAttentionProgramming2024}, which admits a large variety of attention variants by providing two key configuration points: $\mathsf{score\_mod}$ to modify the values of $QK^T$ and $\mathsf{mask\_mod}$, a heavily configurable masking engine. Our key insight is that by manually specifying the optimization of one step of the attention kernel, the rest of the mechanism becomes completely configurable by the user, while leaving the compiler free to perform automatic compiler optimizations that distribute the kernel to the GPU.
 
 \subsubsection{Limitations of Optimizing Attention}
+\begin{figure}
+\begin{tabularx}{\textwidth}{XXX}
+  \multicolumn{2}{c}{
+  $ \begin{bmatrix} x_0 \\ x_1 \\ \vdots \\ x_n  \end{bmatrix} 
+  \oplus_n 
+  \begin{bmatrix} x_1  \\ y_1 \\ \vdots \\ y_n \end{bmatrix} 
+  = 
+  \begin{bmatrix}
+    \max(x_0, y_0) \\
+    \alpha_x  x_1 + \alpha_y y_1 \\ 
+    \vdots \\
+    \alpha_x x_n +  \alpha_y y_n \\ 
+  \end{bmatrix}
+
+  ~\mathsf{where}~
+  \begin{aligned}
+    m &= \max(x_0, y_0) \\ 
+  \alpha_x &= e^{x_0 - m} \\
+  \alpha_y &= e^{y_0 - m}
+  \end{aligned}
+  $
+  }
+  \\
+% \begin{algorithmic}
+%   \ForAll{$i,j \in [0,N) \times [0,N)$}
+%     \For {$k \in [0,d)$}
+%       \State $S_{i,j} := S_{i,j} + Q_{i,k} K_{j,k}$
+%     \EndFor
+%   \EndFor
+%   \ForAll{$i \in [0,N)$}
+%     \For {$j \in [0,N)$}
+%       \State $m_{i} := \max(m_{i}, S_{i,j})$
+%     \EndFor
+%   \EndFor
+%   \ForAll{$i \in [0,N)$}
+%     \For {$j \in [0,N)$}
+%       \State $P_{i,j} := \exp(S_{i,j} - m_i)$
+%       \State $\ell_i := \ell_i + P_{i,j}$
+%     \EndFor
+%     $P_{i,j} := P_{i,j} / \ell_i$
+%   \EndFor
+%   \ForAll{$i,j \in [0,N) \times [0,d)$}
+%     \For {$k \in [0,N)$}
+%       \State $O_{i,j} := O_{i,j} + P_{i,k} V_{k,j}$
+%     \EndFor
+%   \EndFor
+% \end{algorithmic}
+% &
+\begin{algorithmic}
+  \ForAll{$i,j \in [0,N) \times [0,N)$}
+    \For {$k \in [0,d)$}
+      \State $S_{i,j} := S_{i,j} + Q_{i,k} K_{j,k}$
+    \EndFor
+  \EndFor
+  \ForAll{$i \in [0,N)$}
+    \For {$j \in [0,N)$}
+      \State $\tilde{P} = e^{S_{i,j}}$
+      \State $
+        \begin{bmatrix} m_i \\ \ell_i \\ O_{i} \end{bmatrix}
+        := 
+        \begin{bmatrix} m_i \\ \ell_i \\ O_{i}\end{bmatrix} 
+        \oplus_2 
+        \begin{bmatrix} S_{i,j} \\ \tilde{P} \\ \tilde{P} V_{j} \end{bmatrix}
+      $
+    \EndFor
+  \EndFor
+  \ForAll{$i,j \in [0,N) \times [0,N)$}
+    \State $O_{i,j} := O_{i,j} / \ell_i$
+  \EndFor
+\end{algorithmic}
+&
+\begin{algorithmic}
+  \ForAll{$i,j \in [0,N) \times [0,N)$}
+    \For {$k \in [0,d)$}
+      \State $S_{i,j} := S_{i,j} + Q_{i,k} K_{j,k}$
+    \EndFor
+  \EndFor
+  \ForAll{$i \in [0,N)$}
+    \For {$j \in [0,N)$}
+      \State $\tilde{m} = \max(m_{i}, S_{i,j})$
+      \State $\tilde{P} = e^{S_{i,j} - \tilde{m}}$
+      \State $\tilde{\alpha} = e^{m_i - \tilde{m}} $
+      \State $m_i := \tilde{m}$
+      \State $\ell_i := \alpha \ell_i + \tilde{P}$
+      \ForAll {$k \in [0,d)$}
+        \State $O_{i,k} := \alpha O_{i,k} + \tilde{P} V_{j,k}$
+      \EndFor
+    \EndFor
+  \EndFor
+  \ForAll{$i,j \in [0,N) \times [0,d)$}
+    \State $O_{i,j} := O_{i,j} / \ell_i$
+  \EndFor
+\end{algorithmic}
+\end{tabularx}
+
+\caption{\label{fig:attention} Optimization of attention. Values that don't persist between iterations are signified with $\tilde{x}$, a convention borrowed from Flash Attention \cite{daoFlashAttentionFastMemoryEfficient2022, daoFlashAttention2FasterAttention2023}.}
+\end{figure}
 
 Attention (\autoref{eqn:attention-math}) utilizes the $\softmax$ operation to create a probability distribution of the tokens in embedding space. However, taking the exponent of the values in the $QK^T$ results in values that far exceed the range of even 32-bit floating point numbers. To execute on real machinery, a safer version of softmax (\autoref{eqn:attention-math-safe}) is used that normalizes the elements by subtracting the row's maximum, such that the range of the exponentiation rests between 0 and 1. As maximum and accumulation are both reductions, and the denominator's accumulation is dependent on the maximum computation, the loop fusion is impossible for the compiler to perform automatically.
 
 
-Loop tiling is the transformation that allows us to partition the loop to obtain a subtile that can be transformed into a dispatch to the GPU. However, if we are unable to fuse the loop, each loop must be tiled separately, resulting in multiple dispatch calls which is inefficient. Fortunately, by applying the online softmax transformation as devised by Milakov et al \cite{milakovOnlineNormalizerCalculation2018}, we are able to derive a single nested loop as in \autoref{alg:online-attention}. Not only is this loop tileable, it also allows the programmer to automatically derive the same kernel as devised in Flash Attention 2 \cite{daoFlashAttention2FasterAttention2023}. Unlike Flash Attention, which is written as a low-level Triton kernel, our attention implementation is written as a high-level neural network. This allows us to perform subsequent tiling and optimizations on the attention mechanism such as quantization, conversion to MXFP \cite{rouhaniMicroscalingDataFormats2023} formats and other low-level optimizations, while still allowing users to program using the high-level representation.
+Loop tiling is the transformation that allows us to partition the loop to obtain a subtile that can be transformed into a dispatch to the GPU. However, if we are unable to fuse the loop, each loop must be tiled separately, resulting in multiple dispatch calls that materializes temporary tensors. Fortunately, by applying the online softmax transformation as devised by Milakov et al \cite{milakovOnlineNormalizerCalculation2018}, we are able to derive a single nested loop as in \autoref{alg:online-attention}. Not only is this loop tileable, it also allows the programmer to automatically derive the same kernel as devised in Flash Attention 2 \cite{daoFlashAttention2FasterAttention2023}. 
+
+Unlike Flash Attention, which is implemented as a low-level Triton kernel, our attention implementation is written as a transformation of a high-level neural network. This allows us to perform subsequent tiling and optimizations on the attention mechanism such as quantization, conversion to MXFP \cite{rouhaniMicroscalingDataFormats2023} formats and other low-level optimizations, while still allowing users to program using the high-level representation.
 
 \subsubsection{Progress Report}
 
@@ -469,7 +569,7 @@ Backup Deadline: PLDI 2027 (est. November 2026)
 
 General purpose GPU computing has its origins as a repurposing of the raster pipeline \cite{bolzSparseMatrixSolvers2003,krugerLinearAlgebraOperators2003}, resulting in the pipeline's subsequent generalization and abstraction that culminated in the current year's compute pipeline of launch grids and thread blocks. However, when adapting the general pipeline for raytracing, the limitations of compute were laid clear: as a SIMD architecture, performance would degrade quickly due to the heavy branching and recursion present in raytraced workflows. Thus, the raytracing pipeline (\autoref{fig:raytracepipe}) was introduced, with the ability to reorganize threads \cite{adinetCUDADynamicParallelism2014}, to loop back to previous stages and built-in acceleration of the bounding volume hierarchy traversal. In an attempt to coax lightning into striking twice, work began immediately on utilizing the pipeline for non-geometric workflows. While many of these attempts were successful \cite{menesesAcceleratingRangeMinimum2024,bauerVisibilityAlgorithmsDynamic2023,haGeneralizingRayTracing2024,Evangelou2021RadiusSearch,zhangMLIRLinalgDialect2022,hennebergRTIndeXExploitingHardwareAccelerated2023}, reformulating the algorithm as a geometric problem and partionining the program for raytracing requires low-level, domain-specific knowledge of manipulating graphics pipelines and resources. There currently exists no abstraction that maps to the utilization of the raytracing pipeline as perfectly nested loops do for the tiling of the compute pipeline.
 
-\subsubsection{Abstraction candidates} The natural candidate for abstraction is \emph{sparse linear algebra}. The art of treating linear algebra programs like geometric problems is not new; polyhedral computations treat the iteration space and tensors as integer polyhedra \cite{grosserPolyhedralASTGeneration2015}. Likewise, the row and column indices of sparse linear algebra could be treated as coordinates in geometric space, and retrieving all sparse elements in a row could be done with a raycast along the row's index. Zhang et al. \cite{zhangRTSpMSpMHarnessingRay2025} devised an algorithm to accelerate sparse matrix-sparse matrix multiplication with raytracing. By specifying the lowering of certain sparse operators to be optimized for RT cores, there is reason to hypothesize that more complex programs could be fused into the subsequent kernels to yield performant GPU-accelerated code. Additionally, block-sparse data structures exist as quads in geometric space, which reduces the number of elements in the BVH, while also taking advantage of the GPU's SIMD architecture thanks to spatial locality.
+\subsubsection{Abstraction candidates} The natural candidate for abstraction is \emph{sparse linear algebra}. The art of treating linear algebra programs like geometric problems is not new; polyhedral compilers treat the iteration domain and tensors as integer polyhedra \cite{grosserPolyhedralASTGeneration2015}. Likewise, the row and column indices of sparse linear algebra could be treated as geometric coordinates, and retrieving all sparse elements in a row could be done with a raycast along the row's index. Zhang et al. \cite{zhangRTSpMSpMHarnessingRay2025} devised an algorithm to accelerate sparse matrix-sparse matrix multiplication with raytracing. By specifying the lowering of certain sparse operators to be optimized for RT cores, there is reason to hypothesize that more complex programs could be fused into the subsequent kernels to yield performant GPU-accelerated code. Additionally, block-sparse data structures exist as quads in geometric space, which reduces the number of elements in the BVH, while also taking advantage of the GPU's SIMD architecture thanks to spatial locality.
 
 \paragraph{Hash} A common pattern across the various raytrace-targeted formulations of non-geometric problems is the \emph{hash}ing of the stored elements into a tuple of nine $\mathsf{float32}$ elements. This arises due to the ray-traced pipeline's acceleration structures that are fixed to storing three-dimensional geometry, however, hashing itself is inherent to some of these programs as well.
 
