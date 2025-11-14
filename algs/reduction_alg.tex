@@ -1,0 +1,50 @@
+\documentclass{standalone}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+
+\usepackage{xargs}
+\usepackage{lipsum}
+\usepackage{xparse}
+\usepackage{xifthen, xstring}
+\usepackage{xspace}
+\usepackage{marginnote}
+\usepackage{etoolbox}
+\usepackage[acronym,shortcuts]{glossaries}
+\usepackage{amsmath}
+\usepackage{thmtools} % required for autoref to lemmas
+\usepackage[noend]{algpseudocode}
+\usepackage{hyphenat}
+\usepackage[shortcuts]{extdash}
+\usepackage{tabularx}
+\usepackage{tcolorbox}
+\usepackage{subcaption}
+\usepackage{varwidth}
+
+\begin{document}
+    \begin{varwidth}{\linewidth}
+\begin{algorithmic}
+  \ForAll{$i,j \in [0,N) \times [0,N)$}
+    \For {$k \in [0,d)$}
+      \State $S_{i,j} := S_{i,j} + Q_{i,k} K_{j,k}$
+    \EndFor
+  \EndFor
+  \ForAll{$i \in [0,N)$}
+    \For {$j \in [0,N)$}
+      \State $\vphantom{A^{A^A}}\tilde{P} = e^{S_{i,j}}$
+      \State $
+        \begin{bmatrix} m_i \\ \ell_i \\ O_{i} \end{bmatrix}
+        := 
+        \begin{bmatrix} m_i \\ \ell_i \\ O_{i}\end{bmatrix} 
+        \oplus_2 
+        \begin{bmatrix} S_{i,j} \\ \tilde{P} \\ \tilde{P} V_{j} \end{bmatrix}
+      $
+    \EndFor
+  \EndFor
+  \ForAll{$i,j \in [0,N) \times [0,N)$}
+    \State $O_{i,j} := O_{i,j} / \ell_i$
+  \EndFor
+\end{algorithmic}
+    \end{varwidth}
+\end{document}
