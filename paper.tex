@@ -428,6 +428,7 @@ Workshop Demo: C4ML @ CGO (1 February 2026) \\
 Target venue: OOPSLA 2026 (17 March 2026)
 \newcommand{\Attention}{\mathsf{Attention}}
 \newcommand{\softmax}{\mathsf{softmax}}
+\newcommand{\milakov}{~$\oplus_2$~}
 \begin{align}
   \label{eqn:attention}
   \quad \Attention(\mathbf{Q}, \mathbf{K}, \mathbf{V}) 
@@ -452,11 +453,11 @@ Target venue: OOPSLA 2026 (17 March 2026)
 
 The attention mechanism (\autoref{eqn:attention}) is the mechanism that gives large language models the ability to infer context. As it has rather famously been decreed to be "all you need" \cite{vaswaniAttentionAllYou2023}, optimization of attention has become a heavily researched topic \cite{daoFlashAttentionFastMemoryEfficient2022,daoFlashAttention2FasterAttention2023,dongFlexAttentionProgramming2024}, especially with regards to targeting the GPU. The state-of-the-art in the field is PyTorch's FlexAttention \cite{dongFlexAttentionProgramming2024}, which admits a large variety of attention variants by providing two key configuration points: $\mathsf{score\_mod}$ to modify the values of $QK^T$ and $\mathsf{mask\_mod}$, a heavily configurable masking engine. Our key insight is that by manually specifying the optimization of one step of the attention kernel, the rest of the mechanism becomes completely configurable by the user, while leaving the compiler free to perform automatic compiler optimizations that distribute the kernel to the GPU.
 
-\subsubsection{Limitations of Optimizing Attention}
-\begin{figure}
-\begin{tabularx}{\textwidth}{XXX}
-  \multicolumn{2}{c}{
-  $ \begin{bmatrix} x_0 \\ x_1 \\ \vdots \\ x_n  \end{bmatrix} 
+We define $\oplus_n$ (\autoref{eqn:milakovreduction}), an $n+1$ binary reduction operator that uses its first element to reduce all other elements exponentially, with the syntax borrowed from Milakov's online softmax normalization \cite{milakovOnlineNormalizerCalculation2018}. We then manually fuse the softmax and second matmul of attention into a single nested reduction loop over \milakov, making it tileable.
+
+\begin{equation}
+  \label{eqn:milakovreduction}
+  \begin{bmatrix} x_0 \\ x_1 \\ \vdots \\ x_n  \end{bmatrix} 
   \oplus_n 
   \begin{bmatrix} x_1  \\ y_1 \\ \vdots \\ y_n \end{bmatrix} 
   = 
@@ -466,16 +467,24 @@ The attention mechanism (\autoref{eqn:attention}) is the mechanism that gives la
     \vdots \\
     \alpha_x x_n +  \alpha_y y_n \\ 
   \end{bmatrix}
-
   ~\mathsf{where}~
   \begin{aligned}
     m &= \max(x_0, y_0) \\ 
   \alpha_x &= e^{x_0 - m} \\
   \alpha_y &= e^{y_0 - m}
   \end{aligned}
-  $
-  }
-  \\
+\end{equation}
+
+Our contributions are, and will be, as follows:
+
+\begin{enumerate}
+  \item An implementation of an exponential reduction operator, \milakov, that demystifies the attention kernel for tensor compilers to optimize
+  \item An end-to-end implementation of an attention skeleton that flexibly accommodates low-level, element-wise changes to the attention kernel
+\end{enumerate}
+
+\subsubsection{Limitations of Optimizing Attention}
+\begin{figure}
+\begin{tabularx}{\textwidth}{XXX}
 % \begin{algorithmic}
 %   \ForAll{$i,j \in [0,N) \times [0,N)$}
 %     \For {$k \in [0,d)$}
@@ -501,6 +510,7 @@ The attention mechanism (\autoref{eqn:attention}) is the mechanism that gives la
 %   \EndFor
 % \end{algorithmic}
 % &
+\label{alg:plus_alg}
 \begin{algorithmic}
   \ForAll{$i,j \in [0,N) \times [0,N)$}
     \For {$k \in [0,d)$}
@@ -553,14 +563,23 @@ The attention mechanism (\autoref{eqn:attention}) is the mechanism that gives la
 
 Attention (\autoref{eqn:attention-math}) utilizes the $\softmax$ operation to create a probability distribution of the tokens in embedding space. However, taking the exponent of the values in the $QK^T$ results in values that far exceed the range of even 32-bit floating point numbers. To execute on real machinery, a safer version of softmax (\autoref{eqn:attention-math-safe}) is used that normalizes the elements by subtracting the row's maximum, such that the range of the exponentiation rests between 0 and 1. As maximum and accumulation are both reductions, and the denominator's accumulation is dependent on the maximum computation, the loop fusion is impossible for the compiler to perform automatically.
 
-
-Loop tiling is the transformation that allows us to partition the loop to obtain a subtile that can be transformed into a dispatch to the GPU. However, if we are unable to fuse the loop, each loop must be tiled separately, resulting in multiple dispatch calls that materializes temporary tensors. Fortunately, by applying the online softmax transformation as devised by Milakov et al \cite{milakovOnlineNormalizerCalculation2018}, we are able to derive a single nested loop as in \autoref{alg:online-attention}. Not only is this loop tileable, it also allows the programmer to automatically derive the same kernel as devised in Flash Attention 2 \cite{daoFlashAttention2FasterAttention2023}. 
+Loop tiling is the transformation that allows us to partition the loop and extract a subtile to become a kernel for the GPU. However, if we are unable to fuse the loop, each loop must be tiled separately, resulting in multiple dispatch calls that could materialize unnecessary temporary tensors and incur scheduling overhead. By rewriting attention using \milakov as in \autoref{alg:plus_alg}, we can decompose it to the corresponding linalg kernels and derive a single nested loop 
 
 Unlike Flash Attention, which is implemented as a low-level Triton kernel, our attention implementation is written as a transformation of a high-level neural network. This allows us to perform subsequent tiling and optimizations on the attention mechanism such as quantization, conversion to MXFP \cite{rouhaniMicroscalingDataFormats2023} formats and other low-level optimizations, while still allowing users to program using the high-level representation.
 
 \subsubsection{Progress Report}
 
-This paper is still a work in progress, as we have not fully integrated the functionality into IREE for a proper benchmark. Once implemented, we will be using the Meta attention gym \cite{metaMetapytorchAttentiongym2025} to do an apples-to-apples comparison with PyTorch's FlexAttention engine \cite{dongFlexAttentionProgramming2024}. In terms of timeline, a demo is planned to be presented at CC's C4ML (deadline of December 2025) followed by a submission at OOPSLA in 2026. 
+We are targeting full integration into upstream IREE. The steps for integration are as follows:
+\begin{enumerate}
+  \item Initial \milakov~operator, known as $\mathsf{exp\_reduction\_op}$ (Upstream \cite{hoLinalgExtIntroduceLinalg_extexp_reduction2025})
+  \item Tiling of the \milakov~operator (Upstream \cite{hoLinalgExtAddedTilingInterface2025})
+  \item Decomposition of the \milakov~operator (In Progress \cite{hoLinalgExtAddedDecomposition2025})
+  \item End-to-End Attention Implementation using \milakov
+\end{enumerate}
+
+Following this, we will profile our implementation using the Meta attention gym \cite{metaMetapytorchAttentiongym2025} to do an apples-to-apples comparison with PyTorch's FlexAttention engine \cite{dongFlexAttentionProgramming2024}. We will also implement a masking engine which FlexAttention fully supports.
+
+A demo is planned to be presented at CC's C4ML (with an abstract deadline of December 2025) followed by a submission at OOPSLA in 2026. 
 
 \subsection{Compiling to Accelerate Block-Sparse Linear Algebra with Raytracing Hardware}
 
