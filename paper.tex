@@ -265,7 +265,7 @@ S:      c[i] = c[i] + a[i][j];
 \vfill
 \end{tabular}
 
-As in many loop optimization models \cite{xueUnimodularTransformationsNonperfectly1997,grosserPolyhedralASTGeneration2015,chenCHiLLFrameworkComposing}, we will assume the program iterates through $\domain$ lexicographically. The specific invocation of a statement $S$ executed with induction variables $v \in \domain$ is denoted as $S_{v}$, and the set of all statement invocations as $\mathcal{D}_S$.  The dependency relation $\mathbf{D}_r : \mathcal{D}_S \times \mathcal{D}_S $ may be derived with program analysis%CITE
+As in many loop optimization models \cite{xueUnimodularTransformationsNonperfectly1997,grosserPolyhedralASTGeneration2015,chenCHiLLFrameworkComposing2008}, we will assume the program iterates through $\domain$ lexicographically. The specific invocation of a statement $S$ executed with induction variables $v \in \domain$ is denoted as $S_{v}$, and the set of all statement invocations as $\mathcal{D}_S$.  The dependency relation $\mathbf{D}_r : \mathcal{D}_S \times \mathcal{D}_S $ may be derived with program analysis%CITE
 , and defines a partial order on the statement invocations that must be fulfilled to preserve the semantics of the executing program. 
 
 We now define a loop transformation $T: \domain \to \domain$ as a transformation of a loop's iteration domain. For $T$ to be a legal transformation, it must preserve program semantics, which requires the dependency relation to remain satisfied under $T$ (i.e. $\forall (S_u,S_v) \in \mathbf{D}_r . T(u) \prec T(v)$).
@@ -369,7 +369,7 @@ As we saw with general compute, computing on the GPU has come a long way from be
   \end{subfigure}
 \end{figure}
 
-To select the appropriate pipelines for computation, render engines interface with the graphics card using low-level APIs such as DirectX \cite{stevewhimsDirect3D12Reference}, Metal \cite{appleinc.MetalOverview2025}, and Vulkan \cite{vulkanHomeVulkanCross2025}. To abstract access to the underlying APIs, graphics engines is define a common interface known as the \emph{rendering hardware interface} (RHI) \cite{open3denginecontributorsO3DERenderHardware2025,nvidiaNVIDIARTXNVRHI2025}, which allows for multi-API targeting.
+To select the appropriate pipelines for computation, render engines interface with the graphics card using low-level APIs such as DirectX \cite{microsoftDirect3D12Reference2021}, Metal \cite{appleinc.MetalOverview2025}, and Vulkan \cite{vulkanHomeVulkanCross2025}. To abstract access to the underlying APIs, graphics engines is define a common interface known as the \emph{rendering hardware interface} (RHI) \cite{open3denginecontributorsO3DERenderHardware2025,nvidiaNVIDIARTXNVRHI2025}, which allows for multi-API targeting.
 
 \subsubsection{The Raster Pipeline}
 
