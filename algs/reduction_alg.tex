@@ -24,6 +24,32 @@
 
 \begin{document}
     \begin{varwidth}{\linewidth}
+
+% \begin{algorithmic}
+%   \ForAll{$i,j \in [0,N) \times [0,N)$}
+%     \For {$k \in [0,d)$}
+%       \State $S_{i,j} := S_{i,j} + Q_{i,k} K_{j,k}$
+%     \EndFor
+%   \EndFor
+%   \ForAll{$i \in [0,N)$}
+%     \For {$j \in [0,N)$}
+%       \State $m_{i} := \max(m_{i}, S_{i,j})$
+%     \EndFor
+%   \EndFor
+%   \ForAll{$i \in [0,N)$}
+%     \For {$j \in [0,N)$}
+%       \State $P_{i,j} := \exp(S_{i,j} - m_i)$
+%       \State $\ell_i := \ell_i + P_{i,j}$
+%     \EndFor
+%     $P_{i,j} := P_{i,j} / \ell_i$
+%   \EndFor
+%   \ForAll{$i,j \in [0,N) \times [0,d)$}
+%     \For {$k \in [0,N)$}
+%       \State $O_{i,j} := O_{i,j} + P_{i,k} V_{k,j}$
+%     \EndFor
+%   \EndFor
+% \end{algorithmic}
+
 \begin{algorithmic}
   \ForAll{$i,j \in [0,N) \times [0,N)$}
     \For {$k \in [0,d)$}

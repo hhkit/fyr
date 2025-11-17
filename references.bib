@@ -1156,6 +1156,18 @@
   file = {/Users/ihkh2/Zotero/storage/WUNHQPUS/21761.html}
 }
 
+@misc{hoMLIRIRDLAddedIRDL2025,
+  title = {[{{MLIR}}][{{IRDL}}] {{Added IRDL}} to {{C}}++ {{Translation}} by Hhkit {$\cdot$} {{Pull Request}} \#141248 {$\cdot$} Llvm/Llvm-Project},
+  author = {Ho, Ivan},
+  year = 2025,
+  journal = {GitHub},
+  urldate = {2025-10-29},
+  abstract = {A re-attempt at merging IRDL-to-CPP (\#133982) after a sanitizer check failed in post-merge CI (resolving \#138285). This PR introduces a new tool, mlir-irdl-to-cpp, that converts IRDL to C++ defini...},
+  howpublished = {https://github.com/llvm/llvm-project/pull/141248},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/MCL9V2IE/141248.html}
+}
+
 @misc{HowLearnedVulkan,
   title = {How {{I}} Learned {{Vulkan}} and Wrote a Small Game Engine with It},
   urldate = {2025-09-15},
@@ -1811,16 +1823,6 @@
   file = {/Users/ihkh2/Zotero/storage/87V5EJKL/Milakov and Gimelshein - 2018 - Online normalizer calculation for softmax.pdf;/Users/ihkh2/Zotero/storage/9X93282H/1805.html}
 }
 
-@misc{MLIRIRDLAddedIRDL,
-  title = {[{{MLIR}}][{{IRDL}}] {{Added IRDL}} to {{C}}++ {{Translation}} by Hhkit {$\cdot$} {{Pull Request}} \#141248 {$\cdot$} Llvm/Llvm-Project},
-  journal = {GitHub},
-  urldate = {2025-10-29},
-  abstract = {A re-attempt at merging IRDL-to-CPP (\#133982) after a sanitizer check failed in post-merge CI (resolving \#138285). This PR introduces a new tool, mlir-irdl-to-cpp, that converts IRDL to C++ defini...},
-  howpublished = {https://github.com/llvm/llvm-project/pull/141248},
-  langid = {english},
-  file = {/Users/ihkh2/Zotero/storage/MCL9V2IE/141248.html}
-}
-
 @misc{mlirOpenMLIRMeeting2023,
   title = {Open {{MLIR Meeting}} 2-9-2023: {{Deep Dive}} on {{MLIR Internals}}, {{Operation}}\&{{Attribute}}, towards {{Properties}}},
   shorttitle = {Open {{MLIR Meeting}} 2-9-2023},
@@ -2001,6 +2003,22 @@
   isbn = {978-1-4503-5698-5},
   langid = {english},
   file = {/Users/ihkh2/Zotero/storage/L59EMPQY/Peng et al. - 2018 - CURD a dynamic CUDA race detector.pdf}
+}
+
+@article{pitchanathanFalconScalableAnalytical2024,
+  title = {Falcon: {{A Scalable Analytical Cache Model}}},
+  shorttitle = {Falcon},
+  author = {Pitchanathan, Arjun and Grover, Kunwar and Grosser, Tobias},
+  year = 2024,
+  month = jun,
+  journal = {Artifact for "Falcon: A Scalable Analytical Cache Model"},
+  volume = {8},
+  number = {PLDI},
+  pages = {222:1854--222:1878},
+  doi = {10.1145/3656452},
+  urldate = {2025-11-17},
+  abstract = {Compilers often use performance models to decide how to optimize code. This is often preferred over using hardware performance measurements, since hardware measurements can be expensive, limited by hardware availability, and makes the output of compilation non-deterministic. Analytical models, on the other hand, serve as efficient and noise-free performance indicators. Since many optimizations focus on improving memory performance, memory cache miss rate estimations can serve as an effective and noise-free performance indicator for superoptimizers, worst-case execution time analyses, manual program optimization, and many other performance-focused use cases. Existing methods to model the cache behavior of affine programs work on small programs such as those in the Polybench benchmark but do not scale to the larger programs we would like to optimize in production, which can be orders of magnitude bigger by lines of code. These analytical approaches hand off the whole program to a Presburger solver and perform expensive mathematical operations on the huge resulting formulas. We develop a scalable cache model for affine programs that splits the computation into smaller pieces that do not trigger the worst-case asymptotic behavior of these solvers. We evaluate our approach on 46 TorchVision neural networks, finding that our model has a geomean runtime of 44.9 seconds compared to over 32 minutes for the state-of-the-art prior cache model, and the latter is actually smaller than the true value because the prior model reached our four-hour time limit on 54\% of the networks, and this limit was never reached by our tool. Our model exploits parallelism effectively: running it on sixteen cores is 8.2x faster than running it single-threaded. While the state-of-the-art model takes over four hours to analyze a majority of the benchmark programs, Falcon produces results in at most 3 minutes and 3 seconds; moreover, after a local modification to the program being analyzed, our model efficiently updates the predictions in 513 ms on average (geomean). Thus, we provide the first scalable analytical cache model.CCS Concepts: {$\bullet$} Software and its engineering {$\rightarrow$} Compilers.},
+  file = {/Users/ihkh2/Zotero/storage/J5IX35N8/Pitchanathan et al. - 2024 - Falcon A Scalable Analytical Cache Model.pdf}
 }
 
 @article{pompougnacWeavingSynchronousReactions2022,
