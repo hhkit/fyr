@@ -1,0 +1,42 @@
+\documentclass{standalone}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+
+\usepackage{xargs}
+\usepackage{lipsum}
+\usepackage{xparse}
+\usepackage{xifthen, xstring}
+\usepackage{xspace}
+\usepackage{marginnote}
+\usepackage{etoolbox}
+\usepackage[acronym,shortcuts]{glossaries}
+\usepackage{amsmath}
+\usepackage{thmtools} % required for autoref to lemmas
+\usepackage[noend]{algpseudocode}
+\usepackage{hyphenat}
+\usepackage[shortcuts]{extdash}
+\usepackage{tabularx}
+\usepackage{tcolorbox}
+\usepackage{subcaption}
+\usepackage{varwidth}
+
+\begin{document}
+    \begin{varwidth}{\linewidth}
+
+    \begin{algorithmic}
+    \ForAll{$i \in [0,\lfloor \frac{N}{B_r} \rfloor)$}
+        \For {$j \in [0,\lfloor \frac{N}{B_c} \rfloor)$}
+            \ForAll{$i_t \in [0,B_r)$}
+                \For{$j_t \in [0,B_c)$}
+                    \State $\dots$ % k loop
+                    \State $\dots$ % inner loop
+                \EndFor
+            \EndFor
+        \EndFor
+        \State $\dots$ % div loop
+    \EndFor
+    \end{algorithmic}
+    \end{varwidth}
+\end{document}
