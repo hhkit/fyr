@@ -172,6 +172,9 @@
 % ivans magic defines
 \newcommand{\dialect}[1]{$\mathsf{#1}$}
 \newcommand{\domain}{\mathbb{D}}
+\newcommand{\Attention}{\mathsf{Attention}}
+\newcommand{\softmax}{\mathsf{softmax}}
+\newcommand{\milakov}{~$\oplus_2$~}
 
 \begin{document}
 %% Title information
@@ -235,20 +238,15 @@ The GPU, or graphics processing unit, is a single-instruction multiple-data (SIM
 
 Each SM also contains dedicated circuitry for accelerating common functions. Tensor cores allow for fast tensor fused-multiply-and-add across the warp, and ray tracing cores accelerate the triangle-ray intersection operation. Moreover, due the GPU's historic purposes, SMs also have access to \emph{texture mapping units} (TMUs) that accelerate multilinear interpolation of values in the bound texture resource.
 
-\paragraph{Programming for the GPU} \emph{Kernel} is the common term to refer to the part of the program that executes on the GPU. Programmers for Nvidia architectures may use CUDA to write kernels, and for programmers who wish to target a wider variety of hardware, they may write the kernel as a compute shader compiled to SPIR-V and execute it using the Vulkan API. The kernel is executed over a large number of threads known as a \emph{grid}. Each invocation of the kernel is assigned a block identifier and a thread identifier, allowing the program to branch based on the invocation identifier. Within a block, threads are able to share memory and synchronization primitives, although grid-level synchronization is made available by a driver. On kernel dispatch, each block is issued to a streaming multiprocessor, which then partitions the block into warps for execution. 
+\paragraph{Programming for the GPU} \emph{Kernel} is the common term to refer to the part of the program that executes on the GPU. Programmers for Nvidia architectures may use CUDA to write kernels, and for programmers who wish to target a wider variety of hardware, they may write the kernel as a compute shader compiled to SPIR-V and execute it using the Vulkan API. The kernel is executed over a large number of threads known as a \emph{grid}, which consists of $G$ blocks each containing $B$ threads. Each invocation of the kernel is assigned a block identifier and a thread identifier, allowing the program to branch based on the invocation identifier. Within a block, threads are able to share memory and synchronization primitives, although grid-level synchronization is made available by a driver. On kernel dispatch, each block is issued to a streaming multiprocessor, which then partitions the block into warps for execution. 
 
 Typically, a kernel dispatch is performed from the CPU (also known as the host device). However, the ability to dispatch kernels from the GPU grows increasingly supported, reducing the need for ping-pong between the CPU and GPU. This feature is known as \emph{Dynamic Parallelism} \cite{adinetCUDADynamicParallelism2014} in CUDA and \emph{Device-Generated Commands} \cite{blumenkrantzVK_EXT_device_generated_commands3VulkanDocumentation2024} in Vulkan.
-
-\subsection{Programs in the Machine Learning Space}
-
-\ivan{Bea's suggestion. We will discuss matmul, convolutional neural nets, back propagation, and stencil computations here in hopefully less than 2k words}
-
 
 \subsection{Compilers for the GPU}
 
 As a massively parallel architecture, compilers for the GPU are closely associated with parallel compilers. We first introduce a model for discussing loop semantics, through the lens of which we will discuss the existing work in the field.
 
-\subsubsection{Loop optimizations} Loop optimizations are a set of program transformations that target loops; specifically, they target \emph{perfectly nested loops}. Perfectly nested loops are crucial for loop optimization, as by having no statements in between loop headers, the loop can be compactly represented as a 2-tuple of its iteration domain $\domain \in \mathcal{P}(\mathbb{Z}^{n})$ and its body $S \in \domain \to \mathcal{D}_S$, and transformations can be made to either the iteration domain or the body without necessarily reasoning about the other. We demonstrate this with a C/C++ example, but also present a corresponding notation to simply the syntax and emphasize changes effected by loop transformations. For loops deemed to be embarrassingly parallel, we shall denote them with $\mathbf{for~all}$ instead of $\mathbf{for}$.
+\subsubsection{Loop optimizations} Loop optimizations are a set of program transformations that target loops; specifically, they target \emph{perfectly nested loops}. Perfectly nested loops are defined as loops that nest within each other without statements in between loop headers. They are crucial for loop optimization, as by having no statements in between loop headers, the loop can be compactly represented as a 2-tuple of its iteration domain $\domain \in \mathcal{P}(\mathbb{Z}^{n})$ and its body $S \in \domain \to \mathcal{D}_S$, and transformations can be made to either the iteration domain or the body without necessarily reasoning about the other. We demonstrate this with a C/C++ example, but also present a corresponding notation to simply the syntax and emphasize changes effected by loop transformations. For loops deemed to be embarrassingly parallel, we shall denote them with $\mathbf{for~all}$ instead of $\mathbf{for}$.
 
 \begin{tabular}{p{0.46\textwidth}p{0.46\textwidth}}
 \begin{minted}{cpp}
@@ -350,7 +348,47 @@ We highlight the following dialects which we regularly use in our work:
   \item \dialect{transform} \cite{luckeMLIRTransformDialect2024}: MLIR's scheduling language for program transformations 
 \end{itemize}
 
-Triton \cite{tilletTritonIntermediateLanguage2019} is an MLIR-based compiler that provides a high-level Python-embedded DSL for specifying tile semantics, which is immediately translated to its own eponymous tile-based MLIR dialect. Other machine learning compilers \cite{anselPyTorch2Faster2024, sabneXLACompilingMachine2020, theireeauthorsIREE2019}, aim to consume neural networks as a sequence of computations and each have their own methods of lowering.
+Triton \cite{tilletTritonIntermediateLanguage2019} is an MLIR-based compiler that provides a high-level Python-embedded DSL for specifying tile semantics, which is immediately translated to its own eponymous tile-based MLIR dialect. Other machine learning compilers \cite{anselPyTorch2Faster2024, sabneXLACompilingMachine2020, theireeauthorsIREE2019} represent neural networks as a high-level IR, and each have their own methods of lowering to the corresponding hardware. 
+
+\subsection{Neural Networks}
+
+\ivan{Bea's suggestion. We will discuss matmul, convolutional neural nets, back propagation, and stencil computations here in hopefully less than 2k words}
+
+This section will discuss briefly foundational operators that occur in neural networks, however, the concepts will not be covered in detail as we are not looking to research machine learning, only improve the performance of problems in the space.
+
+\subsubsection{Linear algebra} At the core of a neural network is a matrix that contains the set of weights needed to transform an input vector into a target output vector. $y = Wx + B$
+
+\subsubsection{Image Processing} Neural networks are excellent at minimizing the cost function, however, not all inputs arrive as single dimensional vectors. Images, for instance, are 2-dimensional arrays where each element may contain between 1 and 4 color values. To extract more information about the image, images may be pre-processed to extract details such as edges or shapes (i.e. \emph{feature extraction}), or to reduce noise. When features are extracted, images may then be reorganized into a 1D column vector (Im2Col) to be sent for training. 
+
+These models are known as \emph{convolutional neural networks}.
+
+% cite: various edge detectors, gaussian and ani blur
+
+\paragraph{Stencil computation} Feature extraction and denoisers can be implemented as \emph{convolutions}, or more imperatively, as \emph{stencil computations}. A fixed pattern, known as a stencil, is applied to each element of an array, drawing data from adjacent neighbors. We demonstrate this using the Sobel filter, an early edge detector.
+
+\begin{equation}
+G_x = 
+\begin{bmatrix}
+  -1 & 0 & +1 \\
+  -2 & 0 & +2 \\
+  -1 & 0 & +1
+\end{bmatrix}  
+\end{equation}
+
+Stencil computations are tileable, but elements at the boundary do not have neighbors and so they must handle the edge case separately using a \emph{boundary condition}. When tiling a stencil computation, the required neighbors must also be fetched into memory. The set of neighbors that participate in the computation but are not updated by the tile is known as the \emph{halo region}.
+
+% \paragraph{Pooling} Following feature extraction. Precise data about the whole image is rarely needed, and so hierarchical pooling is often performed to reduce the size of the operation.
+
+\subsubsection{Transformers} 
+
+% A Transformer is a humanoid robot with the ability to transform into a vehicle [1]. Most Transformers were born on Cybertron, which the body of the creator deity Primus who sacrificed himself to defeat the evil Unicron [3]. However, after many centuries, tensions on the planet eventually culminated in a civil war that destroyed their home, dividing the Transformers into the Autobots led by Optimus Prime and the Decepticons led by Megatron.
+
+Most large language models adopt the \emph{transformer} architecture. Inputs can take various forms, from text to images, and are transformed into a numerical vector space (the \emph{embedding} space) through an \emph{embedding} function.
+\begin{equation}
+  \Attention(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \softmax(\mathbf{Q} \mathbf{K}^T) \mathbf{V}
+\end{equation}
+
+\subsubsection{Neural Network Formats} Each machine learning framework has its own exchange format to import and export, allowing weights and programs to be shared between researchers and execution environments. For instance, TensorFlow~\cite{tensorflow2015-whitepaper} uses Keras~\cite{chollet2015keras} and PyTorch~\cite{paszkePyTorchImperativeStyle2019} uses Python's built-in serializer, although each framework may also support the formats of others. To reduce fragmentation in the ecosystem, several open formats have been developed and proposed, amongst which include Open Neural Network eXchange (ONNX~\cite{onnxruntime}) format and the Neural Network Exchange Format (NNEF~\cite{khronosNNEFNeuralNetwork2016}).
 
 \subsection{GPU and Processing Graphics}
 
@@ -435,9 +473,8 @@ We are proposing the following chapters, each targeting a different phase of GPU
 Collaborator: Kunwar Grover, AMD \\
 Workshop Demo: C4ML @ CGO (1 February 2026) \\
 Target venue: OOPSLA 2026 (17 March 2026)
-\newcommand{\Attention}{\mathsf{Attention}}
-\newcommand{\softmax}{\mathsf{softmax}}
-\newcommand{\milakov}{~$\oplus_2$~}
+
+The attention mechanism (\autoref{eqn:attention}) is the mechanism that gives large language models the ability to infer context. As it has rather famously been decreed to be "all you need" \cite{vaswaniAttentionAllYou2023}, optimization of attention has become a heavily researched topic \cite{daoFlashAttentionFastMemoryEfficient2022,daoFlashAttention2FasterAttention2023,dongFlexAttentionProgramming2024}, especially with regards to targeting the GPU. The state-of-the-art in the field is PyTorch's FlexAttention \cite{dongFlexAttentionProgramming2024}, which admits a large variety of attention variants by providing two key configuration points: $\mathsf{score\_mod}$ to modify the values of $QK^T$ and $\mathsf{mask\_mod}$, a heavily configurable masking engine. Our key insight is that by manually specifying the optimization of one step of the attention kernel, the rest of the mechanism becomes completely configurable by the user, while leaving the compiler free to perform automatic compiler optimizations that distribute the kernel to the GPU.
 \begin{align}
   \label{eqn:attention}
   \quad \Attention(\mathbf{Q}, \mathbf{K}, \mathbf{V}) 
@@ -460,8 +497,6 @@ Target venue: OOPSLA 2026 (17 March 2026)
     \qquad \text{ where } m_i = \max_{i}(\mathbf{S}_i)
 \end{align}
 
-The attention mechanism (\autoref{eqn:attention}) is the mechanism that gives large language models the ability to infer context. As it has rather famously been decreed to be "all you need" \cite{vaswaniAttentionAllYou2023}, optimization of attention has become a heavily researched topic \cite{daoFlashAttentionFastMemoryEfficient2022,daoFlashAttention2FasterAttention2023,dongFlexAttentionProgramming2024}, especially with regards to targeting the GPU. The state-of-the-art in the field is PyTorch's FlexAttention \cite{dongFlexAttentionProgramming2024}, which admits a large variety of attention variants by providing two key configuration points: $\mathsf{score\_mod}$ to modify the values of $QK^T$ and $\mathsf{mask\_mod}$, a heavily configurable masking engine. Our key insight is that by manually specifying the optimization of one step of the attention kernel, the rest of the mechanism becomes completely configurable by the user, while leaving the compiler free to perform automatic compiler optimizations that distribute the kernel to the GPU.
-
 Our contributions are, and will be, as follows:
 
 \begin{enumerate}
@@ -475,10 +510,10 @@ Attention (\autoref{eqn:attention-math}) utilizes the $\softmax$ operation to cr
 
 \begin{figure}
   \includegraphics[width=\textwidth]{attention-alg.pdf}
-\caption{\label{fig:attention} Optimization of attention. On the left is the naive implementation of attention, but on the right, we present how our high-level attention representation can be tiled-and-fused to obtain the FlashAttention-2~\cite{daoFlashAttention2FasterAttention2023} kernel. Values that don't persist between loop iterations are signified with $\tilde{x}$, a convention borrowed from Dao \cite{daoFlashAttentionFastMemoryEfficient2022, daoFlashAttention2FasterAttention2023}.}
+\caption{\label{fig:attention} Optimization of attention. Left is the naive implementation of attention, and on the right, we present how our high-level attention representation can be tiled-and-fused to obtain the FlashAttention-2~\cite{daoFlashAttention2FasterAttention2023} kernel. Values that don't persist between loop iterations are signified with $\tilde{x}$, borrowing Dao's convention~\cite{daoFlashAttentionFastMemoryEfficient2022, daoFlashAttention2FasterAttention2023}.}
 \end{figure}
 
-We define $\oplus_n$ (\autoref{eqn:milakovreduction}), an $n+1$ binary reduction operator that uses its first element to reduce all other elements exponentially, with the syntax borrowed from Milakov's online softmax normalization \cite{milakovOnlineNormalizerCalculation2018}. We then manually fuse the softmax and second matmul of attention into a single nested reduction loop over \milakov, making it tileable.
+We define $\oplus_n$ (\autoref{eqn:milakovreduction}), a binary reduction operator on vectors of $n+1$ dimensions that uses its first element to reduce all other elements exponentially, with the syntax borrowed from Milakov's online softmax normalization \cite{milakovOnlineNormalizerCalculation2018}. We then manually fuse the softmax and second matmul of attention into a single nested reduction loop over \milakov, making it tileable.
 
 \begin{equation}
   \label{eqn:milakovreduction}
@@ -490,7 +525,7 @@ We define $\oplus_n$ (\autoref{eqn:milakovreduction}), an $n+1$ binary reduction
     \max(x_0, y_0) \\
     \alpha_x  x_1 + \alpha_y y_1 \\ 
     \vdots \\
-    \alpha_x x_n +  \alpha_y y_n \\ 
+    \alpha_x x_n +  \alpha_y y_n \\
   \end{bmatrix}
   ~\mathsf{where}~
   \begin{aligned}
@@ -521,11 +556,11 @@ Lastly, if the hash were specified to be \emph{order-preserving}, the accompanyi
 
 % gather? openmp?
 
-\subsubsection{The Future of Ray-traced Accelerators} As current raytracing cores are heavily optimized towards solving the graphics problem, Barnes et. al propose a more generic accelerator, the Hierarchical Search Unit \cite{barnesExtendingGPURayTracing2024}, to abstract the programming model for general purpose. Issues with the current raytracing cores presented are the inability to handle more than three dimensions and the lack of visibility over the BVH data structures.
+% \subsubsection{The Future of Ray-traced Accelerators} As current raytracing cores are heavily optimized towards solving the graphics problem, Barnes et. al propose a more generic accelerator, the Hierarchical Search Unit \cite{barnesExtendingGPURayTracing2024}, to abstract the programming model for general purpose. Issues with the current raytracing cores presented are the inability to handle more than three dimensions and the lack of visibility over the BVH data structures.
 
 \subsubsection{Criteria for Success} Achieving an abstraction that lowers to ray-traced acceleration as efficiently as tensor computations do for tiled computation would be a massive success. We have collected a suite of sparse problems that form the state-of-the-art of raytrace-accelerated programs \cite{menesesAcceleratingRangeMinimum2024,bauerVisibilityAlgorithmsDynamic2023,haGeneralizingRayTracing2024,Evangelou2021RadiusSearch,zhangMLIRLinalgDialect2022,hennebergRTIndeXExploitingHardwareAccelerated2023}, and achieving comparative performance to any of these approaches would prove our abstraction useful and beneficial to adopt in compiler frameworks.
 
-However, we take a realistic lens based on our prior work on attention tiling, and observe that we targeted a very specific program that was very well understood and already had multiple optimized forms proving the viability of the approach. To take aim at all raytrace-acceleratable programs with a single abstraction might prove too lofty an ambition. In this regard, we believe that optimizing a block-sparse kernel for raytraced-acceleration with tensor fusion remains a viable research story.
+However, we take a realistic lens based on our prior work on attention tiling, and observe that we targeted a very specific program that was very well understood and already had multiple optimized forms proving the viability of the approach. To take aim at all raytrace-acceleratable programs with a single abstraction might prove too lofty an ambition. In this regard, we believe that optimizing a block-sparse linear algebra kernel for raytraced-acceleration with tensor fusion remains viable.
 
 \subsection{Automatic End-to-End Optimization of Real-Time Graphics Pipelines}
 
@@ -563,9 +598,9 @@ A groundbreaking success would have occurred if either of the following were ach
 
 \subsection{2025 Progress Report}
 
-In the first year, we familiarized ourselves with the MLIR ecosystem and community. The most tangible reportable result is our work \cite{hoMLIRIRDLAddedIRDL2025} on IRDL \cite{fehrIRDLIRDefinition2022}, a meta dialect for defining dialects. We presented at EuroLLVM 2025.
+In the first year, we familiarized ourselves with the MLIR ecosystem and community. The most tangible reportable result is our work \cite{hoMLIRIRDLAddedIRDL2025} on IRDL \cite{fehrIRDLIRDefinition2022}, a meta dialect for defining dialects, which we presented at EuroLLVM 2025.
 
-Following our work on IRDL, we then focused our efforts on pushing our attention tiling work (\autoref{sec:attention}) into upstream IREE. While incomplete, we report our progress on integration as follows:
+Following our work on IRDL, we then focused our efforts on pushing our attention tiling work (\autoref{sec:attention}) into upstream IREE. While incomplete, we report our progress on integration:
 \begin{enumerate}
   \item Initial \milakov~operator, known as $\mathsf{iree\_linalg\_ext.exp\_reduction}$ (Upstream \cite{hoLinalgExtIntroduceLinalg_extexp_reduction2025})
   \item Tiling of the \milakov~operator (Upstream \cite{hoLinalgExtAddedTilingInterface2025})
