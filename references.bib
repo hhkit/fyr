@@ -212,6 +212,21 @@
   file = {/Users/ihkh2/Zotero/storage/5G5V4NLE/Baghdadi et al. - 2019 - Tiramisu A Polyhedral Compiler for Expressing Fast and Portable Code.pdf}
 }
 
+@inproceedings{bandishtiTilingStencilComputations2012,
+  title = {Tiling Stencil Computations to Maximize Parallelism},
+  booktitle = {{{SC}} '12: {{Proceedings}} of the {{International Conference}} on {{High Performance Computing}}, {{Networking}}, {{Storage}} and {{Analysis}}},
+  author = {Bandishti, Vinayaka and Pananilath, Irshad and Bondhugula, Uday},
+  year = 2012,
+  month = nov,
+  pages = {1--11},
+  issn = {2167-4337},
+  doi = {10.1109/SC.2012.107},
+  urldate = {2025-11-19},
+  abstract = {Most stencil computations allow tile-wise concurrent start, i.e., there always exists a face of the iteration space and a set of tiling hyperplanes such that all tiles along that face can be started concurrently. This provides load balance and maximizes parallelism. However, existing automatic tiling frameworks often choose hyperplanes that lead to pipelined start-up and load imbalance. We address this issue with a new tiling technique that ensures concurrent start-up as well as perfect load-balance whenever possible. We first provide necessary and sufficient conditions on tiling hyperplanes to enable concurrent start for programs with affine data accesses. We then provide an approach to find such hyperplanes. Experimental evaluation on a 12-core Intel Westmere shows that our code is able to outperform a tuned domain-specific stencil code generator by 4\% to 27\%, and previous compiler techniques by a factor of 2x to 10.14x.},
+  keywords = {Compilers,Equations,Face,Parallel processing,Program transformation,Schedules,Silicon,Tiles,Vectors},
+  file = {/Users/ihkh2/Zotero/storage/XYJ75AZN/Bandishti et al. - 2012 - Tiling stencil computations to maximize parallelism.pdf}
+}
+
 @article{bangaruSLANGDFastModular2023,
   title = {{{SLANG}}.{{D}}: {{Fast}}, {{Modular}} and {{Differentiable Shader Programming}}},
   shorttitle = {{{SLANG}}.{{D}}},
@@ -972,6 +987,12 @@
   file = {/Users/ihkh2/Zotero/storage/ZLZ38W3A/Gysi et al. - 2021 - Domain-Specific Multi-Level IR Rewriting for GPU The Open Earth Compiler for GPU-accelerated Climat.pdf}
 }
 
+@phdthesis{hagedorn2016extension,
+  title = {An Extension of a Functional Intermediate Language for Parallelizing Stencil Computations and Its Optimizing {{GPU}} Implementation Using {{OpenCL}}},
+  author = {Hagedorn, Bastian},
+  year = 2016
+}
+
 @article{hagedornAchievingHighperformanceFunctional2020,
   title = {Achieving High-Performance the Functional Way: A Functional Pearl on Expressing High-Performance Optimizations as Rewrite Strategies},
   shorttitle = {Achieving High-Performance the Functional Way},
@@ -1127,6 +1148,40 @@
   abstract = {This year at gamescom, Microsoft is highlighting new gaming features coming for Windows,~particularly for handheld devices. We want to highlight one of the DirectX team's most exciting new contributions to the PC gaming ecosystem, which will make its debut on the new ROG Xbox Ally and ROG Xbox Ally X. Advanced shader delivery addresses one [\dots ]},
   langid = {american},
   file = {/Users/ihkh2/Zotero/storage/FDKUXZC2/introducing-advanced-shader-delivery.html}
+}
+
+@inproceedings{holewinskiHighperformanceCodeGeneration2012,
+  title = {High-Performance Code Generation for Stencil Computations on {{GPU}} Architectures},
+  booktitle = {Proceedings of the 26th {{ACM}} International Conference on {{Supercomputing}}},
+  author = {Holewinski, Justin and Pouchet, Louis-No{\"e}l and Sadayappan, P.},
+  year = 2012,
+  month = jun,
+  series = {{{ICS}} '12},
+  pages = {311--320},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  doi = {10.1145/2304576.2304619},
+  urldate = {2025-11-19},
+  abstract = {Stencil computations arise in many scientific computing domains, and often represent time-critical portions of applications. There is significant interest in offloading these computations to high-performance devices such as GPU accelerators, but these architectures offer challenges for developers and compilers alike. Stencil computations in particular require careful attention to off-chip memory access and the balancing of work among compute units in GPU devices.In this paper, we present a code generation scheme for stencil computations on GPU accelerators, which optimizes the code by trading an increase in the computational workload for a decrease in the required global memory bandwidth. We develop compiler algorithms for automatic generation of efficient, time-tiled stencil code for GPU accelerators from a high-level description of the stencil operation. We show that the code generation scheme can achieve high performance on a range of GPU architectures, including both nVidia and AMD devices.},
+  isbn = {978-1-4503-1316-2},
+  file = {/Users/ihkh2/Zotero/storage/7RZ6X52F/Holewinski et al. - 2012 - High-performance code generation for stencil computations on GPU architectures.pdf}
+}
+
+@inproceedings{holewinskiHighperformanceCodeGeneration2012a,
+  title = {High-Performance Code Generation for Stencil Computations on {{GPU}} Architectures},
+  booktitle = {Proceedings of the 26th {{ACM}} International Conference on {{Supercomputing}}},
+  author = {Holewinski, Justin and Pouchet, Louis-No{\"e}l and Sadayappan, P.},
+  year = 2012,
+  month = jun,
+  pages = {311--320},
+  publisher = {ACM},
+  address = {San Servolo Island, Venice Italy},
+  doi = {10.1145/2304576.2304619},
+  urldate = {2025-11-19},
+  abstract = {Stencil computations arise in many scientific computing domains, and often represent time-critical portions of applications. There is significant interest in offloading these computations to high-performance devices such as GPU accelerators, but these architectures offer challenges for developers and compilers alike. Stencil computations in particular require careful attention to off-chip memory access and the balancing of work among compute units in GPU devices.},
+  isbn = {978-1-4503-1316-2},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/SY89WY9Y/Holewinski et al. - 2012 - High-performance code generation for stencil computations on GPU architectures.pdf}
 }
 
 @misc{hoLinalgExtAddedDecomposition2025,
@@ -1312,6 +1367,18 @@
   isbn = {979-8-4007-1215-9},
   langid = {english},
   file = {/Users/ihkh2/Zotero/storage/TGFSL2BS/Kell and Stinnett - 2024 - Source-Level Debugging of Compiler-Optimised Code Ill-Posed, but Not Impossible.pdf}
+}
+
+@book{kennedyOptimizingCompilersModern2001,
+  title = {Optimizing Compilers for Modern Architectures: A Dependence-Based Approach},
+  shorttitle = {Optimizing Compilers for Modern Architectures},
+  author = {Kennedy, Ken and Allen, John R.},
+  year = 2001,
+  month = sep,
+  publisher = {Morgan Kaufmann Publishers Inc.},
+  address = {San Francisco, CA, USA},
+  abstract = {Modern computer architectures designed with high-performance microprocessors offer tremendous potential gains in performance over previous designs. Yet their very complexity makes it increasingly difficult to produce efficient code and to realize their full potential. This landmark text from two leaders in the field focuses on the pivotal role that compilers can play in addressing this critical issue. The basis for all the methods presented in this book is data dependence, a fundamental compiler analysis tool for optimizing programs on high-performance microprocessors and parallel architectures. It enables compiler designers to write compilers that automatically transform simple, sequential programs into forms that can exploit special features of these modern architectures. The text provides a broad introduction to data dependence, to the many transformation strategies it supports, and to its applications to important optimization problems such as parallelization, compiler memory hierarchy management, and instruction scheduling. The authors demonstrate the importance and wide applicability of dependence-based compiler optimizations and give the compiler writer the basics needed to understand and implement them. They also offer cookbook explanations for transforming applications by hand to computational scientists and engineers who are driven to obtain the best possible performance of their complex applications.},
+  isbn = {978-1-55860-286-1}
 }
 
 @misc{kerbl3DGaussianSplatting2023,
@@ -1711,6 +1778,24 @@
   file = {/Users/ihkh2/Zotero/storage/FWSXKQSP/Markidis et al. - 2018 - NVIDIA Tensor Core Programmability, Performance & Precision.pdf}
 }
 
+@inproceedings{maruyamaPhysisImplicitlyParallel2011,
+  title = {Physis: An Implicitly Parallel Programming Model for Stencil Computations on Large-Scale {{GPU-accelerated}} Supercomputers},
+  shorttitle = {Physis},
+  booktitle = {Proceedings of 2011 {{International Conference}} for {{High Performance Computing}}, {{Networking}}, {{Storage}} and {{Analysis}}},
+  author = {Maruyama, Naoya and Nomura, Tatsuo and Sato, Kento and Matsuoka, Satoshi},
+  year = 2011,
+  month = nov,
+  series = {{{SC}} '11},
+  pages = {1--12},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  doi = {10.1145/2063384.2063398},
+  urldate = {2025-11-19},
+  abstract = {This paper proposes a compiler-based programming framework that automatically translates user-written structured grid code into scalable parallel implementation code for GPU-equipped clusters. To enable such automatic translations, we design a small set of declarative constructs that allow the user to express stencil computations in a portable and implicitly parallel manner. Our framework translates the user-written code into actual implementation code in CUDA for GPU acceleration and MPI for node-level parallelization with automatic optimizations such as computation and communication overlapping. We demonstrate the feasibility of such automatic translations by implementing several structured grid applications in our framework. Experimental results on the TSUBAME2.0 GPU-based supercomputer show that the performance is comparable as hand-written code and good strong and weak scalability up to 256 GPUs.},
+  isbn = {978-1-4503-0771-0},
+  file = {/Users/ihkh2/Zotero/storage/Y9QZLALZ/Maruyama et al. - 2011 - Physis an implicitly parallel programming model for stencil computations on large-scale GPU-acceler.pdf}
+}
+
 @misc{mayerEmployingPolyhedralMethods2024,
   title = {Employing Polyhedral Methods to Optimize Stencils on {{FPGAs}} with Stencil-Specific Caches, Data Reuse, and Wide Data Bursts},
   author = {Mayer, Florian and Brandner, Julian and Philippsen, Michael},
@@ -2013,6 +2098,35 @@
   file = {/Users/ihkh2/Zotero/storage/MT2BHTCF/Osborne and Sannikov - 2024 - Radiance Cascades A Novel High-Resolution Formal Solution for Multidimensional Non-LTE Radiative Tr.pdf;/Users/ihkh2/Zotero/storage/YJ4QVNXS/2408.html}
 }
 
+@misc{osheaIntroductionConvolutionalNeural2015,
+  title = {An {{Introduction}} to {{Convolutional Neural Networks}}},
+  author = {O'Shea, Keiron and Nash, Ryan},
+  year = 2015,
+  month = dec,
+  number = {arXiv:1511.08458},
+  eprint = {1511.08458},
+  primaryclass = {cs},
+  publisher = {arXiv},
+  doi = {10.48550/arXiv.1511.08458},
+  urldate = {2025-11-19},
+  abstract = {The field of machine learning has taken a dramatic twist in recent times, with the rise of the Artificial Neural Network (ANN). These biologically inspired computational models are able to far exceed the performance of previous forms of artificial intelligence in common machine learning tasks. One of the most impressive forms of ANN architecture is that of the Convolutional Neural Network (CNN). CNNs are primarily used to solve difficult image-driven pattern recognition tasks and with their precise yet simple architecture, offers a simplified method of getting started with ANNs.},
+  archiveprefix = {arXiv},
+  langid = {english},
+  keywords = {Computer Science - Computer Vision and Pattern Recognition,Computer Science - Machine Learning,Computer Science - Neural and Evolutionary Computing},
+  file = {/Users/ihkh2/Zotero/storage/GB57IW92/O'Shea and Nash - 2015 - An Introduction to Convolutional Neural Networks.pdf}
+}
+
+@article{paszkeAutomaticDifferentiationPyTorch2017,
+  title = {Automatic Differentiation in {{PyTorch}}},
+  author = {Paszke, Adam and Gross, Sam and Chintala, Soumith and Chanan, Gregory and Yang, Edward and DeVito, Zachary and Lin, Zeming and Desmaison, Alban and Antiga, Luca and Lerer, Adam},
+  year = 2017,
+  month = oct,
+  urldate = {2025-11-19},
+  abstract = {In this article, we describe an automatic differentiation module of PyTorch --- a library designed to enable rapid research on machine learning models. It builds upon a few projects, most notably Lua Torch, Chainer, and HIPS Autograd, and provides a high performance environment with easy access to automatic differentiation of models executed on different devices (CPU and GPU). To make prototyping easier, PyTorch does not follow the symbolic approach used in many other deep learning frameworks, but focuses on differentiation of purely imperative programs, with a focus on extensibility and low overhead. Note that this preprint is a draft of certain sections from an upcoming paper covering all PyTorch features.},
+  langid = {english},
+  file = {/Users/ihkh2/Zotero/storage/VHZT8GVM/Paszke et al. - 2017 - Automatic differentiation in PyTorch.pdf}
+}
+
 @misc{paszkePyTorchImperativeStyle2019,
   title = {{{PyTorch}}: {{An Imperative Style}}, {{High-Performance Deep Learning Library}}},
   shorttitle = {{{PyTorch}}},
@@ -2065,6 +2179,21 @@
   file = {/Users/ihkh2/Zotero/storage/J5IX35N8/Pitchanathan et al. - 2024 - Falcon A Scalable Analytical Cache Model.pdf}
 }
 
+@inproceedings{pmlr-v51-lee16a,
+  title = {Generalizing Pooling Functions in Convolutional Neural Networks: {{Mixed}}, Gated, and Tree},
+  booktitle = {Proceedings of the 19th International Conference on Artificial Intelligence and Statistics},
+  author = {Lee, Chen-Yu and Gallagher, Patrick W. and Tu, Zhuowen},
+  editor = {Gretton, Arthur and Robert, Christian C.},
+  year = 2016,
+  month = may,
+  series = {Proceedings of Machine Learning Research},
+  volume = {51},
+  pages = {464--472},
+  publisher = {PMLR},
+  address = {Cadiz, Spain},
+  abstract = {We seek to improve deep neural networks by generalizing the pooling operations that play a central role in current architectures. We pursue a careful exploration of approaches to allow pooling to learn and to adapt to complex and variable patterns. The two primary directions lie in (1) learning a pooling function via (two strategies of) combining of max and average pooling, and (2) learning a pooling function in the form of a tree-structured fusion of pooling filters that are themselves learned. In our experiments every generalized pooling operation we explore improves performance when used in place of average or max pooling. We experimentally demonstrate that the proposed pooling operations provide a boost in invariance properties relative to conventional pooling and set the state of the art on several widely adopted benchmark datasets; they are also easy to implement, and can be applied within various deep neural network architectures. These benefits come with only a light increase in computational overhead during training and a very modest increase in the number of model parameters.}
+}
+
 @article{pompougnacWeavingSynchronousReactions2022,
   title = {Weaving {{Synchronous Reactions}} into the {{Fabric}} of {{SSA-form Compilers}}},
   author = {Pompougnac, Hugo and Beaugnon, Ulysse and Cohen, Albert and Butucaru, Dumitru Potop},
@@ -2089,6 +2218,15 @@
   urldate = {2025-11-11},
   abstract = {We present a plan to add loop nest optimizations in GCC based on polyhedral representations of loop nests. We advocate a static analysis approach based on a hierarchy of interchangeable abstractions with solvers that range from the exact solvers such as OMEGA, to faster but less precise solvers based on more coarse abstractions. The intermediate representationGRAPHITE (GIMPLE Represented as Polyhedra with Interchangeable Envelopes), built on GIMPLE and the natural loops, hosts the high level loop transformations. We base this presentation on the WRaP-IT project developed in theAlchemy group at INRIA Futurs and Paris-Sud University, on the PIPS compiler developed at \'Ecole des mines de Paris, and on a joint work with several members of the static analysis and polyhedral compilation community in France. The main goal of this project is to bring more high level loop optimizations toGCC: loop fusion, tiling, strip mining, etc. Thanks to the WRaP-IT experience, we know that the polyhedral analyzes and transformations are affordable in a production compiler. A second goal of this project is to experiment with compile time reduction versus attainable precision when replacing operations on polyhedra with faster operations on more abstract domains. However, the use of a too coarse representation for computing might also result in an over approximated solution that cannot be used in subsequent computations. There exists a trade off between speed of the computation and the attainable precision that has not yet been analyzed for real world programs.},
   file = {/Users/ihkh2/Zotero/storage/TUC5K5YT/Pop et al. - 2006 - GRAPHITE  Polyhedral Analyses and Optimizations for GCC.pdf}
+}
+
+@misc{pouchetPolyBench2010,
+  title = {{{PolyBench}}/{{C}}},
+  author = {Pouchet, Louis-No{\"e}l},
+  year = 2010,
+  urldate = {2025-11-19},
+  howpublished = {https://www.cs.colostate.edu/\textasciitilde pouchet/software/polybench/},
+  file = {/Users/ihkh2/Zotero/storage/5AD8CBT4/polybench.html}
 }
 
 @misc{pytorchcontributorsTorchnnfunctionalscaled_dot_product_attentionPyTorch272025,
@@ -2204,6 +2342,11 @@
   urldate = {2025-11-12},
   copyright = {MIT},
   howpublished = {https://github.com/Raikiri/RadianceCascadesPaper}
+}
+
+@article{rall1996introduction,
+  title = {An Introduction to Automatic Differentiation},
+  author = {Rall, Louis B and Corliss, George F}
 }
 
 @misc{RayTracingVulkan2020,
@@ -2360,6 +2503,14 @@
   file = {/Users/ihkh2/Zotero/storage/JFMWFD3I/Silvennoinen and Lehtinen - 2017 - Real-time global illumination by precomputed local reconstruction from sparse radiance probes.pdf}
 }
 
+@article{sobelIsotropic3x3Image2014,
+  title = {An Isotropic 3x3 Image Gradient Operator},
+  author = {Sobel, Irwin},
+  year = 2014,
+  month = feb,
+  journal = {Presentation at Stanford A.I. Project 1968}
+}
+
 @article{solomonikCS598EVS,
   title = {{{CS}} 598 {{EVS}}: {{Tensor Computations}} - {{Basics}} of {{Tensor Computations}}},
   author = {Solomonik, Edgar},
@@ -2473,6 +2624,15 @@
   howpublished = {https://github.com/iree-org/iree}
 }
 
+@misc{thejaxauthorsAutomaticDifferentiationJAX2024,
+  title = {Automatic Differentiation --- {{JAX}} Documentation},
+  author = {The JAX Authors},
+  year = 2024,
+  urldate = {2025-11-19},
+  howpublished = {https://docs.jax.dev/en/latest/automatic-differentiation.html},
+  file = {/Users/ihkh2/Zotero/storage/L37KCPBH/automatic-differentiation.html}
+}
+
 @misc{thellvmfoundationLinalgDialectMLIR2025,
   title = {'linalg' {{Dialect}} - {{MLIR}}},
   author = {The LLVM Foundation},
@@ -2548,6 +2708,23 @@
   langid = {english},
   keywords = {Economics - General Economics,Quantitative Finance - Economics},
   file = {/Users/ihkh2/Zotero/storage/Y3UAT873/Toner-Rodgers - 2025 - Artificial Intelligence, Scientific Discovery, and Product Innovation.pdf}
+}
+
+@inproceedings{touatiDecidabilityPhaseOrdering2006,
+  title = {On the Decidability of Phase Ordering Problem in Optimizing Compilation},
+  booktitle = {Proceedings of the 3rd Conference on {{Computing}} Frontiers},
+  author = {Touati, Sid-Ahmed-Ali and Barthou, Denis},
+  year = 2006,
+  month = may,
+  series = {{{CF}} '06},
+  pages = {147--156},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  doi = {10.1145/1128022.1128042},
+  urldate = {2025-11-19},
+  abstract = {We are interested in the computing frontier around an essential question about compiler construction: having a program P and a set M of non parametric compiler optimization modules (called also phases), is it possible to find a sequence s of these phases such that the performance (execution time for instance) of the final generated program P{$\prime$} is "optimal" ? We prove in this article that this problem is undecidable in two general schemes of optimizing compilation: iterative compilation and library optimization/generation. Fortunately, we give some simplified cases when this problem be-comes decidable, and we provide some algorithms (not necessary efficient) that can answer our main question. Another essential question that we are interested in is parame-ters space exploration in optimizing compilation (tuning optimizing compilation parameters). In this case, we assume a fixed sequence of optimization, but each optimization phase is allowed to have a parameter. We try to figure out how to compute the best parameter values for all program transformations when the compilation sequence is given. We also prove that this general problem is undecidable and we provide some simplified decidable instances.},
+  isbn = {978-1-59593-302-7},
+  file = {/Users/ihkh2/Zotero/storage/PU8MLLUF/Touati and Barthou - 2006 - On the decidability of phase ordering problem in optimizing compilation.pdf}
 }
 
 @misc{TreeBorrowsProgramming,
@@ -2870,6 +3047,24 @@
   abstract = {Background and Objective Interactive soft tissue dissection has been a fundamental procedure in virtual surgery systems. Existing cutting algorithms involve complex topology changes of simulation meshes, which can increase simulation overhead and produce visual artifacts. In this paper, we proposed a novel graph-based shape-matching method that allows for real-time, flexible, progressive, and discontinuous cuts on soft tissue. Methods We employed shape-matching constraints within the position-based dynamics (PBD) framework, a widely adopted approach for real-time simulation applications. The soft tissue was effectively modeled using overlapping clusters, each governed by shape-matching constraints. The dissection process was bifurcated into two distinct stages. In the first stage, the surgical scalpel presses the surface of the soft tissue. The soft tissue is cut apart when the surface pressure exceeds a threshold, entering the second stage. To address the discrepancy between the visual mesh and the simulation model during cluster separation, we developed an Aggregate Finding Connected Components (AFCC) algorithm, optimized for GPU computation and integrated with a background grid. This approach also avoids ghost forces and fragmentation artifacts. To control the increase in the number of clusters, we also propose a merging strategy that can run in parallel. Results Our simulation outcomes demonstrated that the AFCC dissection algorithm effectively manages cluster separation and expansion with robustness. There were no ghost forces between the cutting surface and unrealistic fragments. Our simulation capability extended to supporting intricate and discontinuous cutting routes. Our dissection simulation maintained real-time performance even with over 100,000 particles constituting the soft tissue. Conclusions Our real-time and robust surgical dissection simulation technique enables the performance of complex cuts in various surgical scenarios, demonstrating its potential in virtual surgery applications.},
   keywords = {K.6.1 [computer graphics],Virtual surgery simulation},
   file = {/Users/ihkh2/Zotero/storage/XSU3S2KY/S0169260724001676.html}
+}
+
+@misc{zerrellStripeTensorCompilation2019,
+  title = {Stripe: {{Tensor Compilation}} via the {{Nested Polyhedral Model}}},
+  shorttitle = {Stripe},
+  author = {Zerrell, Tim and Bruestle, Jeremy},
+  year = 2019,
+  month = mar,
+  number = {arXiv:1903.06498},
+  eprint = {1903.06498},
+  primaryclass = {cs},
+  publisher = {arXiv},
+  doi = {10.48550/arXiv.1903.06498},
+  urldate = {2025-11-19},
+  abstract = {Hardware architectures and machine learning (ML) libraries evolve rapidly. Traditional compilers often fail to generate high-performance code across the spectrum of new hardware offerings. To mitigate, engineers develop hand-tuned kernels for each ML library update and hardware upgrade. Unfortunately, this approach requires excessive engineering effort to scale or maintain with any degree of state-of-the-art performance. Here we present a Nested Polyhedral Model for representing highly parallelizable computations with limited dependencies between iterations. This model provides an underlying framework for an intermediate representation (IR) called Stripe, amenable to standard compiler techniques while naturally modeling key aspects of modern ML computing. Stripe represents parallelism, efficient memory layout, and multiple compute units at a level of abstraction amenable to automatic optimization. We describe how Stripe enables a compiler for ML in the style of LLVM that allows independent development of algorithms, optimizations, and hardware accelerators. We also discuss the design exploration advantages of Stripe over kernel libraries and schedule-based or schedule-space-based code generation.},
+  archiveprefix = {arXiv},
+  keywords = {Computer Science - Distributed Parallel and Cluster Computing,Computer Science - Machine Learning},
+  file = {/Users/ihkh2/Zotero/storage/ULFNDJK9/Zerrell and Bruestle - 2019 - Stripe Tensor Compilation via the Nested Polyhedral Model.pdf;/Users/ihkh2/Zotero/storage/7UV4I7EL/1903.html}
 }
 
 @misc{zhangMLIRLinalgDialect2022,

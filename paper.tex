@@ -207,9 +207,9 @@ The thesis is as follows: compiling to optimize a program for the GPU is more th
 
 To test the robustness of our approach, we will attempt to use the tools we developed for machine learning programs to implement another existing class of programs that utilizes all three pipelines of the GPU: real-time simulations. Real-time simulations utilize raytracing to calculate global illumination, the raster pipeline to render the scene, and the compute pipeline as a catch-all pipeline for on-chip computations such as animation skeleton updates and physics. That is, we will attempt to define a real-time simulation engine declaratively, then apply guided and automatic compiler rewrites to optimize it such that it achieves real-time performance.
 
-In summary, we will attempt to answer the following research questions:
+The overarching theme of this thesis is to master utilization of the GPU through compilers. To achieve this mastery, we will attempt to answer the following research questions:
 \begin{itemize}
-  \item RQ1: What are the restrictions with regards to optimizing linear algebra programs?
+  \item RQ1: What are the restrictions that automatic optimization of linear algebra programs faces?
   \item RQ2: What is a suitable abstraction for designating parts of a program to use the raytracing pipeline, such that we can apply compiler techniques to achieve a performant program that fully utilizes all capabilities of the GPU?
   \item RQ3: Can program rewrites reduce the performance gap between raytraced and rasterized workflows in real-time scenarios? 
 \end{itemize}
@@ -354,36 +354,92 @@ Triton \cite{tilletTritonIntermediateLanguage2019} is an MLIR-based compiler tha
 
 \ivan{Bea's suggestion. We will discuss matmul, convolutional neural nets, back propagation, and stencil computations here in hopefully less than 2k words}
 
-This section will discuss briefly foundational operators that occur in neural networks, however, the concepts will not be covered in detail as we are not looking to research machine learning, only improve the performance of problems in the space.
+This section will discuss several types of neural networks (or neural nets) and the various high-level operators that occur in these programs.
 
-\subsubsection{Linear algebra} At the core of a neural network is a matrix that contains the set of weights needed to transform an input vector into a target output vector. $y = Wx + B$
+\subsubsection{Feedforward neural networks} The simplest neural network is a feed-forward neural network, where information always flows from inputs to outputs. For machine learning scientists, the classical diagram shown for a layer in a neural network is:
 
-\subsubsection{Image Processing} Neural networks are excellent at minimizing the cost function, however, not all inputs arrive as single dimensional vectors. Images, for instance, are 2-dimensional arrays where each element may contain between 1 and 4 color values. To extract more information about the image, images may be pre-processed to extract details such as edges or shapes (i.e. \emph{feature extraction}), or to reduce noise. When features are extracted, images may then be reorganized into a 1D column vector (Im2Col) to be sent for training. 
+\centerline{
+\includegraphics[scale=2]{i-hate-ml.drawio.pdf}
+}
 
-These models are known as \emph{convolutional neural networks}.
+We can write this as a simple matrix multiplication:
+\begin{align*}
+  % y = Wx \\
+  \begin{bmatrix}
+  y_1 \\ y_2 \\ y_3
+  \end{bmatrix}
+  = 
+  \begin{bmatrix}
+  w_{1,1} & w_{2,1} \\
+  w_{1,2} & w_{2,2} \\
+  w_{1,3} & w_{2,3} \\
+  \end{bmatrix} 
+  \begin{bmatrix} 
+    x_1 \\ x_2
+  \end{bmatrix}
+\end{align*}
+
+To reduce the linearity of the result, each output element of the matrix multiplication is passed into an activation function, the most commonly used of which are $\mathsf{sigmoid}$ and $\mathsf{ReLU}$.
+
+To train for the correct weight values, the error of the results are passed into a cost function, after which the whole network is \emph{differentiated} to obtain the vector of weight adjustments. Propagating the errors back into the weight tensor is known as \emph{backprogation} or \emph{gradient descent}.
+
+As new activation functions or new network designs are devised with different layers, the whole program still needs to be differentiated to determine the adjustment vector. Automatic differentiation \cite{enzymeadEnzymeCon2023HackableAutodiff2024,jakobDRJITJustintimeCompiler2022,thejaxauthorsAutomaticDifferentiationJAX2024,paszkeAutomaticDifferentiationPyTorch2017,rall1996introduction,bangaruSLANGDFastModular2023} (\emph{autodiff}) exists in machine learning compilers to remove the burden of differentiating their program from their users as they iterate.
+
+\subsubsection{Convolutional neural networks} Convolutional neural networks \cite{osheaIntroductionConvolutionalNeural2015} (CNNs) are neural nets that target the field of pattern recognition in images. The three layers involved in a CNN are:
+\begin{itemize}
+  \item Convolution layer % feature extraction 
+  \item Pooling layer % downsamping 
+  \item Fully-connected layer % dense layers
+\end{itemize}
+
+\ivan{i'll probably add the classical CNN diagram here, as we can include details about Im2Col}
 
 % cite: various edge detectors, gaussian and ani blur
 
-\paragraph{Stencil computation} Feature extraction and denoisers can be implemented as \emph{convolutions}, or more imperatively, as \emph{stencil computations}. A fixed pattern, known as a stencil, is applied to each element of an array, drawing data from adjacent neighbors. We demonstrate this using the Sobel filter, an early edge detector.
+\paragraph{The Convolution Layer: Stencil computation} The convolution layers extract features from or reduce noise in the input, extracting values for the fully-connected layer to train on.  A fixed pattern (i.e. the stencil) is applied to each element of an array, drawing data from adjacent neighbors. We demonstrate this using the $3\times3$ stencil of the Sobel filter \cite{sobelIsotropic3x3Image2014}, an early edge detector.
 
-\begin{equation}
-G_x = 
+\begin{equation*}
 \begin{bmatrix}
   -1 & 0 & +1 \\
   -2 & 0 & +2 \\
   -1 & 0 & +1
-\end{bmatrix}  
-\end{equation}
+\end{bmatrix}
+\otimes
+\begin{bmatrix}
+    0 & 0 & 0 & 0 & 0 & 0 \\
+    0 & 1 & 2 & 1 & 1 & 2 \\
+    0 & 1 & 1 & 1 & 1 & 1 \\
+    1 & 0 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 1 & 1 & 1 & 0 \\
+    0 & 1 & 1 & 1 & 1 & 1
+\end{bmatrix}
+=
+\begin{bmatrix}
+    1 & 2 & \hdots \\
+    3 & \begin{bmatrix}
+      &-1(0)  + 0(0) + 1(0)\\
+      +&-2(0) + 0(1) + 2(2)\\
+      +&-1(0) + 0(1) + 1(1)\\
+    \end{bmatrix} & \hdots  \\
+    \vdots & \vdots & \ddots
+\end{bmatrix}
+\end{equation*}
 
-Stencil computations are tileable, but elements at the boundary do not have neighbors and so they must handle the edge case separately using a \emph{boundary condition}. When tiling a stencil computation, the required neighbors must also be fetched into memory. The set of neighbors that participate in the computation but are not updated by the tile is known as the \emph{halo region}.
+We observe that elements at the boundaries of the image do not have neighbors beyond the boundary for the stencil to apply to, and so the policy for handling this edge case is known as the computation's \emph{boundary condition} (BC). In the case of Sobel, the BC is to take the element itself, though other policies may be to wrap-around the image.
 
-% \paragraph{Pooling} Following feature extraction. Precise data about the whole image is rarely needed, and so hierarchical pooling is often performed to reduce the size of the operation.
+The computation of each element of the stencil computation is embarrassingly parallel \cite{maruyamaPhysisImplicitlyParallel2011} and, hence, stencil computations are a classical target for tiling \cite{bandishtiTilingStencilComputations2012,hagedorn2016extension}. When tiling a stencil computation, the required neighbors must also be fetched into memory. The set of neighbors that participate in the computation but are not updated by the tile is known as the \emph{halo region} \cite{holewinskiHighperformanceCodeGeneration2012}. Stencil computations may be represented as polyhedral loops, and many stencil computations can be found in polyhedral benchmark test suites \cite{pouchetPolyBench2010}.
 
-\subsubsection{Transformers} 
+\paragraph{Pooling layer} The convolution layer typically retains the same image size as the input image, however, when flattened, a 720p ($1366\times768$) image still contains over a million pixels. CNNs typically do not require pixel-perfect information, thus, the pooling layer downsamples the convolution layer's outputs to reduce the size of the input and prevent overfitting. The most common pooling policies are max pooling (MaxPool) and average pooling (AvgPool) \cite{pmlr-v51-lee16a}.
+
+\paragraph{Fully-connected layer} The fully-connected layer is simply a feed-forward neural network.
+
+\subsubsection{Large language models} 
+\ivan{section under construction}
 
 % A Transformer is a humanoid robot with the ability to transform into a vehicle [1]. Most Transformers were born on Cybertron, which the body of the creator deity Primus who sacrificed himself to defeat the evil Unicron [3]. However, after many centuries, tensions on the planet eventually culminated in a civil war that destroyed their home, dividing the Transformers into the Autobots led by Optimus Prime and the Decepticons led by Megatron.
 
-Most large language models adopt the \emph{transformer} architecture. Inputs can take various forms, from text to images, and are transformed into a numerical vector space (the \emph{embedding} space) through an \emph{embedding} function.
+A weakness of convolutional networks is the inability of an element to draw information from other elements, which is known as \emph{inferring context}.
+Most large language models adopt the \emph{transformer} architecture. Inputs can take various forms, from text to images, and are transformed into a numerical vector space (the \emph{embedding} space) through an \emph{encoding} function.
 \begin{equation}
   \Attention(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \softmax(\mathbf{Q} \mathbf{K}^T) \mathbf{V}
 \end{equation}
@@ -398,7 +454,7 @@ As with general compute, computing on the GPU has come a long way from being a f
   \item Raytracing pipeline
 \end{itemize}
 
-The term for non-host programs in the high-performance computing realm is '\emph{kernel}'. However, in computer graphics, the programs that execute in the programmable stages of a render pipeline are instead called \emph{shaders}.
+The term for non-host programs in high-performance computing is \emph{kernel}, but in computer graphics, the code that executes in the programmable stages of a pipeline is instead called a \emph{shader}.
 
 \begin{figure}
   \caption{The hardware accelerated rendering pipelines in GPUs. \label{fig:pipelines}}
@@ -426,7 +482,7 @@ The raster pipeline (\autoref{fig:rasterpipe}) is the primary pipeline, and can 
 
 \paragraph{Forward+} Forward rendering refers to performing the entire graphics pass, from geometry through to shading, in a single render pass. Forward+ \cite{haradaForwardBringingDeferred2012} takes the tiling of the deferred shading pipeline and applied it to forward rendering, tiling the camera frustum and performing frustum culls of the lights in the scene using a compute shader. The true insight drawn from Forward+ was that deferred shading was not a one-size-fits-all optimization technique; a mixture of factors including memory traffic and overdraw needed to be considered when optimizing a graphics pipeline.
 
-\paragraph{Post-processing} While the typical graphics pass produces a realistic image of the scene, many applications of real-time graphics are typically geared towards entertainment such as video games. Complete realism may not always be the requirement, and thus, artists may tune the final image, applying \emph{post processing effects} such as depth of field\cite{mcintoshEfficientlySimulatingBokeh2012} and tone mapping \cite{eilertsenRealtimeNoiseawareTone2015} to achieve a desired effect on the viewer. As each of these effects forms, massive performance gains can be made by \emph{fusing} adjacent passes into a single shader, avoiding the materialization of intermediate textures and minimizing the number of draw calls.
+\paragraph{Post-processing} While the typical graphics pass produces a realistic image of the scene, many applications of real-time graphics are typically geared towards entertainment such as video games. Complete realism may not always be the requirement, and thus, artists may tune the final image, applying \emph{post processing effects} such as depth-of-field \cite{mcintoshEfficientlySimulatingBokeh2012} and tone mapping \cite{eilertsenRealtimeNoiseawareTone2015} to achieve a desired effect on the viewer. As each of these effects forms, massive performance gains can be made by \emph{fusing} adjacent passes into a single shader, avoiding the materialization of intermediate textures and minimizing the number of draw calls.
 
 \subsubsection{The Raytracing Pipeline}
 
@@ -457,7 +513,7 @@ Inverse rendering derives geometry and materials from one or more final images o
 
 \section{Thesis Proposal}
 
-When certain conditions are right, compilers are fantastic at doing certain types of automatic optimization: in particular, loop fusion and loop tiling. However, other types of optimization require guidance, either because transformations are mathematically illegal or just impossible to derive. User-schedulable languages provide a means to specify the optimization schedule manually, however, users are required to either specify every step of compiler optimization or leave it up to a previously-derived pipeline. In the domain of GPU programming, where tensor and parallel programs dominate the problem space, we propose that the compiler only needs a little bit of guidance, and all subsequent tilings, fusions, and peephole optimizations may be left up to the compiler to greedily perform.
+When certain conditions are right, compilers are fantastic at doing certain types of automatic optimization: in particular, loop fusion and loop tiling. However, other types of optimization require guidance, either because transformations are mathematically illegal or because they may interfere with downstream optimizations (known as the undecidable phase-ordering problem \cite{touatiDecidabilityPhaseOrdering2006}). User-schedulable languages provide a means to specify the optimization schedule manually, however, users are required to either specify every step of compiler optimization or leave it up to a previously-derived pipeline. In the domain of GPU programming, where tensor and parallel programs dominate the problem space, we propose that the compiler only needs a little bit of guidance, and all subsequent tilings, fusions, and peephole optimizations may be left up to the compiler to greedily perform.
 
 We are proposing the following chapters, each targeting a different phase of GPU optimization:
 \begin{itemize}
@@ -510,7 +566,7 @@ Attention (\autoref{eqn:attention-math}) utilizes the $\softmax$ operation to cr
 
 \begin{figure}
   \includegraphics[width=\textwidth]{attention-alg.pdf}
-\caption{\label{fig:attention} Optimization of attention. Left is the naive implementation of attention, and on the right, we present how our high-level attention representation can be tiled-and-fused to obtain the FlashAttention-2~\cite{daoFlashAttention2FasterAttention2023} kernel. Values that don't persist between loop iterations are signified with $\tilde{x}$, borrowing Dao's convention~\cite{daoFlashAttentionFastMemoryEfficient2022, daoFlashAttention2FasterAttention2023}.}
+\caption{\label{fig:attention} Optimization of attention. Left is the naive implementation of attention, and on the right, we present how our high-level attention representation can be tiled-and-fused to obtain the FlashAttention-2~\cite{daoFlashAttention2FasterAttention2023} kernel. Values that don't persist between loop iterations are annotated as $\tilde{x}$, borrowing Dao's convention~\cite{daoFlashAttentionFastMemoryEfficient2022, daoFlashAttention2FasterAttention2023}.}
 \end{figure}
 
 We define $\oplus_n$ (\autoref{eqn:milakovreduction}), a binary reduction operator on vectors of $n+1$ dimensions that uses its first element to reduce all other elements exponentially, with the syntax borrowed from Milakov's online softmax normalization \cite{milakovOnlineNormalizerCalculation2018}. We then manually fuse the softmax and second matmul of attention into a single nested reduction loop over \milakov, making it tileable.
@@ -546,6 +602,8 @@ Backup Deadline: PLDI 2027 (est. November 2026)
 
 General purpose GPU computing has its origins as a repurposing of the raster pipeline \cite{bolzSparseMatrixSolvers2003,krugerLinearAlgebraOperators2003}, resulting in the pipeline's subsequent generalization and abstraction that culminated in the current year's compute pipeline of launch grids and thread blocks. However, when adapting the general pipeline for raytracing, the limitations of compute were laid clear: as a SIMD architecture, performance would degrade quickly due to the heavy branching and recursion present in raytraced workflows. Thus, the raytracing pipeline (\autoref{fig:raytracepipe}) was introduced, with the ability to reorganize threads \cite{adinetCUDADynamicParallelism2014}, to loop back to previous stages and built-in acceleration of the bounding volume hierarchy traversal. In an attempt to coax lightning into striking twice, work began immediately on utilizing the pipeline for non-geometric workflows. While many of these attempts were successful \cite{menesesAcceleratingRangeMinimum2024,bauerVisibilityAlgorithmsDynamic2023,haGeneralizingRayTracing2024,Evangelou2021RadiusSearch,zhangMLIRLinalgDialect2022,hennebergRTIndeXExploitingHardwareAccelerated2023}, reformulating the algorithm as a geometric problem and partionining the program for raytracing requires low-level, domain-specific knowledge of manipulating graphics pipelines and resources. There currently exists no abstraction that maps to the utilization of the raytracing pipeline as perfectly nested loops do for the tiling of the compute pipeline.
 
+This paper will investigate the targeting of the raytrace pipeline to as an optimization.
+
 \subsubsection{Abstraction candidates} The natural candidate for abstraction is \emph{sparse linear algebra}. The art of treating linear algebra programs like geometric problems is not new; polyhedral compilers treat the iteration domain and tensors as integer polyhedra \cite{grosserPolyhedralASTGeneration2015}. Likewise, the row and column indices of sparse linear algebra could be treated as geometric coordinates, and retrieving all sparse elements in a row could be done with a raycast along the row's index. Zhang et al. \cite{zhangRTSpMSpMHarnessingRay2025} devised an algorithm to accelerate sparse matrix-sparse matrix multiplication with raytracing. By specifying the lowering of certain sparse operators to be optimized for RT cores, there is reason to hypothesize that more complex programs could be fused into the subsequent kernels to yield performant GPU-accelerated code. Additionally, block-sparse data structures exist as quads in geometric space, which reduces the number of elements in the BVH, while also taking advantage of the GPU's SIMD architecture thanks to spatial locality.
 
 \paragraph{Hash} A common pattern across the various raytrace-targeted formulations of non-geometric problems is the \emph{hash}ing of the stored elements into a tuple of nine $\mathsf{float32}$ elements. This arises due to the ray-traced pipeline's acceleration structures that are fixed to storing three-dimensional geometry, however, hashing itself is inherent to some of these programs as well.
@@ -575,7 +633,7 @@ While advances in rendering techniques have pushed the envelope of real-time ren
 
 \begin{figure}
   \includegraphics[width=\textwidth, keepaspectratio]{Deferred_TiledDeferred.pdf}
-  \caption{Our proposal to use compiler rewrites to optimize a render pipeline. In this case, we transform the deferred shading pipeline (left) to a tiled deferred shading pipeline (right). Render image credit to LearnOpenGL's SSAO tutorial \cite{vriesJoeyDeVriesLearnOpenGL2025}. Tiling of frustum cull and SSAO can be performed automatically, but implementation is non-trivial. \label{fig:deferred}}
+  \caption{Our proposal to use compiler rewrites to optimize a render pipeline. In this case, we transform the deferred shading pipeline (left) to a tiled deferred shading pipeline (right) that consumes less memory. Tiling of frustum cull and SSAO can be performed automatically, but implementation is non-trivial. \label{fig:deferred} Render image credit to LearnOpenGL's SSAO tutorial \cite{vriesJoeyDeVriesLearnOpenGL2025}.} 
 \end{figure}
 
 \subsubsection{State-of-the-art} 
