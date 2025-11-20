@@ -178,7 +178,7 @@
 
 \begin{document}
 %% Title information
-\title[Oolong]{Compiling for GPU Acceleration is More Than Tiling Nested Loops}
+\title[Oolong]{Compiling for GPU Acceleration is More Than Loop Tiling}
 % \subtitle{Hint: It's in the Name}                   %% \subtitle is optional
 
 %% Author information
@@ -234,7 +234,7 @@ This section will span the three topics that the thesis will cover: the GPU arch
   \caption{A heavily simplified block diagram of Nvidia's GB202 GPU, also known as the RTX 5090 \cite{nvidiaNVIDIARTXBlackwell2025}. \label{fig:gpuarch}}
 \end{figure}
 
-The GPU, or graphics processing unit, is a single-instruction multiple-data (SIMD) architecture (\autoref{fig:gpuarch}) that consists of a massive number of streaming multiprocessors (SMs). Each SM consists of a set of CUDA cores and a set of warp schedulers, and execute bundles of threads known as warps. On Nvidia architectures, an SM receives a warp of 32 threads that share four warp schedulers. % Pre-Volta, threads would conditionally execute the same instruction eight times in parallel four times in sequence for the total of 32 threads. However, as of Volta, each thread has its own program counter, and programmers are encouraged to treat each thread as its own instance in a paradigm known as SIMT (single-instruction multiple-thread). The underlying hardware attempts to retain the performance granted by SIMD by grouping threads with similar control flow, however, if inter-lane control flow diverges too much, they become subject to performance degradation in what is known as \emph{warp divergence}.
+The GPU, or graphics processing unit, is a single-instruction multiple-data (SIMD) architecture (\autoref{fig:gpuarch}) that consists of a massive number of streaming multiprocessors (SMs). Each SM consists of a set of CUDA cores and a set of warp schedulers, and execute bundles of threads known as warps. On Nvidia architectures, warps contain 32 threads. % Pre-Volta, threads would conditionally execute the same instruction eight times in parallel four times in sequence for the total of 32 threads. However, as of Volta, each thread has its own program counter, and programmers are encouraged to treat each thread as its own instance in a paradigm known as SIMT (single-instruction multiple-thread). The underlying hardware attempts to retain the performance granted by SIMD by grouping threads with similar control flow, however, if inter-lane control flow diverges too much, they become subject to performance degradation in what is known as \emph{warp divergence}.
 
 Each SM also contains dedicated circuitry for accelerating common functions. Tensor cores allow for fast tensor fused-multiply-and-add across the warp, and ray tracing cores accelerate the triangle-ray intersection operation. Moreover, due the GPU's historic purposes, SMs also have access to \emph{texture mapping units} (TMUs) that accelerate multilinear interpolation of values in the bound texture resource.
 
@@ -356,34 +356,15 @@ Triton \cite{tilletTritonIntermediateLanguage2019} is an MLIR-based compiler tha
 
 This section will discuss several types of neural networks (or neural nets) and the various high-level operators that occur in these programs.
 
-\subsubsection{Feedforward neural networks} The simplest neural network is a feed-forward neural network, where information always flows from inputs to outputs. For machine learning scientists, the classical diagram shown for a layer in a neural network is:
+\subsubsection{Feedforward neural networks} The simplest neural network is a feed-forward neural network, where information always flows from inputs to outputs. For machine learning scientists, the following diagram summarizes the most basic neural network. For our purposes, we can see how the weight application is represented as a matrix multiplication:
 
 \centerline{
-\includegraphics[scale=2]{i-hate-ml.drawio.pdf}
+\includegraphics[scale=1.25]{i-hate-ml.drawio.pdf}
 }
 
-We can write this as a simple matrix multiplication:
-\begin{align*}
-  % y = Wx \\
-  \begin{bmatrix}
-  y_1 \\ y_2 \\ y_3
-  \end{bmatrix}
-  = 
-  \begin{bmatrix}
-  w_{1,1} & w_{2,1} \\
-  w_{1,2} & w_{2,2} \\
-  w_{1,3} & w_{2,3} \\
-  \end{bmatrix} 
-  \begin{bmatrix} 
-    x_1 \\ x_2
-  \end{bmatrix}
-\end{align*}
+To reduce the linearity of the matmul's result, each output element $y_n$ may be element-wise passed into an activation function $f_a$, of which the most commonly used are $\mathsf{sigmoid}$ and $\mathsf{ReLU}$.
 
-To reduce the linearity of the result, each output element of the matrix multiplication is passed into an activation function, the most commonly used of which are $\mathsf{sigmoid}$ and $\mathsf{ReLU}$.
-
-To train for the correct weight values, the error of the results are passed into a cost function, after which the whole network is \emph{differentiated} to obtain the vector of weight adjustments. Propagating the errors back into the weight tensor is known as \emph{backprogation} or \emph{gradient descent}.
-
-As new activation functions or new network designs are devised with different layers, the whole program still needs to be differentiated to determine the adjustment vector. Automatic differentiation \cite{enzymeadEnzymeCon2023HackableAutodiff2024,jakobDRJITJustintimeCompiler2022,thejaxauthorsAutomaticDifferentiationJAX2024,paszkeAutomaticDifferentiationPyTorch2017,rall1996introduction,bangaruSLANGDFastModular2023} (\emph{autodiff}) exists in machine learning compilers to remove the burden of differentiating their program from their users as they iterate.
+To train for the correct weight values, the error of the results are passed into a cost function, after which the whole network is \emph{differentiated} to obtain the vector of weight adjustments. Propagating the errors back into the weight tensor is known as \emph{backprogation} or \emph{gradient descent}. As new activation functions or new network designs are devised with different layers, calculating the gradient of the program grows more complex and difficult to maintain. Automatic differentiation (\emph{autodiff}) \cite{enzymeadEnzymeCon2023HackableAutodiff2024,jakobDRJITJustintimeCompiler2022,thejaxauthorsAutomaticDifferentiationJAX2024,paszkeAutomaticDifferentiationPyTorch2017,rall1996introduction,bangaruSLANGDFastModular2023} exists in machine learning compilers to remove the burden of differentiation from their users as they iterate through different network designs.
 
 \subsubsection{Convolutional neural networks} Convolutional neural networks \cite{osheaIntroductionConvolutionalNeural2015} (CNNs) are neural nets that target the field of pattern recognition in images. The three layers involved in a CNN are:
 \begin{itemize}
@@ -394,38 +375,11 @@ As new activation functions or new network designs are devised with different la
 
 \ivan{i'll probably add the classical CNN diagram here, as we can include details about Im2Col}
 
-% cite: various edge detectors, gaussian and ani blur
-
 \paragraph{The Convolution Layer: Stencil computation} The convolution layers extract features from or reduce noise in the input, extracting values for the fully-connected layer to train on.  A fixed pattern (i.e. the stencil) is applied to each element of an array, drawing data from adjacent neighbors. We demonstrate this using the $3\times3$ stencil of the Sobel filter \cite{sobelIsotropic3x3Image2014}, an early edge detector.
 
-\begin{equation*}
-\begin{bmatrix}
-  -1 & 0 & +1 \\
-  -2 & 0 & +2 \\
-  -1 & 0 & +1
-\end{bmatrix}
-\otimes
-\begin{bmatrix}
-    0 & 0 & 0 & 0 & 0 & 0 \\
-    0 & 1 & 2 & 1 & 1 & 2 \\
-    0 & 1 & 1 & 1 & 1 & 1 \\
-    1 & 0 & 0 & 0 & 0 & 0 \\
-    0 & 0 & 1 & 1 & 1 & 0 \\
-    0 & 1 & 1 & 1 & 1 & 1
-\end{bmatrix}
-=
-\begin{bmatrix}
-    1 & 2 & \hdots \\
-    3 & \begin{bmatrix}
-      &-1(0)  + 0(0) + 1(0)\\
-      +&-2(0) + 0(1) + 2(2)\\
-      +&-1(0) + 0(1) + 1(1)\\
-    \end{bmatrix} & \hdots  \\
-    \vdots & \vdots & \ddots
-\end{bmatrix}
-\end{equation*}
+\includegraphics[scale=1.5]{convolution-anno.pdf}
 
-We observe that elements at the boundaries of the image do not have neighbors beyond the boundary for the stencil to apply to, and so the policy for handling this edge case is known as the computation's \emph{boundary condition} (BC). In the case of Sobel, the BC is to take the element itself, though other policies may be to wrap-around the image.
+We observe that elements at the boundaries of the image do not have neighbors beyond the boundary for the stencil to apply to, and so the policy for handling this edge case is known as the computation's \emph{boundary condition} (BC). In the case of Sobel, the BC is to take the element itself, though other policies may include using 0 or wrapping around the image.
 
 The computation of each element of the stencil computation is embarrassingly parallel \cite{maruyamaPhysisImplicitlyParallel2011} and, hence, stencil computations are a classical target for tiling \cite{bandishtiTilingStencilComputations2012,hagedorn2016extension}. When tiling a stencil computation, the required neighbors must also be fetched into memory. The set of neighbors that participate in the computation but are not updated by the tile is known as the \emph{halo region} \cite{holewinskiHighperformanceCodeGeneration2012}. Stencil computations may be represented as polyhedral loops, and many stencil computations can be found in polyhedral benchmark test suites \cite{pouchetPolyBench2010}.
 
@@ -433,10 +387,11 @@ The computation of each element of the stencil computation is embarrassingly par
 
 \paragraph{Fully-connected layer} The fully-connected layer is simply a feed-forward neural network.
 
-\subsubsection{Large language models} 
-\ivan{section under construction}
+\subsubsection{Large language models}
 
 % A Transformer is a humanoid robot with the ability to transform into a vehicle [1]. Most Transformers were born on Cybertron, which the body of the creator deity Primus who sacrificed himself to defeat the evil Unicron [3]. However, after many centuries, tensions on the planet eventually culminated in a civil war that destroyed their home, dividing the Transformers into the Autobots led by Optimus Prime and the Decepticons led by Megatron.
+
+Large language models are designed to understand human language. 
 
 A weakness of convolutional networks is the inability of an element to draw information from other elements, which is known as \emph{inferring context}.
 Most large language models adopt the \emph{transformer} architecture. Inputs can take various forms, from text to images, and are transformed into a numerical vector space (the \emph{embedding} space) through an \emph{encoding} function.
