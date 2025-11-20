@@ -353,11 +353,9 @@ Triton \cite{tilletTritonIntermediateLanguage2019} is an MLIR-based compiler tha
 
 \subsection{Neural Networks}
 
-\ivan{Bea's suggestion. We will discuss matmul, convolutional neural nets, back propagation, and stencil computations here in hopefully less than 2k words}
-
 This section will discuss several types of neural networks (or neural nets) and the various high-level operators that occur in these programs.
 
-\subsubsection{Feedforward neural networks} The simplest neural network is a feed-forward neural network, where information always flows from inputs to outputs. For machine learning scientists, the following diagram summarizes the most basic neural network. For our purposes, we can see how the weight application is represented as a matrix multiplication:
+\subsubsection{Feed-forward neural networks} The simplest neural network is a feed-forward neural network, where information always flows from inputs to outputs. We demonstrate how a neural network may be represented as a matrix multiplication:
 
 \centerline{
 \includegraphics[scale=1.25]{i-hate-ml.drawio.pdf}
@@ -392,23 +390,25 @@ The computation of each element of the stencil computation is embarrassingly par
 
 % A Transformer is a humanoid robot with the ability to transform into a vehicle [1]. Most Transformers were born on Cybertron, which the body of the creator deity Primus who sacrificed himself to defeat the evil Unicron [3]. However, after many centuries, tensions on the planet eventually culminated in a civil war that destroyed their home, dividing the Transformers into the Autobots led by Optimus Prime and the Decepticons led by Megatron.
 
-Large language models (LLMs) are models trained to understand human language. While they can also take the form of recurrent neural networks (RNNs), most LLMs in the current year utilize the \emph{transformer} architecture (\autoref{fig:transformer}).
+Large language models (LLMs) are models trained to understand human language. While they can also take the form of recurrent neural networks (RNNs), most LLMs in the current year adopt the \emph{transformer} architecture (\autoref{fig:transformer}).
 
 \begin{figure}
 \includegraphics[width=\textwidth]{transformer.pdf}
   \caption{The transformer architecture \cite{vaswaniAttentionAllYou2023} as depicted by Godoy \cite{godoyDvgodoyDlvisuals2025} (CC BY). \label{fig:transformer}}
 \end{figure}
 
-In transformers, inputs and outputs are not normally provided in vector form. Language, for instance, tends to arrive in text and tokenized strings. These tokens are mapped to vectors via an \emph{embedding} function or \emph{encoder}/\emph{decoder}. Unlike convolutional neural networks, transformers will also encode the position of a token into the embedding vector as well.
+In transformers, inputs and outputs are not normally provided in numeric form. Language, for instance, tends to arrive in text and tokenized strings. These tokens are mapped to vectors via an \emph{embedding} function (or an \emph{encoder}/\emph{decoder}). Unlike convolutional neural networks, transformers will also encode the position of a token into the embedding vector as well.
+
+\paragraph{Attention} The mechanism present throughout the transformer architecture is the attention mechanism (\autoref{eqn:attention-masked}, \cite{vaswaniAttentionAllYou2023}), which is able to dynamically determine the value of context.
 
 \begin{equation}
   \Attention_{\mathbf{M}}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \softmax(\mathbf{Q} \mathbf{K}^T - \mathbf{M}) \mathbf{V}
   \label{eqn:attention-masked}
 \end{equation}
 
-The mechanism ever present in the transformer architecture is the attention mechanism (\autoref{eqn:attention-masked}, \cite{vaswaniAttentionAllYou2023}), which is an ternary function over the embedding space. Attention takes in three vectors $\mathbf{Q}$, $\mathbf{K}$ and $\mathbf{V}$ and returns a vector corresponding to the next predicted token. Multiple attention heads can be run in parallel, which allows different attention heads to train on different aspects of the input to avoid overfitting.
+The \emph{query} vector $\mathbf{Q}$ represents a query about the token and the \emph{key} vector $\mathbf{K}$ represents an answer to the query. For example, in language, adjectives modify the meaning of nouns that follow it, so $\mathbf{Q}$ would contain higher values where the nouns might expect adjectives, and $\mathbf{K}$ might contain the adjectives themselves. The computation $\mathbf{S}=\mathbf{Q}\mathbf{K}^T$ polls the questions against the answers, forming the \emph{context} of the attention kernel. Sometimes, a value in the context requires discarding (for instance, causal masking prevents earlier tokens from influencing later tokens) by subtracting $\inf$ from the values --- this is represented by the $\mathbf{M}$ matrix. The context, post normalization with $\softmax$, is then applied to the inputs once again by being multiplied with the value matrix $\mathbf{V}$.
 
-The \emph{query} vector $\mathbf{Q}$ represents a query about the token and the \emph{key} vector $\mathbf{K}$ represents an answer to the query. For example, in language, adjectives modify the meaning of nouns that follow it, so $\mathbf{Q}$ would contain higher values where the nouns might expect adjectives, and $\mathbf{K}$ might contain the adjectives themselves. The computation $\mathbf{S}=\mathbf{Q}\mathbf{K}^T$ polls the questions against the answers, forming the \emph{context} of the attention. Sometimes, a value in the context is necessarily discarded (for instance, causal masking prevents earlier tokens from influencing later tokens) by subtracting $\inf$ from the values --- this is represented by the $\mathbf{M}$ matrix. The context, post normalization with $\softmax$, is then applied to the inputs once again by being multiplied with the value matrix $\mathbf{V}$.
+Being at the core of the transformer architecture, the optimization and parallelization of attention has been the topic of many a machine learning research paper. Flash Attention and its variants \cite{daoFlashAttentionFastMemoryEfficient2022,daoFlashAttention2FasterAttention2023} present a manual tiling of the attention mechanism for the respective GPUs at the time of publication. Compiler engines such as FlexAttention \cite{dongFlexAttentionProgramming2024} and FlashInfer \cite{yeFlashInferEfficientCustomizable2025} aim to provide a configurable template for the various attention variants developed \cite{liuRingAttentionBlockwise2023,brandonStripedAttentionFaster2023,kwon2023efficient}.
 
 \subsubsection{Neural Network Formats} Each machine learning framework has its own exchange format to import and export, allowing weights and programs to be shared between researchers and execution environments. For instance, TensorFlow~\cite{tensorflow2015-whitepaper} uses Keras~\cite{chollet2015keras} and PyTorch~\cite{paszkePyTorchImperativeStyle2019} uses Python's built-in serializer, although each framework may also support the formats of others. To reduce fragmentation in the ecosystem, several open formats have been developed and proposed, amongst which include Open Neural Network eXchange (ONNX~\cite{onnxruntime}) format and the Neural Network Exchange Format (NNEF~\cite{khronosNNEFNeuralNetwork2016}).
 
@@ -423,7 +423,6 @@ As with general compute, computing on the GPU has come a long way from being a f
 The term for non-host programs in high-performance computing is \emph{kernel}, but in computer graphics, the code that executes in the programmable stages of a pipeline is instead called a \emph{shader}.
 
 \begin{figure}
-  \caption{The hardware accelerated rendering pipelines in GPUs. \label{fig:pipelines}}
   \begin{subfigure}{0.4\textwidth}
     \includegraphics[scale=0.50,keepaspectratio]{RasterPipeline.pdf}
     \caption{The raster pipeline.\label{fig:rasterpipe}} 
@@ -432,6 +431,7 @@ The term for non-host programs in high-performance computing is \emph{kernel}, b
     \includegraphics[scale=0.6,keepaspectratio]{RaytracePipeline.pdf}
     \caption{The ray tracing pipeline and its acceleration structures. \label{fig:raytracepipe}}  
   \end{subfigure}
+  \caption{The hardware accelerated rendering pipelines in GPUs. \label{fig:pipelines}}
 \end{figure}
 
 To select the appropriate pipelines for computation, render engines interface with the graphics card using low-level APIs such as DirectX \cite{microsoftDirect3D12Reference2021}, Metal \cite{appleinc.MetalOverview2025}, and Vulkan \cite{vulkanHomeVulkanCross2025}. To abstract access to the underlying APIs, graphics engines define a common interface known as the \emph{rendering hardware interface} (RHI) \cite{open3denginecontributorsO3DERenderHardware2025,nvidiaNVIDIARTXNVRHI2025}, which allows for multi-API targeting.
@@ -440,15 +440,15 @@ To select the appropriate pipelines for computation, render engines interface wi
 
 The raster pipeline (\autoref{fig:rasterpipe}) is the primary pipeline, and can be partitioned into two general steps: the \emph{geometry} stage and the \emph{fragment} stage. In the geometry stage, programmers turn input buffers into triangle primitives by specifying either the \emph{vertex}-\emph{tesselation}-\emph{geometry} sequence of shaders, or by a single \emph{mesh shader} in more modern hardware. The hardware then determines which texture elements (\emph{texel}s) in the output texture are inside the triangle (referred to as \emph{rasterization}), then invokes the \emph{fragment shader} on each texel in the fragment stage. As there are far more fragment shader invocations than geometry-stage shaders --- a roughly 3:N relationship --- significant performance gains are more likely to be made by optimizing fragment shaders or culling the number of fragment shader invocations.
 
-\ivan{ok i'm just going to add one more figure and a section about render passes}
+% \ivan{ok i'm just going to add one more figure and a section about render passes}
 
-\paragraph{Deferred Shading} Deferred shading defers the lighting computation to a separate render pass, painting the intermediate values required by the rendering equation into a set of output textures known as the geometry buffer (or G-buffer). While this improved the performance of lighting computations, deferred shading was notoriously memory intensive. As an embarrassingly parallel operation, however, the deferred shading computation could be tiled, saving the memory limits of the G-buffer.
+\paragraph{Deferred Shading} Deferred shading defers the lighting computation to a separate render pass, painting the intermediate values required by the rendering equation \cite{kajiyaRenderingEquation1986} into a set of output textures known as the geometry buffer (or G-buffer). While this improved the performance of lighting computations, deferred shading was notoriously memory intensive. 
 
 % depth pre-pass??
 
-\paragraph{Forward+} Forward rendering refers to performing the entire graphics pass, from geometry through to shading, in a single render pass. Forward+ \cite{haradaForwardBringingDeferred2012} takes the tiling of the deferred shading pipeline and applied it to forward rendering, tiling the camera frustum and performing frustum culls of the lights in the scene using a compute shader. The true insight drawn from Forward+ was that deferred shading was not a one-size-fits-all optimization technique; a mixture of factors including memory traffic and overdraw needed to be considered when optimizing a graphics pipeline.
+% \paragraph{Forward+} Forward rendering refers to performing the entire graphics pass, from geometry through to shading, in a single render pass. Forward+ \cite{haradaForwardBringingDeferred2012} takes the tiling of the deferred shading pipeline and applied it to forward rendering, tiling the camera frustum and performing frustum culls of the lights in the scene using a compute shader. The true insight drawn from Forward+ was that deferred shading was not a one-size-fits-all optimization technique; a mixture of factors including memory traffic and overdraw needed to be considered when optimizing a graphics pipeline.
 
-\paragraph{Post-processing} While the typical graphics pass produces a realistic image of the scene, many applications of real-time graphics are typically geared towards entertainment such as video games. Complete realism may not always be the requirement, and thus, artists may tune the final image, applying \emph{post processing effects} such as depth-of-field \cite{mcintoshEfficientlySimulatingBokeh2012} and tone mapping \cite{eilertsenRealtimeNoiseawareTone2015} to achieve a desired effect on the viewer. As each of these effects forms, massive performance gains can be made by \emph{fusing} adjacent passes into a single shader, avoiding the materialization of intermediate textures and minimizing the number of draw calls.
+\paragraph{Post-processing} While the typical graphics pass produces a realistic image of the scene, many applications of real-time graphics are typically geared towards entertainment such as video games. Complete realism may not always be the requirement, and thus, artists may tune the final image, applying \emph{post processing effects} such as depth-of-field \cite{mcintoshEfficientlySimulatingBokeh2012} and tone mapping \cite{eilertsenRealtimeNoiseawareTone2015} to achieve a desired effect. Effects such as depth-based edge detection \cite{abidhasanDepthEdgeDetection2016} may also draw on information from the G-buffer. As each of these effects forms, massive performance gains can be made by \emph{fusing} adjacent passes into a single shader, avoiding the materialization of intermediate textures and minimizing the number of draw calls.
 
 \subsubsection{The Raytracing Pipeline}
 
