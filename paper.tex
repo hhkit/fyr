@@ -245,21 +245,21 @@ Typically, a kernel dispatch is performed from the CPU (also known as the host d
 
 \subsection{Compilers for the GPU}
 
-As a massively parallel architecture, compilers for the GPU are closely associated with parallel compilers. We first introduce a model for discussing loop semantics, through the lens of which we will discuss the existing work in the field.
+As a massively parallel architecture, compilers for the GPU are closely associated with parallel compilers. We introduce a model for discussing loop semantics which we will use to discuss the existing work in the field.
 
-\subsubsection{Loop optimizations} Loop optimizations are a set of program transformations that target loops; specifically, they target \emph{perfectly nested loops}. Perfectly nested loops are defined as loops that nest within each other without statements in between loop headers. They are crucial for loop optimization, as by having no statements in between loop headers, the loop can be compactly represented as a 2-tuple of its iteration domain $\domain \in \mathcal{P}(\mathbb{Z}^{n})$ and its body $S \in \domain \to \mathcal{D}_S$, and transformations can be made to either the iteration domain or the body without necessarily reasoning about the other. We demonstrate this with a C/C++ example, but also present a corresponding notation to simply the syntax and emphasize changes effected by loop transformations. For loops deemed to be embarrassingly parallel, we shall denote them with $\mathbf{for~all}$ instead of $\mathbf{for}$.
+\subsubsection{Loop optimizations} Loop optimizations are a set of program transformations that target loops; specifically, they target \emph{perfectly nested loops}. Perfectly nested loops are defined as loops that nest within each other without statements in between loop headers. They are crucial for loop optimization, as by having no statements in between loop headers, the loop can be compactly represented as a 2-tuple of its iteration domain $\domain \in \mathcal{P}(\mathbb{Z}^{n})$ and its body $S \in \domain \to \mathcal{D}_S$, and transformations can be made to either component without reasoning about the other. We demonstrate this with a C code snippet, but also present a corresponding mathematical notation to simply the syntax and emphasize changes effected by loop transformations. For loops deemed to be embarrassingly parallel, we shall denote them with $\mathbf{for~all}$ instead of $\mathbf{for}$.
 
 \begin{tabular}{p{0.46\textwidth}p{0.46\textwidth}}
 \begin{minted}{cpp}
 #pragma omp parallel 
 for (int i = 0; i < 1024; ++i)
     for (int j = 0; j < 32; ++j)
-S:      c[i] = c[i] + a[i][j];
+S:      c[i] = c[i] - a[i][j];
 \end{minted}
 &%
 
 \begin{algorithmic}
-  \State $\mathsf{let }~ \lBrack  S \rBrack (i,j) \triangleq \left( c_i := c_i + a_{i,j} \right) ~\mathsf{in}$ 
+  \State $\mathsf{let }~ \lBrack  S \rBrack (i,j) \triangleq \left( c_i := c_i - a_{i,j} \right) ~\mathsf{in}$ 
   \ForAll {$i \in [0,1024)$}  
     \For {$j \in [0, 32)$}  
       \State $ \lBrack  S \rBrack (i,j) $
@@ -269,14 +269,50 @@ S:      c[i] = c[i] + a[i][j];
 \vfill
 \end{tabular}
 
-As in many loop optimization models \cite{xueUnimodularTransformationsNonperfectly1997,grosserPolyhedralASTGeneration2015,chenCHiLLFrameworkComposing2008}, we will assume the program iterates through $\domain$ lexicographically. The specific invocation of a statement $S$ executed with induction variables $v \in \domain$ is denoted as $S_{v}$, and the set of all statement invocations as $\mathcal{D}_S$.  The dependency relation $\mathbf{D}_r : \mathcal{D}_S \times \mathcal{D}_S $ may be derived with program analysis%CITE
-, and defines a partial order on the statement invocations that must be fulfilled to preserve the semantics of the executing program. 
+As in many loop optimization models \cite{xueUnimodularTransformationsNonperfectly1997,grosserPolyhedralASTGeneration2015,chenCHiLLFrameworkComposing2008}, we will assume the program iterates through $\domain$ lexicographically. The specific invocation of a statement $S$ executed with induction variables $v \in \domain$ is denoted as $S_{v}$, and the set of all statement invocations as $\mathcal{D}_S$.  The dependency relation $\mathbf{D}_r : \mathcal{D}_S \times \mathcal{D}_S $ defines a partial order on the statement invocations that must be fulfilled to preserve the semantics of the executing program, and may be derived with program analysis \cite{banerjeeSingleLoops1997}.
+
+Above, we may deduce the $i$ loop to be parallel as the reduction variable $c_i$ is local to each $i$ iteration. But the reducing $j$ loop is not parallel, as subtraction is not associative. We encode the dependency relation as $\mathbf{D}_r = \left \{ (S_{i,j}, S_{i,j'}) \mid j < j' \right \}$.
 
 We now define a loop transformation $T: \domain \to \domain$ as a transformation of a loop's iteration domain. For $T$ to be a legal transformation, it must preserve program semantics, which requires the dependency relation to remain satisfied under $T$ (i.e. $\forall (S_u,S_v) \in \mathbf{D}_r . T(u) \prec_{lex} T(v)$).
 
+Consider the transformation 
+$R_j := \begin{bmatrix}
+    i, j
+  \end{bmatrix}
+  \mapsto 
+  \begin{bmatrix}
+    i, 31 - j
+  \end{bmatrix}$, which reverses the $j$ loop. 
+
+\begin{tabular}{m{0.275\textwidth}m{0.02\textwidth}m{0.55\textwidth}} \\
+\multicolumn{3}{p{0.9\textwidth}}{
+  $\mathsf{let }~ \lBrack  S \rBrack (i,j) \triangleq \left( c_i := c_i - a_{i,j} \right) ~\mathsf{in}$ 
+}
+\\
+\begin{algorithmic}
+  \ForAll {$i \in [0,1024)$}  
+    \For {$j \in [0, 32)$}  
+      \State $ \lBrack  S \rBrack (i,j) $
+    \EndFor
+  \EndFor
+\end{algorithmic}
+&
+$\xrightarrow{R_j}$
+&
+\begin{algorithmic}
+  \ForAll {$i \in [0,1024)$}  
+    \For {$j \in [0, 32)$}  
+      \State $ \lBrack  S \rBrack (i,31-j) $
+    \EndFor
+  \EndFor
+\end{algorithmic}
+\end{tabular}
+
+In the initial loop, $(S_{0,0}, S_{0,1}) \in \mathbf{D}_r$. However, $R_j([0,0]) \not\prec_{lex} R_j([0,1])$ (i.e $[0,31] \not\prec_{lex} [0,30]$). Hence, the transformation $R_j$ does not fulfill the dependency relation $\mathbf{D}_r$ and is thus illegal.
+
 % I hate every word I've written here
 
-While there are a myriad of loop transformations such as loop reversal, loop skewing, and loop unrolling, we will specifically discuss the two loop transformations that are required in any loop optimizing framework targeting the GPU: \emph{loop tiling} \cite{xueTilingLoopTransformation2011,wonnacottScalabilityLoopTiling2013} and \emph{loop fusion} \cite{manjikianFusionLoopsParallelism1997, darteComplexityLoopFusion1999,qiaoLoopFusionKernel2019,mehtaRevisitingLoopFusion2014}. 
+While there are a myriad of loop transformations such as loop reversal, loop skewing, and loop unrolling, we will focus on the two transformations that are required in any loop optimizing framework targeting the GPU: \emph{loop tiling} \cite{xueTilingLoopTransformation2011,wonnacottScalabilityLoopTiling2013} and \emph{loop fusion} \cite{manjikianFusionLoopsParallelism1997, darteComplexityLoopFusion1999,qiaoLoopFusionKernel2019,mehtaRevisitingLoopFusion2014}. 
 
 \paragraph{Loop tiling} Loop tiling splits a loop dimension into multiple smaller dimensions. Tiling is a crucial transformation as perfectly nested loops are \emph{closed} under tiling, allowing the inner loops to be extracted as kernels \cite{wonnacottScalabilityLoopTiling2013} and be further tiled for lower-level optimizations such as vectorization.
 
@@ -301,7 +337,6 @@ $\xrightarrow{\mathsf{tile}(16)}$
   \EndFor
 \end{algorithmic}
 \end{tabular}
-
 \paragraph{Loop fusion} Loop fusion refers to the fusion of dependent loops to reduce the cost of iteration, remove intermediate values, or, when combined with tiling, enable the extraction of more complex kernels. We demonstrate this by fusing a transpose into a matrix multiplication --- a common fusion that exploits cache locality.
 
 \begin{tabular}{m{0.375\textwidth}m{0.08\textwidth}m{0.55\textwidth}} \\
@@ -358,7 +393,7 @@ This section will discuss several types of neural networks (or neural nets) and 
 \subsubsection{Feed-forward neural networks} The simplest neural network is a feed-forward neural network, where information always flows from inputs to outputs. We demonstrate how a neural network may be represented as a matrix multiplication:
 
 \centerline{
-\includegraphics[scale=1.25]{i-hate-ml.drawio.pdf}
+\includegraphics[scale=1.15]{i-hate-ml.drawio.pdf}
 }
 
 To reduce the linearity of the matmul's result, each output element $y_n$ may be element-wise passed into an activation function $f_a$, of which the most commonly used are $\mathsf{sigmoid}$ and $\mathsf{ReLU}$.
@@ -376,13 +411,13 @@ To train for the correct weight values, the error of the results are passed into
 
 \paragraph{The Convolution Layer: Stencil computation} The convolution layers extract features from or reduce noise in the input, extracting values for the fully-connected layer to train on.  A fixed pattern (i.e. the stencil) is applied to each element of an array, drawing data from adjacent neighbors. We demonstrate this using the $3\times3$ horizontal stencil of the Sobel filter \cite{sobelIsotropic3x3Image2014}, an early edge detector.
 
-\includegraphics[scale=1.5]{convolution-anno.pdf}
+\includegraphics[scale=1.4]{convolution-anno.pdf}
 
 We observe that elements at the boundaries of the image do not have neighbors beyond the boundary for the stencil to apply to, and so the policy for handling this edge case is known as the computation's \emph{boundary condition} (BC). In the case of Sobel, the BC is to take the element itself, though other policies may include using 0 or wrapping around the image.
 
 The computation of each element of the stencil computation is embarrassingly parallel \cite{maruyamaPhysisImplicitlyParallel2011} and, hence, stencil computations are a classical target for tiling \cite{bandishtiTilingStencilComputations2012,hagedorn2016extension}. When tiling a stencil computation, the required neighbors must also be fetched into memory. The set of neighbors that participate in the computation but are not updated by the tile is known as the \emph{halo region} \cite{holewinskiHighperformanceCodeGeneration2012}. Stencil computations may be represented as polyhedral loops, and many stencil computations can be found in polyhedral benchmark test suites \cite{pouchetPolyBench2010}.
 
-\paragraph{Pooling layer} The convolution layer typically retains the same image size as the input image, however, when flattened, a 720p ($1366\times768$) image still contains over a million pixels. CNNs typically do not require pixel-perfect information, thus, the pooling layer downsamples the convolution layer's outputs to reduce the size of the input and prevent overfitting. The most common pooling policies are max pooling (MaxPool) and average pooling (AvgPool) \cite{pmlr-v51-lee16a}.
+\paragraph{Pooling layer} CNNs do not require pixel-perfect information, and may introduce pooling layers to downsample the convolution layer's outputs to reduce the size of the input and prevent overfitting. The most common pooling policies are max pooling (MaxPool) and average pooling (AvgPool) \cite{pmlr-v51-lee16a}.
 
 \paragraph{Fully-connected layer} The fully-connected layer is simply a feed-forward neural network.
 
@@ -468,8 +503,7 @@ The raytracing pipeline (\autoref{fig:raytracepipe}) is a different pipeline tha
 
 Computer graphics as a field is huge, spanning different rendering techniques and the use of machine learning in various parts of the render pipeline. We will hence cover a small subset of it relevant to this PhD, specifically targeting the use of compiler techniques in computer graphics. 
 
-\subsubsection{Domain Specific Languages (DSLs) for Computer Graphics}
-A number of DSLs have been devised, some specfically for computer graphics, others for more generic computation. Taichi \cite{huTaichiLanguageHighperformance2019} is a high-performance DSL written for Python that is designed for high performance sparse programs, a class of programs that includes raytraced rendering. LuisaRender \cite{zhengLuisaRenderHighPerformanceRendering2022} and RenderKernel \cite{yangRenderKernelHighlevelProgramming2024} are two attempts at creating a high-level DSL for raster pipelines, attempting to use Python's decorator functionality to specify which pieces of code are kernels to be dispatched to the GPU.
+\subsubsection{Domain Specific Languages (DSLs) for Computer Graphics} Taichi \cite{huTaichiLanguageHighperformance2019} is a high-performance DSL written for Python that is designed for high performance sparse programs, a class of programs that includes raytraced rendering. LuisaRender \cite{zhengLuisaRenderHighPerformanceRendering2022} and RenderKernel \cite{yangRenderKernelHighlevelProgramming2024} are two attempts at creating a high-level DSL for raster pipelines, attempting to use Python's decorator functionality to specify which pieces of code are kernels to be dispatched to the GPU.
 
 \subsubsection{Inverse Rendering}
 
@@ -564,11 +598,11 @@ Unlike Flash Attention, which is implemented in PyTorch as a low-level Triton ke
 Target Venue: ASPLOS 2026 Summer Cycle (August 2026) \\
 Backup Deadline: PLDI 2027 (est. November 2026)
 
-General purpose GPU computing has its origins as a repurposing of the raster pipeline \cite{bolzSparseMatrixSolvers2003,krugerLinearAlgebraOperators2003}, resulting in the pipeline's subsequent generalization and abstraction that culminated in the current year's compute pipeline of launch grids and thread blocks. However, when adapting the general pipeline for raytracing, the limitations of compute were laid clear: as a SIMD architecture, performance would degrade quickly due to the heavy branching and recursion present in raytraced workflows. Thus, the raytracing pipeline (\autoref{fig:raytracepipe}) was introduced, with the ability to reorganize threads \cite{adinetCUDADynamicParallelism2014}, to loop back to previous stages and built-in acceleration of the bounding volume hierarchy traversal. In an attempt to coax lightning into striking twice, work began immediately on utilizing the pipeline for non-geometric workflows. While many of these attempts were successful \cite{menesesAcceleratingRangeMinimum2024,bauerVisibilityAlgorithmsDynamic2023,haGeneralizingRayTracing2024,Evangelou2021RadiusSearch,zhangMLIRLinalgDialect2022,hennebergRTIndeXExploitingHardwareAccelerated2023}, reformulating the algorithm as a geometric problem and partionining the program for raytracing requires low-level, domain-specific knowledge of manipulating graphics pipelines and resources. There currently exists no abstraction that maps to the utilization of the raytracing pipeline as perfectly nested loops do for the tiling of the compute pipeline.
+General purpose GPU computing has its origins as a repurposing of the raster pipeline \cite{bolzSparseMatrixSolvers2003,krugerLinearAlgebraOperators2003}, resulting in the pipeline's subsequent generalization and abstraction that culminated in the current year's compute pipeline of launch grids and thread blocks. However, when adapting the general pipeline for raytracing, the limitations of compute were laid clear: as a SIMD architecture, performance would degrade quickly due to the heavy branching and recursion present in raytraced workflows. Thus, the raytracing pipeline (\autoref{fig:raytracepipe}) was introduced, with the ability to reorganize threads \cite{adinetCUDADynamicParallelism2014}, to loop back to previous stages and built-in acceleration of the bounding volume hierarchy traversal. In an attempt to coax lightning into striking twice, work began immediately on utilizing the pipeline for non-geometric workflows. While many of these attempts were successful~\cite{menesesAcceleratingRangeMinimum2024,bauerVisibilityAlgorithmsDynamic2023,haGeneralizingRayTracing2024,Evangelou2021RadiusSearch,hennebergRTIndeXExploitingHardwareAccelerated2023}, reformulating the algorithm as a geometric problem and partionining the program for raytracing requires low-level, domain-specific knowledge of manipulating graphics pipelines and resources. There currently exists no abstraction that maps to the utilization of the raytracing pipeline as perfectly nested loops do for the tiling of the compute pipeline.
 
-This paper will investigate the targeting of the raytrace pipeline to as an optimization.
+This paper will investigate lowering to the raytrace pipeline to as a compiler-driven optimization.
 
-\subsubsection{Abstraction candidates} The natural candidate for abstraction is \emph{sparse linear algebra}. The art of treating linear algebra programs like geometric problems is not new; polyhedral compilers treat the iteration domain and tensors as integer polyhedra \cite{grosserPolyhedralASTGeneration2015}. Likewise, the row and column indices of sparse linear algebra could be treated as geometric coordinates, and retrieving all sparse elements in a row could be done with a raycast along the row's index. Zhang et al. \cite{zhangRTSpMSpMHarnessingRay2025} devised an algorithm to accelerate sparse matrix-sparse matrix multiplication with raytracing. By specifying the lowering of certain sparse operators to be optimized for RT cores, there is reason to hypothesize that more complex programs could be fused into the subsequent kernels to yield performant GPU-accelerated code. Additionally, block-sparse data structures exist as quads in geometric space, which reduces the number of elements in the BVH, while also taking advantage of the GPU's SIMD architecture thanks to spatial locality.
+\subsubsection{Abstraction candidates} The natural candidate for abstraction is \emph{sparse linear algebra}. The art of treating linear algebra programs like geometric problems is not new; polyhedral compilers treat the iteration domain and tensors as integer polyhedra \cite{grosserPolyhedralASTGeneration2015}. Conversely, the row and column indices of sparse linear algebra could be typecast as geometric coordinates, and retrieving all sparse elements in a row could be done with a raycast along the row's index. Zhang et al. \cite{zhangRTSpMSpMHarnessingRay2025} devised an algorithm to accelerate sparse matrix-sparse matrix multiplication with raytracing. By specifying the lowering of certain sparse operators to be optimized for RT cores, there is reason to hypothesize that more complex programs could be fused into the subsequent kernels to yield performant GPU kernels. Additionally, block-sparse data structures exist as quads in geometric space, which reduces the number of elements in the BVH, while also taking advantage of the GPU's tensor acceleration.
 
 \paragraph{Hash} A common pattern across the various raytrace-targeted formulations of non-geometric problems is the \emph{hash}ing of the stored elements into a tuple of nine $\mathsf{float32}$ elements. This arises due to the ray-traced pipeline's acceleration structures that are fixed to storing three-dimensional geometry, however, hashing itself is inherent to some of these programs as well.
 
@@ -580,7 +614,7 @@ Lastly, if the hash were specified to be \emph{order-preserving}, the accompanyi
 
 % \subsubsection{The Future of Ray-traced Accelerators} As current raytracing cores are heavily optimized towards solving the graphics problem, Barnes et. al propose a more generic accelerator, the Hierarchical Search Unit \cite{barnesExtendingGPURayTracing2024}, to abstract the programming model for general purpose. Issues with the current raytracing cores presented are the inability to handle more than three dimensions and the lack of visibility over the BVH data structures.
 
-\subsubsection{Criteria for Success} Achieving an abstraction that lowers to ray-traced acceleration as efficiently as tensor computations do for tiled computation would be a massive success. We have collected a suite of sparse problems that form the state-of-the-art of raytrace-accelerated programs \cite{menesesAcceleratingRangeMinimum2024,bauerVisibilityAlgorithmsDynamic2023,haGeneralizingRayTracing2024,Evangelou2021RadiusSearch,zhangMLIRLinalgDialect2022,hennebergRTIndeXExploitingHardwareAccelerated2023}, and achieving comparative performance to any of these approaches would prove our abstraction useful and beneficial to adopt in compiler frameworks.
+\subsubsection{Criteria for Success} Achieving an abstraction that lowers to ray-traced acceleration as efficiently as tensor computations do for tiled computation would be a massive success. We have collected a suite of sparse problems that form the state-of-the-art of raytrace-accelerated programs~\cite{menesesAcceleratingRangeMinimum2024,bauerVisibilityAlgorithmsDynamic2023,haGeneralizingRayTracing2024,Evangelou2021RadiusSearch,zhangMLIRLinalgDialect2022,hennebergRTIndeXExploitingHardwareAccelerated2023}, and achieving comparative performance to any of these approaches would prove our abstraction useful and beneficial to adopt in compiler frameworks.
 
 However, we take a realistic lens based on our prior work on attention tiling, and observe that we targeted a very specific program that was very well understood and already had multiple optimized forms proving the viability of the approach. To take aim at all raytrace-acceleratable programs with a single abstraction might prove too lofty an ambition. In this regard, we believe that optimizing a block-sparse linear algebra kernel for raytraced-acceleration with tensor fusion remains viable.
 
@@ -603,17 +637,17 @@ While advances in rendering techniques have pushed the envelope of real-time ren
 \subsubsection{State-of-the-art} 
 The state-of-the-art for high performance computing DSLs in computer graphics is Taichi \cite{huTaichiLanguageHighperformance2019}, a Python-embedded DSL that has its users specify the data format separately from the computation. Taichi is very performant for its target use case, but it struggles to achieve even cinematic performance of 24 frames per second. We argue that the optimization of the pipeline, performed for many years in real-time simulation engines, and caching of frame-to-frame state is critical to achieving real-time performance.
 
-The state-of-the-art real-time simulation engine for comparison is Unreal Engine 5's Lumen engine \cite{epicgamesLumenGlobalIllumination2025}, which adopts many advanced graphics techniques to achieve realistic graphics. Global illumination is achieved by accumulating light data over several frames, known as \emph{temporal sampling} \cite{lambruTemporalSamplingRealTime2021}. As with our machine learning compatriats, beating the hand-tuned equivalent is nigh impossible, but achieving comparable real-time performance alone would be a fantastic result.
+The state-of-the-art real-time simulation engine for comparison is Unreal Engine 5's Lumen engine \cite{epicgamesLumenGlobalIllumination2025}, which adopts many advanced graphics techniques to achieve realistic graphics. Global illumination is achieved by accumulating light data over several frames, known as \emph{temporal sampling}~\cite{lambruTemporalSamplingRealTime2021}. As with our machine learning compatriats, beating the hand-tuned equivalent is nigh-on impossible, but achieving comparable real-time performance alone would be a fantastic result.
 
-\subsubsection{Reactive programming} A key feature of real-time simulation engines that stands out from offline rendering engines is the expectation of temporal locality, resulting in stateful functions executed from frame to frame. The semantics of frame-to-frame state can be captured with an aspect of reactive programming known as \emph{synchronous reactions} \cite{pompougnacWeavingSynchronousReactions2022}.
+\subsubsection{Reactive programming} A key feature of real-time simulation engines that stands out from offline rendering engines is the expectation of temporal locality, resulting in stateful functions executed from frame to frame. This could be the state of a BVH, or a cached global illumination calculation. The semantics of frame-to-frame state can be captured with an aspect of reactive programming known as \emph{synchronous reactions} \cite{pompougnacWeavingSynchronousReactions2022}.
 
 
-\subsubsection{Criteria for Success} As control set ups, we have to turn to tutorial projects by LearnOpenGL \cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems \cite{willemsSaschaWillemsVulkanExamples2025}, as many graphics engines do not make it easy to isolate features of their graphics pipeline for apples-to-apples comparisons. Success is defined by achieving real-time framerates while applying transformations that further optimize the OpenGL/Vulkan tutorial examples with minimal (<20) lines of code expressed as program transformations.
+\subsubsection{Criteria for Success} As control set ups, we have to resort to tutorials by LearnOpenGL~\cite{vriesJoeyDeVriesLearnOpenGL2025} and Sascha Willems~\cite{willemsSaschaWillemsVulkanExamples2025}, as many graphics engines do not make it easy to isolate features of their graphics pipeline for apples-to-apples comparisons. Success is defined by achieving real-time framerates while applying transformations that further optimize the OpenGL/Vulkan tutorial examples with minimal (<20) lines of code expressed as program transformations.
 
 A groundbreaking success would have occurred if either of the following were achieved: 
 \begin{itemize}
   \item We surpass Taichi's performance, achieving cinematic performance in their domain without loss in fidelity or significant increase in code complexity.
-  \item We can achieve real-time performance in an apples-to-apples comparison with Unreal Engine 5's Lumen Engine \cite{epicgamesLumenGlobalIllumination2025} in fewer lines of code.
+  \item We can achieve real-time performance in an apples-to-apples comparison with Unreal Engine 5's Lumen Engine \cite{epicgamesLumenGlobalIllumination2025}.
 \end{itemize}
 
 \section {Timeplan}
@@ -636,15 +670,15 @@ A demo is planned to be presented at CC's C4ML (with an abstract deadline of Dec
 
 \subsection{2026-2028 Timeplan}
 
-The biggest issue pointed out by my supervisor is that of \emph{risk}. Compilers are exceedingly good at optimizing for low-level semantics, and linear algebra in particular neatly lowers to perfectly nested loops (hence, MLIR's \dialect{linalg} dialect) which are perfect for optimizations such as vectorization and memory tiling. In comparison, a compiler for dealing with high-level constructs such as render pipelines may not yield as much performance benefit.
+The biggest issue pointed out by my supervisor is that of \emph{risk}. Compilers are exceedingly good at optimizing for low-level semantics, and linear algebra in particular neatly lowers to perfectly nested loops (hence, MLIR's \dialect{linalg} dialect) which maps perfectly vectorization and memory tiling. In comparison, a compiler for dealing with high-level constructs such as render pipelines may not yield as much performance benefit.
 
-Thus, this timeplan will prioritize the more generally applicable papers of attention tiling and sparse matrix multiplication, all the while building a GPU-targeted dispatch dialect in the background. This will ensure that a pivot to a safer, more machine learning oriented research direction in the third year would be feasible enough such as to not derail the timeline of the PhD.
+Thus, this timeplan will prioritize the more general papers of attention tiling and sparse matrix multiplication, all the while building a GPU-targeted dispatch dialect in the background. Should plans not pan out, it's not unreasonable to pivot towards a CNN-focused paper instead.
 
 Our proposed timeline is therefore as follows:
 
 \noindent
 \centering
-\includegraphics[width=\textheight,keepaspectratio,angle=90]{Gantt.pdf}
+\includegraphics[width=0.852\textheight,keepaspectratio,angle=90]{gantt.png}
 
 %% Bibliography
 \bibliography{references}
