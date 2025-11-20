@@ -376,7 +376,7 @@ To train for the correct weight values, the error of the results are passed into
 
 \ivan{i'll probably add the classical CNN diagram here, as we can include details about Im2Col}
 
-\paragraph{The Convolution Layer: Stencil computation} The convolution layers extract features from or reduce noise in the input, extracting values for the fully-connected layer to train on.  A fixed pattern (i.e. the stencil) is applied to each element of an array, drawing data from adjacent neighbors. We demonstrate this using the $3\times3$ stencil of the Sobel filter \cite{sobelIsotropic3x3Image2014}, an early edge detector.
+\paragraph{The Convolution Layer: Stencil computation} The convolution layers extract features from or reduce noise in the input, extracting values for the fully-connected layer to train on.  A fixed pattern (i.e. the stencil) is applied to each element of an array, drawing data from adjacent neighbors. We demonstrate this using the $3\times3$ horizontal stencil of the Sobel filter \cite{sobelIsotropic3x3Image2014}, an early edge detector.
 
 \includegraphics[scale=1.5]{convolution-anno.pdf}
 
@@ -395,7 +395,7 @@ The computation of each element of the stencil computation is embarrassingly par
 Large language models (LLMs) are models trained to understand human language. While they can also take the form of recurrent neural networks (RNNs), most LLMs in the current year utilize the \emph{transformer} architecture (\autoref{fig:transformer}).
 
 \begin{figure}
-\includegraphics[width=0.5\textwidth]{full_transformer.png}
+\includegraphics[width=\textwidth]{transformer.pdf}
   \caption{The transformer architecture \cite{vaswaniAttentionAllYou2023} as depicted by Godoy \cite{godoyDvgodoyDlvisuals2025} (CC BY). \label{fig:transformer}}
 \end{figure}
 
@@ -406,7 +406,7 @@ In transformers, inputs and outputs are not normally provided in vector form. La
   \label{eqn:attention-masked}
 \end{equation}
 
-The mechanism ever present in the transformer architecture is the attention mechanism (\autoref{eqn:attention-masked}, \cite{vaswaniAttentionAllYou2023}), which a function in the embedding space. Attention takes in three vectors $\mathbf{Q}$, $\mathbf{K}$ and $\mathbf{V}$ and returns a vector corresponding to the next predicted token. Multiple attention heads can be run in parallel, which allows different attention heads to train on different aspects of the input to avoid overfitting.
+The mechanism ever present in the transformer architecture is the attention mechanism (\autoref{eqn:attention-masked}, \cite{vaswaniAttentionAllYou2023}), which is an ternary function over the embedding space. Attention takes in three vectors $\mathbf{Q}$, $\mathbf{K}$ and $\mathbf{V}$ and returns a vector corresponding to the next predicted token. Multiple attention heads can be run in parallel, which allows different attention heads to train on different aspects of the input to avoid overfitting.
 
 The \emph{query} vector $\mathbf{Q}$ represents a query about the token and the \emph{key} vector $\mathbf{K}$ represents an answer to the query. For example, in language, adjectives modify the meaning of nouns that follow it, so $\mathbf{Q}$ would contain higher values where the nouns might expect adjectives, and $\mathbf{K}$ might contain the adjectives themselves. The computation $\mathbf{S}=\mathbf{Q}\mathbf{K}^T$ polls the questions against the answers, forming the \emph{context} of the attention. Sometimes, a value in the context is necessarily discarded (for instance, causal masking prevents earlier tokens from influencing later tokens) by subtracting $\inf$ from the values --- this is represented by the $\mathbf{M}$ matrix. The context, post normalization with $\softmax$, is then applied to the inputs once again by being multiplied with the value matrix $\mathbf{V}$.
 

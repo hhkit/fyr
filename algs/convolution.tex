@@ -21,11 +21,11 @@
 \usepackage{tabularx}
 \usepackage{tcolorbox}
 \usepackage{subcaption}
+\usepackage{mathdots}
 \usepackage{varwidth}
 
 \begin{document}
-\begin{varwidth}{\linewidth}
-
+\begin{varwidth}{1.2\linewidth}
     \begin{equation*}
 \begin{bmatrix}
   \mathcolor{red}{
@@ -36,26 +36,24 @@
 \end{bmatrix}
 \otimes
 \begin{bmatrix}
-  \mathcolor{blue}{
-    0 & 0 & 0 & 0 & 0 & 0 \\
-    0 & 1 & 2 & 1 & 1 & 2 \\
-    0 & 1 & 1 & 1 & 1 & 1 \\
+  
+    \mathcolor{blue}{0 & 0 & 0} & 0 & 0 & 0 \\
+    \mathcolor{blue}{0 & 1 & 2} & 1 & 1 & 2 \\
+    \mathcolor{blue}{0 & 1 & 1} & 1 & 1 & 1 \\
     1 & 0 & 0 & 0 & 0 & 0 \\
     0 & 0 & 1 & 1 & 1 & 0 \\
     0 & 1 & 1 & 1 & 1 & 1
-  }
 \end{bmatrix}
 =
 \begin{bmatrix}
-    \color{olive}1 & \color{olive}2 & \hdots \\
-    \color{olive}3 & \begin{bmatrix}
-       &\mathcolor{red}{-1}(\mathcolor{blue}{0}) + \mathcolor{red}{0}(\mathcolor{blue}{0}) + \mathcolor{red}{1}(\mathcolor{blue}{0})\\
-      +&\mathcolor{red}{-2}(\mathcolor{blue}{0}) + \mathcolor{red}{0}(\mathcolor{blue}{1}) + \mathcolor{red}{2}(\mathcolor{blue}{2})\\
-      +&\mathcolor{red}{-1}(\mathcolor{blue}{0}) + \mathcolor{red}{0}(\mathcolor{blue}{1}) + \mathcolor{red}{1}(\mathcolor{blue}{1})\\
-    \end{bmatrix} & \hdots  \\
-    \vdots & \vdots & \ddots
+    \ddots & \vdots & \iddots \\
+    \hdots & \begin{bmatrix}
+       &\mathcolor{red}{-1} \cdot \mathcolor{blue}{0} + \mathcolor{red}{0} \cdot \mathcolor{blue}{0} + \mathcolor{red}{1} \cdot \mathcolor{blue}{0}\\
+      +&\mathcolor{red}{-2} \cdot \mathcolor{blue}{0} + \mathcolor{red}{0} \cdot \mathcolor{blue}{1} + \mathcolor{red}{2} \cdot \mathcolor{blue}{2}\\
+      +&\mathcolor{red}{-1} \cdot \mathcolor{blue}{0} + \mathcolor{red}{0} \cdot \mathcolor{blue}{1} + \mathcolor{red}{1} \cdot \mathcolor{blue}{1}\\
+    \end{bmatrix} = \mathcolor{blue}{5} & \hdots  \\
+    \iddots & \vdots & \ddots
 \end{bmatrix}
 \end{equation*}
-
 \end{varwidth}
 \end{document}
